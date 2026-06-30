@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spellstorm</title>
+<title>Spellstorm v1.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -278,7 +278,7 @@
 <div id="wrap"><canvas id="game"></canvas></div>
 <div id="framefx"></div>
 <div id="brand">SPELLSTORM</div>
-<div id="disclaimer">2026 work in progress, v1.062</div>
+<div id="disclaimer">2026 work in progress, v1.1</div>
 <div id="warnBanner"><div class="wbig" id="warnBig">⚠ THE CORRUPTED CORE ⚠</div><div class="wsub" id="warnSub">Point of no return — the Warden stirs</div></div>
 
 <div id="hud">
@@ -292,7 +292,7 @@
 <div id="bossbar"><div class="label" id="bossName">Boss</div>
   <div class="track"><div class="fill" id="bossFill"></div></div></div>
 
-<div id="bossIntro"><div><div class="bititle" id="bossIntroName">ZARGOTH</div><div class="bisub">Warden of the Corrupted Core</div></div></div>
+<div id="bossIntro"><div><div class="bititle" id="bossIntroName">ZARGOTH</div><div class="bisub" id="bossIntroSub">Warden of the Corrupted Core</div></div></div>
 
 <div id="toasts"></div>
 
@@ -323,8 +323,10 @@
   <div id="home">
     <canvas id="titlefx"></canvas>
     <div id="homeInner">
-      <h1 id="bigtitle">SPELLSTORM</h1>
-      <div id="tagline">Storm the realm. Master the elements.</div>
+      <h1 id="bigtitle">SPELL</h1>
+	  <h1 id="bigtitle">STORM</h1>
+	  <h1 id="bigtitle">"S" "T" "O" "R" "M" "N"</h1>
+      <div id="tagline">Master the elements, kill the dark lords bat hamster</div>
       <div id="menu">
         <button id="btnPlay">Play</button>
         <button id="btnControls" class="alt">Controls</button>
@@ -370,8 +372,8 @@
       <p>Wands evolve from a <b>Wood Wand</b> to the absolute animals that are <b>Avatar</b> and <b>Nova</b>. Wand mechanics: <b>AoE blasts</b>, <b>chain lightning</b>, <b>orbiting saw-blades</b>, <b>homing</b> and <b>boomerang</b> bolts, <b>freeze fields</b>, <b>black-hole singularities</b>, <b>ricochet</b>, <b>railgun beams</b>, <b>cluster shards</b>, and full <b>360° novas</b>. Buy upgrades with gold, or find rare wands as drops.</p>
 
       <h3>The End</h3>
-      <p>The world darkens with as you approach the <b style="color:#ff5a5a">Corrupted Core</b> at the far edge. Cross the point of no return and face <b>Zargoth, Warden of the Core</b> — the final boss for now.</p>
-	  <p>Beat him, then kill him again faster if you can, <b style="color:#ff5a5a">TEMPORARY ENDGAME</b> </p>
+      <p>The world darkens with as you approach the <b style="color:#ff5a5a">Corrupted Core</b> at the far edge. Cross the point of no return and face a <b>gauntlet of Wardens</b>, each fiercer than the last, ending in the final boss for now.</p>
+	  <p>Survive the whole gauntlet, then do it again faster if you can, <b style="color:#ff5a5a">TEMPORARY ENDGAME</b> </p>
 	  <p>
     </div>
     <button class="back" data-back>Back</button>
@@ -600,6 +602,7 @@ const World = {
     this.running=true;this.won=false;this.shopOpen=false;this.paused=false;
     Upgrades.queue=0; Upgrades.open=false;
     Endgame.reset();
+    Boss.tier=0;
     document.getElementById('levelup').classList.remove('show');
   },
   // biome lookup from world position via two noise fields (temp / moisture)
@@ -842,20 +845,20 @@ const Loot = {
       if(roll<0.10) World.coins.push({x:en.x,y:en.y,type:'bar',value:15*gMult,vy:-2,bob:rand(0,6)});
       else if(roll<en.def.gold+0.05) World.coins.push({x:en.x,y:en.y,type:'coin',value:gMult,vy:-2,bob:rand(0,6)});
     }
-    // HP potion drops (small chance; elites guaranteed)
-    if(en.elite || Math.random()<0.04){
+    // HP potion drops (rarer now; elites still guaranteed)
+    if(en.elite || Math.random()<0.018){
       World.drops.push({x:en.x+rand(-10,10),y:en.y+rand(-10,10),potion:Math.round(35+diff*8),bob:rand(0,6)});
     }
-    // gear drop chance (better deeper; elites guaranteed + higher rarity)
-    let gearChance=0.05+diff*0.02;
-    if(en.def.winged) gearChance+=0.04;
+    // gear drop chance (less common overall so unlocks take longer; still better deeper, elites guaranteed)
+    let gearChance=0.022+diff*0.009;
+    if(en.def.winged) gearChance+=0.018;
     if(en.elite || Math.random()<gearChance){
       const slot=pick(['helmet','chest','legs']);
       const item=this.genGear(slot,diff*(en.elite?1.8:1));
       World.drops.push({x:en.x+rand(-8,8),y:en.y+rand(-8,8),item,bob:rand(0,6)});
     }
-    // RARE WAND DROP — small chance, scales with difficulty; elites much likelier
-    if(Math.random()< (0.006+diff*0.004)*(en.elite?5:1)){
+    // RARE WAND DROP — rarer overall, still scales with difficulty; elites notably likelier
+    if(Math.random()< (0.0022+diff*0.0016)*(en.elite?4:1)){
       const target=clamp(p.wandTier+randi(1,2),0,WANDS.length-1);
       if(target>p.wandTier){
         World.drops.push({x:en.x,y:en.y,wand:target,bob:rand(0,6)});
@@ -1053,7 +1056,19 @@ const Combat = {
       FX.impact(boss.x+rand(-40,40),boss.y+rand(-40,40),w.elem,crit);
     }
     boss.hp-=dmg; boss.hit=8;
-    if(boss.hp<=0){ boss.dead=true; SFX.bossDie(); Game.win(); }
+    if(boss.hp<=0 && !boss.dead){
+      boss.dead=true; SFX.bossDie();
+      if(Boss.tier<BOSSES.length-1){
+        const bx=boss.x, by=boss.y;
+        document.getElementById('bossbar').classList.remove('show');
+        UI.toast(boss.B.name+' falls... but the Core is not yet still.','#ff9a2e');
+        World.boss=null;
+        Boss.tier++;
+        setTimeout(()=>{ if(World.running) Boss.spawn(bx,by); },2600);
+      } else {
+        Game.win();
+      }
+    }
     document.getElementById('bossFill').style.width=Math.max(0,boss.hp/boss.maxhp*100)+'%';
   },
   hurtPlayer(dmg){
@@ -1099,10 +1114,12 @@ const Spawner = {
     const b=World.biomeAt(x,y);
     const type=pick(b.enemies); const base=ENEMIES[type];
     const scale=1+(b.diff-1)*0.6;
-    let hp=Math.round(base.hp*scale*(1+World.wave*0.05));
+    // ENEMY HEALTH — bumped up overall (1.8x base) plus steeper per-wave growth so fights stay
+    // meaningful for longer and the endgame doesn't get trivialized by sheer DPS stacking.
+    let hp=Math.round(base.hp*scale*1.8*(1+World.wave*0.08));
     const elite=Math.random()<0.06+b.diff*0.015;
     let r=base.r, dmg=Math.round(base.dmg*scale), spd=base.speed*(1+(b.diff-1)*0.04);
-    if(elite){ hp=Math.round(hp*3.2); r=Math.round(r*1.5); dmg=Math.round(dmg*1.5); spd*=0.92; }
+    if(elite){ hp=Math.round(hp*3.4); r=Math.round(r*1.5); dmg=Math.round(dmg*1.5); spd*=0.92; }
     World.enemies.push({x,y,r,type,def:base,bi:b.diff,elite,
       hp,maxhp:hp, speed:spd, dmg,
       hit:0, t:rand(0,99), fireCd:base.fireCd||0, dashT:0});
@@ -1138,7 +1155,7 @@ const Spawner = {
 };
 
 // =====================================================================
-// BOSS MANAGER — bullet-hell warden in the Corrupted Core
+// BOSS MANAGER — bullet-hell wardens guarding the Corrupted Core
 // =====================================================================
 // ENDGAME — classic "approaching the final area" tropes
 //   stage 0: nothing · 1: distant dread · 2: warning banner · 3: boss
@@ -1169,50 +1186,64 @@ const Endgame = {
 };
 
 // =====================================================================
+// BOSSES — a gauntlet of Wardens guarding the Core. Each is tougher,
+// faster, and meaner than the last; the final one is the true test.
+// =====================================================================
+const BOSSES = [
+  {name:'ZARGOTH', title:'Warden of the Core', hp:3000, dmgMul:1.00, speedMul:1.00, atkCdMul:1.00, color:'#ff4d6d'},
+  {name:'MORDRETH', title:'Herald of Ruin', hp:5200, dmgMul:1.25, speedMul:1.10, atkCdMul:0.85, color:'#ff7a18'},
+  {name:'VYRELIS', title:'Eclipse of the Storm', hp:8200, dmgMul:1.50, speedMul:1.20, atkCdMul:0.72, color:'#5bc0ff'},
+  {name:'THE HOLLOW KING', title:'Final Warden of the Core', hp:13000, dmgMul:1.90, speedMul:1.35, atkCdMul:0.60, color:'#c06aff'},
+];
+
 const Boss = {
+  tier:0,
   maybeTrigger(){
     const p=World.player;
     const distC=dist(p.x,p.y,CONFIG.world.size/2,CONFIG.world.size/2)/(CONFIG.world.size*0.5);
-    if(distC>0.86 && !World.bossActive && !World.boss){ this.spawn(p.x,p.y); }
+    if(distC>0.86 && !World.bossActive && !World.boss){ this.tier=0; this.spawn(p.x,p.y); }
   },
   spawn(x,y){
-    World.boss={x,y:y-200,r:64,hp:3000,maxhp:3000,hit:0,t:0,phase:0,dead:false,atkCd:80,eye:0};
+    const B=BOSSES[this.tier];
+    World.boss={x,y:y-200,r:64+this.tier*4,hp:B.hp,maxhp:B.hp,hit:0,t:0,phase:0,dead:false,atkCd:80,eye:0,B};
     World.bossActive=true;
-    document.getElementById('bossName').textContent='ZARGOTH, WARDEN OF THE CORE';
+    document.getElementById('bossName').textContent=B.name+', '+B.title;
     document.getElementById('bossbar').classList.add('show');
     document.getElementById('bossFill').style.width='100%';
-    document.getElementById('bossIntroName').textContent='ZARGOTH';
+    document.getElementById('bossIntroName').textContent=B.name;
+    const sub=document.getElementById('bossIntroSub'); if(sub) sub.textContent=B.title;
     Endgame.onBoss();
-    UI.toast('The Warden awakens.','#ff4d6d');
+    UI.toast(this.tier===0?'The Warden awakens.':B.name+' rises to meet you.',B.color);
     SFX.boss();
   },
   update(){
     const boss=World.boss, p=World.player; if(!boss||boss.dead) return;
+    const B=boss.B||BOSSES[this.tier];
     boss.t++; boss.eye+=0.05; if(boss.hit>0)boss.hit--;
     const hpR=boss.hp/boss.maxhp;
     boss.phase = hpR<0.33?2 : hpR<0.66?1 : 0;
     const a=Math.atan2(p.y-boss.y,p.x-boss.x);
-    boss.x+=Math.cos(a)*(1.0+boss.phase*0.5); boss.y+=Math.sin(a)*(1.0+boss.phase*0.5);
+    boss.x+=Math.cos(a)*(1.0+boss.phase*0.5)*B.speedMul; boss.y+=Math.sin(a)*(1.0+boss.phase*0.5)*B.speedMul;
     boss.x=clamp(boss.x,boss.r,CONFIG.world.size-boss.r); boss.y=clamp(boss.y,boss.r,CONFIG.world.size-boss.r);
-    if(dist(boss.x,boss.y,p.x,p.y)<boss.r+p.r) Combat.hurtPlayer(24);
+    if(dist(boss.x,boss.y,p.x,p.y)<boss.r+p.r) Combat.hurtPlayer(Math.round(24*B.dmgMul));
     boss.atkCd--;
     if(boss.atkCd<=0){
-      boss.atkCd=Math.max(34,80-boss.phase*18);
+      boss.atkCd=Math.max(20,Math.round((80-boss.phase*18)*B.atkCdMul));
       const pat=randi(0,2+boss.phase);
       if(pat===0){ // radial ring
         const n=14+boss.phase*8; for(let k=0;k<n;k++){const ba=k/n*6.28+boss.t*0.02;
-          World.eBolts.push({x:boss.x,y:boss.y,vx:Math.cos(ba)*3.4,vy:Math.sin(ba)*3.4,r:9,life:200,dmg:16,color:'#b06aff'});}
+          World.eBolts.push({x:boss.x,y:boss.y,vx:Math.cos(ba)*3.4,vy:Math.sin(ba)*3.4,r:9,life:200,dmg:Math.round(16*B.dmgMul),color:B.color});}
       } else if(pat===1){ // aimed spread
         for(let k=-3;k<=3;k++){const ba=a+k*0.16;
-          World.eBolts.push({x:boss.x,y:boss.y,vx:Math.cos(ba)*5,vy:Math.sin(ba)*5,r:9,life:160,dmg:18,color:'#ff6a9a'});}
+          World.eBolts.push({x:boss.x,y:boss.y,vx:Math.cos(ba)*5,vy:Math.sin(ba)*5,r:9,life:160,dmg:Math.round(18*B.dmgMul),color:'#ff6a9a'});}
       } else if(pat===2){ // spiral
         for(let k=0;k<6;k++){const ba=boss.t*0.18+k*1.05;
-          World.eBolts.push({x:boss.x,y:boss.y,vx:Math.cos(ba)*4,vy:Math.sin(ba)*4,r:8,life:200,dmg:14,color:'#e8d0ff'});}
+          World.eBolts.push({x:boss.x,y:boss.y,vx:Math.cos(ba)*4,vy:Math.sin(ba)*4,r:8,life:200,dmg:Math.round(14*B.dmgMul),color:'#e8d0ff'});}
       } else { // summon adds
         for(let s=0;s<4;s++){const ang2=Math.random()*6.28,d=140;
-          const base=ENEMIES.gargoyle, hp=40;
+          const base=ENEMIES.gargoyle, hp=Math.round(40*(1+Boss.tier*0.5));
           World.enemies.push({x:boss.x+Math.cos(ang2)*d,y:boss.y+Math.sin(ang2)*d,r:18,type:'gargoyle',def:base,bi:5,
-            hp,maxhp:hp,speed:2.2,dmg:16,hit:0,t:0,fireCd:0,dashT:0});}
+            hp,maxhp:hp,speed:2.2,dmg:Math.round(16*B.dmgMul),hit:0,t:0,fireCd:0,dashT:0});}
       }
     }
   }
@@ -1855,7 +1886,7 @@ const Game = {
     World.won=true; World.running=false;
     document.getElementById('bossbar').classList.remove('show');
     document.getElementById('title').innerHTML='The lands are safe<br><span style="font-size:24px;color:#5fd0ff;letter-spacing:.06em;">The storm settles</span>';
-    document.getElementById('sub').innerHTML='Zargoth is slaim. Level <b style="color:#5fd0ff">'+World.player.level+
+    document.getElementById('sub').innerHTML='The Warden gauntlet is broken. Level <b style="color:#5fd0ff">'+World.player.level+
       '</b> · <b style="color:#5fd0ff">'+World.kills+'</b> kills · <b style="color:#ffcf3a">'+World.gold+
       '</b> gold · wand <b style="color:'+RARITY[WANDS[World.player.wandTier].rarity].color+'">'+WANDS[World.player.wandTier].name+'</b>.';
     const btn=document.getElementById('startBtn'); btn.textContent='Home'; btn.onclick=()=>Game.goHome();
