@@ -328,20 +328,20 @@
       <div id="menu">
         <button id="btnPlay">Play</button>
         <button id="btnControls" class="alt">Controls</button>
-        <button id="btnInfo" class="alt">Gameplay Mechanics</button>
+        <button id="btnInfo" class="alt">Mechanics</button>
       </div>
     </div>
-    <div id="credit">Developed by Tizz3r</div>
+    <div id="credit">Developed by silicon, water, AI & Tizz3r </div>
   </div>
 
   <!-- CONTROLS PANEL -->
   <div id="panelControls" class="menuPanel">
     <h2>Controls</h2>
     <div class="ctrlGrid">
-      <div class="key">W A S D</div><div class="cd">Move — keep moving, standing still is death</div>
-      <div class="key">Mouse</div><div class="cd">Aim your wand toward the cursor</div>
-      <div class="key">Hold L-Click</div><div class="cd">Cast spells continuously at the crosshair</div>
-      <div class="key">Space</div><div class="cd">Dash a short burst (costs mana, brief escape)</div>
+      <div class="key">W A S D</div><div class="cd">Move, this is important</div>
+      <div class="key">Mouse</div><div class="cd">The wand aims towards this</div>
+      <div class="key">Hold L-Click</div><div class="cd">Cast spell</div>
+      <div class="key">Space</div><div class="cd">Use mana to dash</div>
       <div class="key">1 – 8</div><div class="cd">Equip the matching item from your inventory</div>
     </div>
     <button class="back" data-back>Back</button>
@@ -351,25 +351,28 @@
   <div id="panelInfo" class="menuPanel">
     <h2>The Realm, Explained</h2>
     <div id="infoScroll">
-      <h3>The Player</h3>
-      <p>You are a storm-wizard. You have <b>health</b> (red), <b>mana</b> (blue, spent on dashing and regenerated over time), and <b>experience</b> (green). Walk over <b>gold</b> and <b>health potions</b> dropped by the slain. Reaching enough XP grants a <b>level-up</b> where you choose one permanent boost — damage, fire rate, move speed, extra projectiles, crit, max HP, regen, lifesteal, or pickup range.</p>
+      <h3>The Wizard</h3>
+      <p>You are a wizard. You have <b>health</b> (red), <b>mana</b> (blue), and <b>experience</b> (green). Walk over <b>gold</b> and <b>health potions</b> dropped by the enemies you unleashed terror on. Reaching enough XP grants a <b>level-up</b> where you choose one permanent boost — damage, fire rate, move speed, extra projectiles, crit, max HP, regen, lifesteal, or pickup range.</p>
 
       <h3>Damage &amp; Crits</h3>
-      <p>Your wand's base damage scales with your upgrade picks and gear. Every hit can <b>critically strike</b> for bonus damage (shown as a big gold number that briefly flashes the screen). Floating numbers tell you what's happening: <b style="color:#ff5a5a">red</b> = super effective, <b style="color:#9aa6c0">grey</b> = resisted, <b style="color:#fff0a8">gold!</b> = critical.</p>
+      <p>Your wand's base damage scales with your upgrade picks and gear. </p>
+	  <p>Every hit can <b>critically strike</b> for bonus damage (shown as a big gold number that briefly flashes the screen). Floating numbers tell you what's happening: <b style="color:#ff5a5a">red</b> = super effective, <b style="color:#9aa6c0">grey</b> = resisted, <b style="color:#fff0a8">gold!</b> = critical hit, savage.</p>
 
-      <h3>Elements</h3>
+      <h3>Elements - Don't worry too much yet</h3>
       <p>Every wand channels an element, and every enemy is made of one. Matching the right element multiplies your damage; the wrong one is resisted. The element also shapes how the spell <b>looks, how fast it flies, and how big its blast is</b>.</p>
       <div id="elemGrid"></div>
-      <p class="chartnote">Triangle of power — <b style="color:#ff7a18">Fire</b> melts <b style="color:#8be36b">Nature</b> · <b style="color:#7ec8ff">Frost</b> shatters <b style="color:#bfe0ff">Storm</b> · <b style="color:#bfe0ff">Storm</b> overloads <b style="color:#7ec8ff">Frost</b> · <b style="color:#8be36b">Nature</b> grounds <b style="color:#bfe0ff">Storm</b> · <b style="color:#c06aff">Arcane</b> pierces all (true damage, no weakness).</p>
+      <p class="chartnote">Triangle of power — <b style="color:#ff7a18">Fire</b> beats <b style="color:#8be36b">Nature</b> · <b style="color:#7ec8ff">Frost</b> breaks <b style="color:#bfe0ff">Storm</b> · <b style="color:#bfe0ff">Storm</b> wins over <b style="color:#7ec8ff">Frost</b> · <b style="color:#8be36b">Nature</b> settles <b style="color:#bfe0ff">Storm</b> · <b style="color:#c06aff">Arcane</b> pierces all (true damage, no weakness).</p>
 
       <h3>Enemies</h3>
-      <p>Swarms grow per wave and hit harder the farther you roam from the safe center. <b>Wolves</b> dash, <b>slimes</b> hop, <b>sporelings &amp; golems</b> fling projectiles, <b>gargoyles</b> fly. Gold-glowing <b>Elites</b> have triple health but spill gold, gear, potions and rare wands.</p>
+      <p>Swarms grow per wave and hit harder the more you roam from the safe center. <b>Wolves</b> dash quick, <b>slimes</b> move all weird, <b>sporelings &amp; golems</b> fling projectiles at you, <b>gargoyles</b> fly around. Gold-glowing <b>Elites</b> have triple health but reward gold, gear, potions and rare wands.</p>
 
       <h3>Key Spells</h3>
-      <p>Wands evolve from a humble <b>Wood Wand</b> to the realm-cracking <b>Avatar</b> and <b>Nova</b>. Standout mechanics: <b>AoE blasts</b>, <b>chain lightning</b>, <b>orbiting saw-blades</b>, <b>homing</b> and <b>boomerang</b> bolts, <b>freeze fields</b>, <b>black-hole singularities</b>, <b>ricochet</b>, <b>railgun beams</b>, <b>cluster shards</b>, and full <b>360° novas</b>. Buy upgrades with gold, or find rare wands as drops.</p>
+      <p>Wands evolve from a <b>Wood Wand</b> to the absolute animals that are <b>Avatar</b> and <b>Nova</b>. Wand mechanics: <b>AoE blasts</b>, <b>chain lightning</b>, <b>orbiting saw-blades</b>, <b>homing</b> and <b>boomerang</b> bolts, <b>freeze fields</b>, <b>black-hole singularities</b>, <b>ricochet</b>, <b>railgun beams</b>, <b>cluster shards</b>, and full <b>360° novas</b>. Buy upgrades with gold, or find rare wands as drops.</p>
 
       <h3>The End</h3>
-      <p>The world darkens with crimson dread as you approach the <b style="color:#ff5a5a">Corrupted Core</b> at the far edge. Cross the point of no return and face <b>Zargoth, Warden of the Core</b> — the final boss.</p>
+      <p>The world darkens with as you approach the <b style="color:#ff5a5a">Corrupted Core</b> at the far edge. Cross the point of no return and face <b>Zargoth, Warden of the Core</b> — the final boss for now.</p>
+	  <p>Beat him, then kill him again faster if you can, <b style="color:#ff5a5a">TEMPORARY ENDGAME</b> </p>
+	  <p>
     </div>
     <button class="back" data-back>Back</button>
   </div>
@@ -1832,7 +1835,7 @@ const Game = {
   over(){
     World.running=false;
     document.getElementById('bossbar').classList.remove('show');
-    document.getElementById('title').innerHTML='YOU FELL';
+    document.getElementById('title').innerHTML='YOU HAVE DIED';
     document.getElementById('sub').innerHTML='You reached level <b style="color:#5fd0ff">'+World.player.level+
       '</b>, slew <b style="color:#5fd0ff">'+World.kills+'</b> foes, and hoarded <b style="color:#ffcf3a">'+World.gold+'</b> gold.';
     const btn=document.getElementById('startBtn');
@@ -1851,8 +1854,8 @@ const Game = {
   win(){
     World.won=true; World.running=false;
     document.getElementById('bossbar').classList.remove('show');
-    document.getElementById('title').innerHTML='THE WARDEN FALLS<br><span style="font-size:24px;color:#5fd0ff;letter-spacing:.06em;">The storm settles</span>';
-    document.getElementById('sub').innerHTML='Zargoth is undone. Level <b style="color:#5fd0ff">'+World.player.level+
+    document.getElementById('title').innerHTML='The lands are safe<br><span style="font-size:24px;color:#5fd0ff;letter-spacing:.06em;">The storm settles</span>';
+    document.getElementById('sub').innerHTML='Zargoth is slaim. Level <b style="color:#5fd0ff">'+World.player.level+
       '</b> · <b style="color:#5fd0ff">'+World.kills+'</b> kills · <b style="color:#ffcf3a">'+World.gold+
       '</b> gold · wand <b style="color:'+RARITY[WANDS[World.player.wandTier].rarity].color+'">'+WANDS[World.player.wandTier].name+'</b>.';
     const btn=document.getElementById('startBtn'); btn.textContent='Home'; btn.onclick=()=>Game.goHome();
