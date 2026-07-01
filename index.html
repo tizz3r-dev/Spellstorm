@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spellstorm v1.1</title>
+<title>Spellstorm v1.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -253,6 +253,29 @@
     border-top:1px solid rgba(255,255,255,.08);padding-top:12px;transition:opacity .14s,letter-spacing .14s;}
   .upCard:hover .upPick{opacity:1;letter-spacing:.26em;color:var(--cc);}
   #levelupInner .luhint{margin-top:24px;font-family:'Cinzel',serif;font-size:11px;opacity:.5;letter-spacing:.12em;text-transform:uppercase;}
+  .upCard .upKind{position:relative;font-family:'Cinzel',serif;font-weight:700;font-size:9.5px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--cc);opacity:.95;margin-bottom:8px;}
+  .upCard .upKind.risk{color:#ff4d6d;}
+
+  /* corruption meter pill */
+  #corrp{position:relative;overflow:hidden;}
+  #corrp .cbar{position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(90deg,rgba(192,106,255,.16),rgba(255,77,109,.28));z-index:0;transition:width .2s;}
+  #corrp span,#corrp b{position:relative;z-index:1;}
+
+  /* origin select */
+  #overlay.state-origin #home{display:none;}
+  #overlay.state-origin #panelOrigin{display:flex;}
+  #originGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;width:100%;
+    overflow-y:auto;max-height:60vh;padding-right:6px;margin-bottom:20px;}
+  #originGrid::-webkit-scrollbar{width:8px;}
+  #originGrid::-webkit-scrollbar-thumb{background:rgba(95,208,255,.3);border-radius:4px;}
+  .origCard{cursor:pointer;text-align:left;border:2px solid var(--oc,#5fd0ff);border-radius:12px;padding:14px 16px;
+    background:linear-gradient(160deg,rgba(20,40,60,.55),rgba(8,18,30,.72));transition:transform .12s,box-shadow .12s;}
+  .origCard:hover{transform:translateY(-4px);box-shadow:0 10px 26px rgba(0,0,0,.5),0 0 24px color-mix(in srgb,var(--oc) 42%,transparent);}
+  .origCard .on{font-family:'Cinzel',serif;font-weight:900;font-size:17px;color:var(--oc);margin-bottom:5px;}
+  .origCard .otag{font-size:11.5px;color:#bfe6a0;opacity:.95;margin-bottom:2px;}
+  .origCard .ocurse{font-size:11.5px;color:#ff9aa0;opacity:.95;margin-bottom:7px;}
+  .origCard .od{font-size:12.5px;opacity:.82;line-height:1.45;font-style:italic;}
 
   /* end-game warning banner */
   #warnBanner{position:fixed;top:0;left:0;right:0;z-index:45;pointer-events:none;text-align:center;
@@ -278,7 +301,7 @@
 <div id="wrap"><canvas id="game"></canvas></div>
 <div id="framefx"></div>
 <div id="brand">SPELLSTORM</div>
-<div id="disclaimer">2026 work in progress, v1.1</div>
+<div id="disclaimer">2026 work in progress, v1.2 — build-evolution update</div>
 <div id="warnBanner"><div class="wbig" id="warnBig">⚠ THE CORRUPTED CORE ⚠</div><div class="wsub" id="warnSub">Point of no return — the Warden stirs</div></div>
 
 <div id="hud">
@@ -287,6 +310,7 @@
   <div class="pill">Wave <b id="wavev">1</b></div>
   <div class="pill">Kills <b id="killsv">0</b></div>
   <div class="pill" id="goldp">Gold <b id="goldv">0</b></div>
+  <div class="pill" id="corrp"><div class="cbar" id="corrBar"></div><span>Corruption</span> <b id="corrv">0%</b></div>
 </div>
 
 <div id="bossbar"><div class="label" id="bossName">Boss</div>
@@ -336,6 +360,14 @@
     <div id="credit">Developed by silicon, water, AI & Tizz3r </div>
   </div>
 
+  <!-- ORIGIN SELECT -->
+  <div id="panelOrigin" class="menuPanel">
+    <h2>Choose your Arcane Origin</h2>
+    <p style="text-align:center;margin-bottom:14px;opacity:.8;">Every run begins as a different mage. Pick an identity — a boon and a curse that shape the whole run.</p>
+    <div id="originGrid"></div>
+    <button class="back" data-back>Back</button>
+  </div>
+
   <!-- CONTROLS PANEL -->
   <div id="panelControls" class="menuPanel">
     <h2>Controls</h2>
@@ -370,6 +402,18 @@
 
       <h3>Key Spells</h3>
       <p>Wands evolve from a <b>Wood Wand</b> to the absolute animals that are <b>Avatar</b> and <b>Nova</b>. Wand mechanics: <b>AoE blasts</b>, <b>chain lightning</b>, <b>orbiting saw-blades</b>, <b>homing</b> and <b>boomerang</b> bolts, <b>freeze fields</b>, <b>black-hole singularities</b>, <b>ricochet</b>, <b>railgun beams</b>, <b>cluster shards</b>, and full <b>360° novas</b>. Buy upgrades with gold, or find rare wands as drops.</p>
+
+      <h3>Arcane Origins</h3>
+      <p>Every run now begins by choosing an <b>Origin</b> — an identity with a <b style="color:#8be36b">boon</b> and a <b style="color:#ff9aa0">curse</b>. A Glass Savant hits like a meteor but is desperately fragile; a Feral Conduit casts endlessly on its own but can't aim straight. No two origins play the same.</p>
+
+      <h3>Spell Mutations</h3>
+      <p>Level-ups now offer <b style="color:#c06aff">mutations</b> alongside stat boons. Mutations <b>reshape</b> your spell rather than just buffing numbers — split shots, chaining lightning, homing, ricochet, burning trails, shard bursts, freeze fields. They stack onto <i>any</i> wand you hold, so builds emerge: "I became a chain-lightning burn mage." <b style="color:#ff4d6d">Risk</b> mutations are stronger but bite back.</p>
+
+      <h3>Arcane Corruption</h3>
+      <p>The <b style="color:#c06aff">Corruption</b> meter climbs as you take power and push toward the Core. At <b>33 / 66 / 100%</b> the run transforms — you're granted power, but the world bends back and foes hit harder. Late runs drift into glorious chaos.</p>
+
+      <h3>Biome Rules &amp; Warden Trials</h3>
+      <p>Each biome bends the rules while you stand in it — Frostreach slows foes but chills your casting, Emberdeep enrages enemies but showers gold. The Wardens are <b>build checks</b>: one regenerates unless you burst it, one floods the arena with hazards, one hardens against your favourite element, and the last dampens your raw power so skill decides it.</p>
 
       <h3>The End</h3>
       <p>The world darkens with as you approach the <b style="color:#ff5a5a">Corrupted Core</b> at the far edge. Cross the point of no return and face a <b>gauntlet of Wardens</b>, each fiercer than the last, ending in the final boss for now.</p>
@@ -494,19 +538,19 @@ const BIOMES = {
   plains:   {name:'Plains',     ground:'#3f7d2e',alt:'#477f31',blade:'rgba(40,90,28,.5)',diff:1,mood:0,
              enemies:['goblin','slime','wolf']},
   forest:   {name:'Whisperwood',ground:'#2c5226',alt:'#315a2a',blade:'rgba(20,50,18,.5)',diff:1.5,mood:.18,
-             enemies:['goblin','wolf','mushroom']},
+             enemies:['goblin','wolf','mushroom'], rule:'Whisperwood — foes hide in the trees; loot is a touch richer.', goldMod:1.2},
   swamp:    {name:'Mire',       ground:'#39402a',alt:'#414a30',blade:'rgba(28,34,18,.5)',diff:2,mood:.32,
-             enemies:['slime','mushroom','gargoyle']},
+             enemies:['slime','mushroom','gargoyle'], rule:'The Mire — sucking mud slows friend and foe alike.', enemySpeedMod:0.85, castMod:1.12},
   desert:   {name:'Sunscar Waste',ground:'#b89a52',alt:'#c0a45c',blade:'rgba(120,100,50,.4)',diff:2.4,mood:.2,
-             enemies:['scorpion','wolf','gargoyle']},
+             enemies:['scorpion','wolf','gargoyle'], rule:'Sunscar Waste — heat quickens everything; more gold spills.', enemySpeedMod:1.12, goldMod:1.35},
   snow:     {name:'Frostreach', ground:'#cdd9e2',alt:'#d6e1ea',blade:'rgba(150,170,190,.4)',diff:3,mood:.25,
-             enemies:['icegolem','wolf','gargoyle']},
+             enemies:['icegolem','wolf','gargoyle'], rule:'Frostreach — cold slows enemies, but your spells cool slower too.', enemySpeedMod:0.78, castMod:1.22},
   volcano:  {name:'Emberdeep',  ground:'#5a2a22',alt:'#653028',blade:'rgba(80,30,20,.5)',diff:3.6,mood:.5,
-             enemies:['firedemon','scorpion','gargoyle']},
+             enemies:['firedemon','scorpion','gargoyle'], rule:'Emberdeep — enemies rage faster, but drop far more gold.', enemySpeedMod:1.18, goldMod:1.6},
   ruins:    {name:'Old Ruins',  ground:'#4a4a55',alt:'#53535f',blade:'rgba(20,20,26,.4)',diff:4.2,mood:.6,
-             enemies:['gargoyle','firedemon','icegolem']},
+             enemies:['gargoyle','firedemon','icegolem'], rule:'Old Ruins — leyline echoes sharpen your critical strikes.', critMod:0.10},
   corrupt:  {name:'Corrupted Core',ground:'#241826',alt:'#2c1f30',blade:'rgba(12,8,14,.4)',diff:5.5,mood:.9,
-             enemies:['gargoyle','firedemon','scorpion']},
+             enemies:['gargoyle','firedemon','scorpion'], rule:'Corrupted Core — arcane corruption floods you far faster here.', corruptRate:2.6},
 };
 
 // ENEMY ARCHETYPES — movement + attack + loot bias
@@ -601,6 +645,9 @@ const World = {
     this.kills=0;this.gold=0;this.wave=1;this.spawnCd=0;this.toSpawn=Spawner.forWave(1);this.time=0;
     this.running=true;this.won=false;this.shopOpen=false;this.paused=false;
     Upgrades.queue=0; Upgrades.open=false;
+    this.castMod=1; this.enemySpeedMod=1; this.goldMod=1; this.critMod=0;
+    this.corruptEnemyDmg=1; this.lastBiome=null;
+    Corruption.reset();
     Endgame.reset();
     Boss.tier=0;
     document.getElementById('levelup').classList.remove('show');
@@ -643,8 +690,11 @@ const Input = {
 // =====================================================================
 const Camera = {
   x:0,y:0,w:0,h:0,
-  follow(p){ this.x=clamp(p.x-this.w/2,0,CONFIG.world.size-this.w);
-             this.y=clamp(p.y-this.h/2,0,CONFIG.world.size-this.h); },
+  zoom:0.80,                         // <1 = camera pulled further back (more world on screen)
+  vw(){return this.w/this.zoom;},    // visible world width
+  vh(){return this.h/this.zoom;},    // visible world height
+  follow(p){ this.x=clamp(p.x-this.vw()/2,0,Math.max(0,CONFIG.world.size-this.vw()));
+             this.y=clamp(p.y-this.vh()/2,0,Math.max(0,CONFIG.world.size-this.vh())); },
   sx(x){return x-this.x;}, sy(y){return y-this.y;}
 };
 
@@ -710,11 +760,15 @@ const FX = {
         const d=dist(en.x,en.y,f.x,f.y);
         if(d<f.r){
           if(f.kind==='slow') en.slowMul=Math.min(en.slowMul,f.factor);
+          else if(f.kind==='burn'){ if(World.time%9===0) Combat.hurt(en,f.dmg,false); }
           else if(f.kind==='hole'){ const a=Math.atan2(f.y-en.y,f.x-en.x);
             const pull=f.pull*(1-d/f.r); en.x+=Math.cos(a)*pull; en.y+=Math.sin(a)*pull;
             if(d<26) Combat.hurt(en, 4, true); } // crushed at the core
         }
       }
+      // hazard fields damage the player who lingers inside them
+      if(f.kind==='hazard'){ const pp=World.player;
+        if(dist(pp.x,pp.y,f.x,f.y)<f.r && World.time%14===0) Combat.hurtPlayer(f.dmg); }
       if(f.life<=0) F.splice(i,1);
     }
   }
@@ -786,6 +840,10 @@ const UI = {
     document.getElementById('wavev').textContent=World.wave;
     document.getElementById('killsv').textContent=World.kills;
     document.getElementById('goldv').textContent=World.gold;
+    { const c=Math.round(Corruption.v);
+      const cv=document.getElementById('corrv'), cb=document.getElementById('corrBar');
+      if(cv){ cv.textContent=c+'%'; cv.style.color=c>=66?'#ff4d6d':c>=33?'#ff9a2e':'#c06aff'; }
+      if(cb){ cb.style.width=c+'%'; } }
     const hpP=clamp(p.hp/p.maxhp*100,0,100), mpP=clamp(p.mp/p.maxmp*100,0,100), xpP=clamp(p.xp/p.xpNext*100,0,100);
     document.getElementById('hpFill').style.width=hpP+'%';
     document.getElementById('mpFill').style.width=mpP+'%';
@@ -837,7 +895,7 @@ const Loot = {
     World.kills++;
     p.gainXP(en.def.xp*diff*(en.elite?3:1));
     // gold (scaled by biome; elites pour out gold)
-    const gMult=1+Math.floor(diff);
+    const gMult=Math.max(1,Math.round((1+Math.floor(diff))*(World.goldMod||1)));
     if(en.elite){
       for(let i=0;i<3;i++) World.coins.push({x:en.x+rand(-14,14),y:en.y+rand(-14,14),type:'bar',value:15*gMult,vy:-2,bob:rand(0,6)});
     } else {
@@ -876,7 +934,7 @@ const Loot = {
   },
   pickupWand(tier){
     const p=World.player;
-    if(tier>p.wandTier){ p.wandTier=tier; UI.toast('★ '+WANDS[tier].name+' acquired!',RARITY[WANDS[tier].rarity].color); }
+    if(tier>p.wandTier){ p.wandTier=tier; p._effDirty=true; UI.toast('★ '+WANDS[tier].name+' acquired!',RARITY[WANDS[tier].rarity].color); }
   }
 };
 
@@ -941,6 +999,10 @@ function makePlayer(){
     dashCd:0, dashFrames:0,
     // Brotato-style permanent upgrade multipliers/bonuses (from level-up picks)
     mDmg:1, mFireRate:1, mSpeed:1, mMulti:0, mCrit:0, mLifesteal:0, regen:0, pickup:0, mMaxHp:0,
+    // --- build-evolution state ---
+    mods:{}, mutations:[], elemUse:{},
+    healMul:1, autoCast:false, aimWobble:0, timebent:false, dmgDamp:1,
+    origin:null, _eff:null, _effTier:-1, _effDirty:true,
     recalc(){ // apply gear stats + upgrade bonuses
       let hp=CONFIG.player.hp, mp=CONFIG.player.mp, def=0, spd=CONFIG.player.speed;
       hp+=this.level*8; hp+=this.mMaxHp;
@@ -961,13 +1023,48 @@ function makePlayer(){
 // COMBAT MANAGER — firing, bolts, AOE, thunder, damage
 // =====================================================================
 const Combat = {
+  // Build the "effective wand": base tier merged with the player's mutations.
+  buildWand(p){
+    const base=WANDS[p.wandTier], m=p.mods||{};
+    const w=Object.assign({},base);
+    if(m.multi){ w.multi=(w.multi||1)+m.multi; if(!w.spread||w.spread<0.28) w.spread=m.spread||0.34; }
+    if(m.spread) w.spread=Math.max(w.spread||0,m.spread);
+    if(m.pierce) w.pierce=(w.pierce||0)+m.pierce;
+    if(m.aoe){ w.aoe=(w.aoe||0)+m.aoe; w.aoeDmg=(w.aoeDmg||0)+(m.aoeDmg||0); }
+    if(m.homing) w.homing=Math.max(w.homing||0,m.homing);
+    if(m.bounce) w.bounce=(w.bounce||0)+m.bounce;
+    if(m.chain){ w.thunder=true; w.thunderR=Math.max(w.thunderR||0,180);
+      w.thunderDmg=w.thunderDmg||Math.max(4,Math.round(w.dmg*0.7)); w.chain=(w.chain||0)+m.chain; }
+    if(m.split){ const s=w.split?Object.assign({},w.split):{count:0,dmg:Math.max(6,Math.round(w.dmg*0.5)),speed:7,life:26};
+      s.count=(s.count||0)+m.split.count; if(m.split.dmg) s.dmg=(s.dmg||0)+m.split.dmg; w.split=s; }
+    if(m.slowField && !w.slowField) w.slowField={r:130,life:110,factor:0.45};
+    if(m.lifesteal) w.lifesteal=(w.lifesteal||0)+m.lifesteal;
+    if(m.crit){ w.crit=(w.crit||0)+m.crit; w.critMult=Math.max(w.critMult||2,2); }
+    if(m.trail) w.trail=true;
+    if(m.glass) w.glass=true;
+    return w;
+  },
+  wand(){
+    const p=World.player;
+    if(!p._eff || p._effTier!==p.wandTier || p._effDirty){
+      p._eff=this.buildWand(p); p._effTier=p.wandTier; p._effDirty=false;
+    }
+    return p._eff;
+  },
   fire(){
-    const p=World.player, w=WANDS[p.wandTier], a=p.armAngle;
+    const p=World.player, w=this.wand(), a=p.armAngle;
     const tip=34, wx=p.x+Math.cos(a)*tip, wy=p.y+Math.sin(a)*tip-18;
-    p.cool=Math.max(1,Math.round(w.cool/(p.mFireRate||1)));
+    // cooldown: fire-rate + biome cast modifier + Timebent fluctuation
+    let cd=w.cool/(p.mFireRate||1)*(World.castMod||1);
+    if(p.timebent) cd*=rand(0.72,1.28);
+    p.cool=Math.max(1,Math.round(cd));
+    // risk mutation: Blood Price spends a sliver of HP per cast (never lethal)
+    if(p.mods.bloodPct){ p.hp=Math.max(1,p.hp-Math.max(1,Math.round(p.maxhp*p.mods.bloodPct)));
+      FX.spark(p.x,p.y-8,Math.random()*6.28,'#ff4d6d',2); }
     // RAILGUN: instant hitscan beam, no projectile
     if(w.beam){ this.beam(p,w,a,wx,wy); FX.cast(wx,wy,a,w.elem); SFX.cast(w.elem); return; }
-    const dmg=Math.round(w.dmg*(p.mDmg||1));
+    let dmg=Math.round(w.dmg*(p.mDmg||1)*(p.dmgDamp||1));
+    if(w.glass){ const miss=1-clamp(p.hp/p.maxhp,0,1); dmg=Math.round(dmg*(1+miss*1.1)); } // Volatile Core
     let count=w.multi+(p.mMulti||0);
     let spread=count>1?w.spread:0;
     if(w.nova){ spread=6.283/count; } // full circle
@@ -977,7 +1074,7 @@ const Combat = {
       World.bolts.push({x:wx,y:wy,vx:Math.cos(ba)*w.speed,vy:Math.sin(ba)*w.speed,
         r:w.boltR,life:w.pelletLife||(w.boomerang?70:90),dmg,pierce:w.pierce||0,hit:new Set(),
         homing:w.homing||0,spd:w.speed,boomerang:!!w.boomerang,age:0,ox:wx,oy:wy,
-        bounce:w.bounce||0, split:w.split||null, elem:w.elem});
+        bounce:w.bounce||0, split:w.split||null, trail:!!w.trail, elem:w.elem});
     }
     FX.cast(wx,wy,a,w.elem);
     SFX.cast(w.elem);
@@ -1023,20 +1120,21 @@ const Combat = {
       }
     }
   },
-  rollDmg(dmg){ // returns {dmg, crit} using wand + upgrade crit stats
-    const p=World.player, w=WANDS[p.wandTier];
-    const chance=(w.crit||0)+(p.mCrit||0);
+  rollDmg(dmg){ // returns {dmg, crit} using merged wand + upgrade crit stats + biome
+    const p=World.player, w=this.wand();
+    const chance=(w.crit||0)+(p.mCrit||0)+(World.critMod||0);
     if(chance>0 && Math.random()<chance) return {dmg:Math.round(dmg*(w.critMult||2)),crit:true};
     return {dmg,crit:false};
   },
-  heal(amount){ const p=World.player; if(amount<=0)return; p.hp=Math.min(p.maxhp,p.hp+amount);
+  heal(amount){ const p=World.player; amount*= (p.healMul||1); if(amount<=0)return; p.hp=Math.min(p.maxhp,p.hp+amount);
     FX.spark(p.x,p.y-10,Math.random()*6.28,'#ff6a9a',2); },
   hurt(en,dmg,fromPlayer){
     if(en.dead) return;
     let crit=false, eff=1;
     if(fromPlayer){ const r=this.rollDmg(dmg); dmg=r.dmg; crit=r.crit;
-      const w=WANDS[World.player.wandTier];
+      const w=this.wand();
       eff=elemMult(w.elem, en.def.elem); dmg=Math.round(dmg*eff);
+      World.player.elemUse[w.elem]=(World.player.elemUse[w.elem]||0)+1;
       const ls=(w.lifesteal||0)+(World.player.mLifesteal||0); if(ls>0) this.heal(dmg*ls);
       FX.dmgNumber(en.x,en.y-en.r, dmg, crit, eff, ELEMENTS[w.elem]);
       FX.impact(en.x,en.y,w.elem,crit);
@@ -1049,13 +1147,17 @@ const Combat = {
     const boss=World.boss; if(!boss||boss.dead) return;
     let crit=false, eff=1;
     if(fromPlayer){ const r=this.rollDmg(dmg); dmg=r.dmg; crit=r.crit;
-      const w=WANDS[World.player.wandTier];
+      const w=this.wand();
+      World.player.elemUse[w.elem]=(World.player.elemUse[w.elem]||0)+1;
       eff=elemMult(w.elem, 'arcane'); dmg=Math.round(dmg*eff); // boss is arcane-bodied
+      // ADAPTATION boss: hardens against your most-used element
+      if(boss.resistElem && w.elem===boss.resistElem){ dmg=Math.round(dmg*0.5);
+        FX.dmgNumber(boss.x+rand(-30,30),boss.y-boss.r,'RESIST',false,0.5,ELEMENTS[w.elem]); }
       const ls=(w.lifesteal||0)+(World.player.mLifesteal||0); if(ls>0) this.heal(dmg*ls);
       FX.dmgNumber(boss.x+rand(-30,30),boss.y-boss.r, dmg, crit, eff, ELEMENTS[w.elem]);
       FX.impact(boss.x+rand(-40,40),boss.y+rand(-40,40),w.elem,crit);
     }
-    boss.hp-=dmg; boss.hit=8;
+    boss.hp-=dmg; boss.hit=8; boss.lastHit=boss.t; // DPS-check timer
     if(boss.hp<=0 && !boss.dead){
       boss.dead=true; SFX.bossDie();
       if(Boss.tier<BOSSES.length-1){
@@ -1073,7 +1175,7 @@ const Combat = {
   },
   hurtPlayer(dmg){
     const p=World.player; if(p.hurt>0) return;
-    const real=Math.max(1,dmg-p.def);
+    const real=Math.max(1,Math.round(dmg*(World.corruptEnemyDmg||1))-p.def);
     p.hp-=real; p.hurt=28; FX.spark(p.x,p.y,Math.random()*6.28,'#ff3030',8);
     if(p.hp<=0){ p.hp=0; Game.over(); }
   }
@@ -1108,7 +1210,7 @@ const Spawner = {
   forWave(w){ return 7+w*3; },
   spawnOne(){
     const p=World.player;
-    const ang=Math.random()*6.28, d=Math.max(Camera.w,Camera.h)*0.7;
+    const ang=Math.random()*6.28, d=Math.max(Camera.vw(),Camera.vh())*0.6;
     let x=clamp(p.x+Math.cos(ang)*d,40,CONFIG.world.size-40),
         y=clamp(p.y+Math.sin(ang)*d,40,CONFIG.world.size-40);
     const b=World.biomeAt(x,y);
@@ -1136,7 +1238,7 @@ const Spawner = {
     const p=World.player;
     for(const en of World.enemies){
       en.t++; if(en.hit>0)en.hit--;
-      const a=Math.atan2(p.y-en.y,p.x-en.x), m=en.def.move; let sp=en.speed*(en.slowMul||1);
+      const a=Math.atan2(p.y-en.y,p.x-en.x), m=en.def.move; let sp=en.speed*(en.slowMul||1)*(World.enemySpeedMod||1);
       if(m==='hop'){ sp*=(Math.sin(en.t*0.15)>0.6?2.2:0.5); }
       else if(m==='dash'){ en.dashT--; if(en.dashT<=0&&dist(en.x,en.y,p.x,p.y)<320){en.dashT=70;} sp*=(en.dashT>50?2.6:1); }
       else if(m==='slow'){ sp*=0.8; }
@@ -1203,10 +1305,22 @@ const Boss = {
     const distC=dist(p.x,p.y,CONFIG.world.size/2,CONFIG.world.size/2)/(CONFIG.world.size*0.5);
     if(distC>0.86 && !World.bossActive && !World.boss){ this.tier=0; this.spawn(p.x,p.y); }
   },
+  topElem(){ const u=World.player.elemUse; let best='arcane',bv=-1;
+    for(const k in u){ if(u[k]>bv){ bv=u[k]; best=k; } } return best; },
   spawn(x,y){
     const B=BOSSES[this.tier];
-    World.boss={x,y:y-200,r:64+this.tier*4,hp:B.hp,maxhp:B.hp,hit:0,t:0,phase:0,dead:false,atkCd:80,eye:0,B};
+    World.boss={x,y:y-200,r:64+this.tier*4,hp:B.hp,maxhp:B.hp,hit:0,t:0,phase:0,dead:false,atkCd:80,eye:0,lastHit:0,B};
     World.bossActive=true;
+    // BUILD CHECK per warden (doc §5): each tests a different thing, not just raw power
+    World.player.dmgDamp=1;
+    const boss=World.boss, t=this.tier;
+    boss.check='';
+    if(t===0){ boss.dpsCheck=true; boss.check='DPS CHECK — regenerates unless you keep hurting it'; }
+    else if(t===1){ boss.hazard=true; boss.check='MOBILITY CHECK — the arena erupts; do not stand still'; }
+    else if(t===2){ boss.adapt=true; boss.resistElem=this.topElem();
+      boss.check='ADAPTATION — hardens against your favorite element ('+(ELEMENTS[boss.resistElem]?ELEMENTS[boss.resistElem].name:'?')+')'; }
+    else { boss.invert=true; World.player.dmgDamp=0.85;
+      boss.check='INVERSION — your raw power is dampened; skill decides this'; }
     document.getElementById('bossName').textContent=B.name+', '+B.title;
     document.getElementById('bossbar').classList.add('show');
     document.getElementById('bossFill').style.width='100%';
@@ -1214,6 +1328,7 @@ const Boss = {
     const sub=document.getElementById('bossIntroSub'); if(sub) sub.textContent=B.title;
     Endgame.onBoss();
     UI.toast(this.tier===0?'The Warden awakens.':B.name+' rises to meet you.',B.color);
+    if(boss.check) setTimeout(()=>{ if(World.boss===boss) UI.toast('⚔ '+boss.check,'#ffcf3a'); },900);
     SFX.boss();
   },
   update(){
@@ -1222,6 +1337,18 @@ const Boss = {
     boss.t++; boss.eye+=0.05; if(boss.hit>0)boss.hit--;
     const hpR=boss.hp/boss.maxhp;
     boss.phase = hpR<0.33?2 : hpR<0.66?1 : 0;
+    // --- build-check behaviors (doc §5) ---
+    if(boss.dpsCheck && boss.t-boss.lastHit>110){           // regenerates unless you keep hurting it
+      boss.hp=Math.min(boss.maxhp, boss.hp+boss.maxhp*0.0009);
+      if(boss.t%8===0) FX.ring(boss.x,boss.y,boss.r*1.4,14,'#8be36b');
+      document.getElementById('bossFill').style.width=Math.max(0,boss.hp/boss.maxhp*100)+'%';
+    }
+    if(boss.hazard && boss.t%70===0){                       // arena erupts — do not stand still
+      const hx=p.x+rand(-150,150), hy=p.y+rand(-150,150);
+      World.fields.push({x:hx,y:hy,r:66,life:150,maxlife:150,kind:'hazard',dmg:Math.round(14*B.dmgMul)});
+      FX.ring(hx,hy,66,20,'#ff7a18');
+    }
+    if(boss.adapt && boss.t%240===0){ boss.resistElem=Boss.topElem(); } // re-reads your favorite element
     const a=Math.atan2(p.y-boss.y,p.x-boss.x);
     boss.x+=Math.cos(a)*(1.0+boss.phase*0.5)*B.speedMul; boss.y+=Math.sin(a)*(1.0+boss.phase*0.5)*B.speedMul;
     boss.x=clamp(boss.x,boss.r,CONFIG.world.size-boss.r); boss.y=clamp(boss.y,boss.r,CONFIG.world.size-boss.r);
@@ -1253,7 +1380,7 @@ const Boss = {
 // PROJECTILE UPDATES (player + enemy bolts, coins, drops)
 // =====================================================================
 function updateProjectiles(){
-  const p=World.player, w=WANDS[p.wandTier];
+  const p=World.player, w=Combat.wand();
   // player bolts
   for(let i=World.bolts.length-1;i>=0;i--){
     const b=World.bolts[i]; b.age++;
@@ -1273,6 +1400,8 @@ function updateProjectiles(){
         if(b.age>30) b.hit.clear(); } // re-hit on the way back
     }
     b.x+=b.vx; b.y+=b.vy; b.life--;
+    if(b.trail && b.age%5===0){ World.fields.push({x:b.x,y:b.y,r:30,life:34,maxlife:34,kind:'burn',
+      dmg:Math.max(2,Math.round(b.dmg*0.16))}); }
     if(World.time%2===0) FX.spark(b.x,b.y,0,'#ff7a18',1);
     let consumed=false, didHit=false;
     for(const en of World.enemies){
@@ -1343,10 +1472,142 @@ const Shop = {
     document.getElementById('shopCost').textContent=n.cost;
     document.getElementById('shop').classList.add('show'); },
   buy(){ const p=World.player, n=WANDS[p.wandTier+1];
-    if(n&&World.gold>=n.cost){ World.gold-=n.cost; p.wandTier++; UI.toast('Empowered: '+n.name,RARITY[n.rarity].color); }
+    if(n&&World.gold>=n.cost){ World.gold-=n.cost; p.wandTier++; p._effDirty=true; UI.toast('Empowered: '+n.name,RARITY[n.rarity].color); }
     this.close(); },
   skip(){ this.pendingSkip=World.player.wandTier+1; this.close(); },
   close(){ World.shopOpen=false; document.getElementById('shop').classList.remove('show'); UI.sync(); }
+};
+
+// =====================================================================
+// ARCANE ORIGINS — each run begins with a chosen identity: a flavor,
+// a boon, and a curse. (design doc §8 "origin selection")
+// =====================================================================
+const ORIGINS = [
+  {id:'unchosen', name:'The Unchosen', c:'#cfd6c4',
+   tag:'No boon · no curse', d:'A blank slate. Balanced in every way — carve your own path.',
+   apply(p){}},
+  {id:'ember', name:'Emberborn', c:'#ff7a18',
+   tag:'Boon: born with Explosive Impact · +10% damage', curse:'Curse: healing is 45% weaker',
+   d:'Fire lives in you. Your bolts already erupt on impact, but wounds are slow to close.',
+   apply(p){ p.mDmg*=1.10; Mutations.grant(p,'explosive',true); p.healMul=0.55; }},
+  {id:'glass', name:'Glass Savant', c:'#c06aff',
+   tag:'Boon: +45% damage', curse:'Curse: −40% max HP',
+   d:'Devastating and fragile. Every spell hits like a meteor — if you live long enough to cast it.',
+   apply(p){ p.mDmg*=1.45; p.mMaxHp-=Math.round(CONFIG.player.hp*0.40); }},
+  {id:'feral', name:'Feral Conduit', c:'#8be36b',
+   tag:'Boon: spells auto-cast', curse:'Curse: your aim wanders',
+   d:'The magic casts itself, endlessly — but it never quite obeys where you point.',
+   apply(p){ p.autoCast=true; p.aimWobble=0.09; }},
+  {id:'storm', name:'Stormtouched', c:'#bfe0ff',
+   tag:'Boon: born with Chain Ignition · +8% fire rate', curse:'Curse: starts 25% corrupted',
+   d:'Lightning already leaps between your foes — but the corruption took hold long ago.',
+   apply(p){ p.mFireRate*=1.08; Mutations.grant(p,'chainignite',true); Corruption.set(25); }},
+  {id:'time', name:'Timebent', c:'#5bc0ff',
+   tag:'Boon: +1 projectile', curse:'Curse: cooldowns fluctuate ±28%',
+   d:'You slipped a little loose from time. You cast more at once, but never on a steady beat.',
+   apply(p){ p.mMulti+=1; p.timebent=true; }},
+];
+
+// =====================================================================
+// SPELL MUTATIONS — modular, behavioral modifiers layered onto whatever
+// wand you hold. Mutations reshape spells, not just their numbers.
+// (design doc: "Spells are identity frameworks, not damage tools")
+// =====================================================================
+const MUTATIONS = [
+  {id:'splitfork', name:'Split Shot', c:'#5bc0ff', max:3, risk:false,
+   d:'Your spell forks — more projectiles fan out with every stack.', stat:'+2 PROJECTILES',
+   apply(p){ p.mods.multi=(p.mods.multi||0)+2; p.mods.spread=Math.max(p.mods.spread||0,0.42); }},
+  {id:'chainignite', name:'Chain Ignition', c:'#bfe0ff', max:1, risk:false,
+   d:'Impacts arc lightning to nearby foes, chaining through the swarm.', stat:'LIGHTNING CHAINS',
+   apply(p){ p.mods.chain=(p.mods.chain||0)+4; }},
+  {id:'explosive', name:'Explosive Impact', c:'#ff7a18', max:2, risk:false,
+   d:'Every bolt detonates in a wider, fiercer blast on contact.', stat:'+BLAST RADIUS',
+   apply(p){ p.mods.aoe=(p.mods.aoe||0)+70; p.mods.aoeDmg=(p.mods.aoeDmg||0)+8; }},
+  {id:'lingering', name:'Lingering Flame', c:'#ff9a2e', max:1, risk:false,
+   d:'Bolts leave a trail of burning ground that scorches anything crossing it.', stat:'BURN TRAILS',
+   apply(p){ p.mods.trail=true; }},
+  {id:'seeker', name:'Seeker', c:'#ffd24a', max:1, risk:false,
+   d:'Your projectiles bend through the air to hunt the nearest foe.', stat:'HOMING',
+   apply(p){ p.mods.homing=Math.max(p.mods.homing||0,0.11); }},
+  {id:'ricochet', name:'Ricochet', c:'#9be3ff', max:1, risk:false,
+   d:'Instead of dying, bolts bounce to a fresh target — up to four times.', stat:'BOUNCING BOLTS',
+   apply(p){ p.mods.bounce=(p.mods.bounce||0)+4; }},
+  {id:'cluster', name:'Fragmentation', c:'#ff7a18', max:1, risk:false,
+   d:'Bolts burst into a ring of fiery shards when they land.', stat:'SHARD BURST',
+   apply(p){ p.mods.split={count:8,dmg:0}; }},
+  {id:'freeze', name:'Freeze Field', c:'#7ec8ff', max:1, risk:false,
+   d:'Impacts leave a field of frost that slows every foe caught inside.', stat:'SLOW FIELDS',
+   apply(p){ p.mods.slowField=true; }},
+  {id:'vampiric', name:'Leeching Bolts', c:'#ff4d6d', max:2, risk:false,
+   d:'Your spells drink the life of what they strike.', stat:'+6% LIFESTEAL',
+   apply(p){ p.mods.lifesteal=(p.mods.lifesteal||0)+0.06; }},
+  {id:'focus', name:'Unstable Focus', c:'#fff0a8', max:2, risk:false,
+   d:'Wild arcane energy sharpens into savage critical strikes.', stat:'+12% CRIT',
+   apply(p){ p.mods.crit=(p.mods.crit||0)+0.12; }},
+  // ---- RISK mutations: strong, with a real downside (doc: "late-game tension") ----
+  {id:'bloodprice', name:'Blood Price', c:'#ff4d6d', max:1, risk:true,
+   d:'RISK — +35% damage, but every cast spends a sliver of your own life.', stat:'+35% DMG / costs HP',
+   apply(p){ p.mDmg*=1.35; p.mods.bloodPct=0.006; }},
+  {id:'glasscore', name:'Volatile Core', c:'#c06aff', max:1, risk:true,
+   d:'RISK — the closer you are to death, the more your spells devastate.', stat:'DMG scales w/ missing HP',
+   apply(p){ p.mods.glass=true; }},
+];
+
+const Mutations = {
+  // grant a mutation to a player (silent=true skips toast/corruption, for origins)
+  grant(p, id, silent){
+    const M=MUTATIONS.find(m=>m.id===id); if(!M) return false;
+    const have=p.mutations.filter(x=>x===id).length;
+    if(have>=(M.max||1)) return false;
+    M.apply(p); p.mutations.push(id); p._effDirty=true;
+    if(!silent){ UI.toast('Mutation · '+M.name,M.c); Corruption.add(M.risk?14:9); }
+    return true;
+  },
+  eligible(p){ return MUTATIONS.filter(m=>p.mutations.filter(x=>x===m.id).length < (m.max||1)); }
+};
+
+// =====================================================================
+// ARCANE CORRUPTION — a run-wide chaos meter. It rises as you take power
+// (mutations, wand tiers) and as you push toward the Core. At thresholds
+// the run transforms: you gain power, and the world bends back.
+// (design doc §4 "build corruption — the fun chaos engine")
+// =====================================================================
+const Corruption = {
+  v:0, fired:{},
+  reset(){ this.v=0; this.fired={}; },
+  set(n){ this.v=clamp(n,0,100); this.checkThresholds(); },
+  add(n){ this.v=clamp(this.v+n,0,100); this.checkThresholds(); },
+  update(){
+    const rate=(World.biomeAt(World.player.x,World.player.y).corruptRate||0);
+    if(rate>0) this.add(rate*0.02);          // seeps in faster near the Core
+    else this.add(0.003);                    // slow ambient drift
+  },
+  checkThresholds(){
+    if(this.v>=33 && !this.fired[33]){ this.fired[33]=1; this.event(33); }
+    if(this.v>=66 && !this.fired[66]){ this.fired[66]=1; this.event(66); }
+    if(this.v>=100 && !this.fired[100]){ this.fired[100]=1; this.event(100); }
+  },
+  event(t){
+    const p=World.player;
+    if(t===33){
+      UI.toast('⚛ ARCANE SURGE — a free mutation blooms',' #c06aff');
+      const el=Mutations.eligible(p); if(el.length) Mutations.grant(p,pick(el).id,true);
+      World.corruptEnemyDmg=(World.corruptEnemyDmg||1)*1.08;
+      World.flash=Math.max(World.flash,6);
+    } else if(t===66){
+      UI.toast('⚛ REALITY BENDS — spells swell, foes adapt','#ff9a2e');
+      p.mods.pierce=(p.mods.pierce||0)+2; p.mMulti+=1; p._effDirty=true;
+      World.corruptEnemyDmg=(World.corruptEnemyDmg||1)*1.10;
+      World.flash=Math.max(World.flash,10); Endgame.shake=Math.max(Endgame.shake,18);
+    } else {
+      UI.toast('⚛ CORRUPTION OVERLOAD — the storm consumes you','#ff4d6d');
+      p.mDmg*=1.30; p.mFireRate*=1.12; p._effDirty=true;
+      World.corruptEnemyDmg=(World.corruptEnemyDmg||1)*1.15;
+      World.flash=Math.max(World.flash,16); Endgame.shake=Math.max(Endgame.shake,30);
+      // a chaotic burst of foes rushes in
+      for(let i=0;i<6;i++) Spawner.spawnOne();
+    }
+  }
 };
 
 // =====================================================================
@@ -1385,17 +1646,41 @@ const Upgrades = {
       apply:p=>p.pickup+=60},
   ],
   maybeOpen(){ if(this.queue>0 && !this.open && !World.shopOpen) this.present(); },
+  mutIcon(c,risk){
+    return '<svg viewBox="0 0 60 60"><defs><radialGradient id="mg'+Math.floor(Math.random()*1e6)+'" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="'+c+'"/><stop offset="1" stop-color="rgba(0,0,0,.2)"/></radialGradient></defs>'+
+      '<circle cx="30" cy="30" r="15" fill="'+c+'" opacity=".18"/>'+
+      '<g fill="none" stroke="'+c+'" stroke-width="2.5" stroke-linecap="round">'+
+      '<path d="M30 8 C22 20 22 24 30 30 C38 36 38 40 30 52"/>'+
+      '<path d="M30 8 C38 20 38 24 30 30 C22 36 22 40 30 52"/></g>'+
+      '<circle cx="30" cy="30" r="5" fill="#fff"/>'+
+      (risk?'<path d="M30 4 L34 12 L26 12 Z" fill="#ff4d6d"/>':'')+'</svg>';
+  },
   present(){
     this.open=true; World.paused=true;
-    const pool=this.POOL.slice(); const picks=[];
-    for(let i=0;i<3 && pool.length;i++){ picks.push(pool.splice(randi(0,pool.length-1),1)[0]); }
+    const p=World.player;
+    // stat boons
+    const cands=this.POOL.map(u=>({type:'stat',id:u.id,name:u.name,c:u.c,d:u.d,stat:u.stat,icon:u.icon,apply:u.apply}));
+    // behavioral mutations — these are what make builds emerge
+    for(const m of Mutations.eligible(p)){
+      const mm=m;
+      cands.push({type:'mut',id:mm.id,name:mm.name,c:mm.c,d:mm.d,stat:mm.stat,risk:mm.risk,
+        icon:this.mutIcon(mm.c,mm.risk),
+        apply(pl){ Mutations.grant(pl,mm.id,true); Corruption.add(mm.risk?14:9); }});
+    }
+    const picks=[]; const pool=cands.slice();
+    const muts=pool.filter(c=>c.type==='mut');
+    if(muts.length && Math.random()<0.78){ const mm=muts[randi(0,muts.length-1)];
+      picks.push(mm); pool.splice(pool.indexOf(mm),1); }
+    while(picks.length<3 && pool.length){ picks.push(pool.splice(randi(0,pool.length-1),1)[0]); }
     this.current=picks;
     const wrap=document.getElementById('upChoices'); wrap.innerHTML='';
     document.getElementById('upLevel').textContent='Level '+World.player.level+' — Choose your boon';
     picks.forEach((u,idx)=>{
       const card=document.createElement('div'); card.className='upCard'; card.style.setProperty('--cc',u.c);
+      const kind = u.type==='mut' ? (u.risk?'<div class="upKind risk">◆ Risk Mutation</div>':'<div class="upKind">◆ Mutation</div>') : '';
       card.innerHTML=
         '<div class="upGlow"></div>'+
+        kind+
         '<div class="upIcon">'+u.icon+'</div>'+
         '<div class="un">'+u.name+'</div>'+
         '<div class="upStat">'+u.stat+'</div>'+
@@ -1409,7 +1694,7 @@ const Upgrades = {
   },
   choose(idx){
     const u=this.current[idx]; u.apply(World.player);
-    UI.toast(u.name+' acquired!',u.c);
+    UI.toast((u.type==='mut'?'Mutation · '+u.name:u.name+' acquired!'),u.c);
     document.getElementById('levelup').classList.remove('show');
     this.open=false; this.queue--; World.paused=false;
     UI.sync();
@@ -1429,16 +1714,17 @@ const Render = {
   ground(){
     const ctx=this.ctx, t=CONFIG.world.tile;
     const sX=Math.floor(Camera.x/t)*t, sY=Math.floor(Camera.y/t)*t;
-    for(let gy=sY; gy<Camera.y+Camera.h; gy+=t){
-      for(let gx=sX; gx<Camera.x+Camera.w; gx+=t){
+    const ex=Camera.x+Camera.vw(), ey=Camera.y+Camera.vh();
+    for(let gy=sY; gy<ey; gy+=t){
+      for(let gx=sX; gx<ex; gx+=t){
         const b=World.biomeAt(gx+t/2,gy+t/2);
         ctx.fillStyle=(((gx/t)+(gy/t))%2===0)?b.ground:b.alt;
         ctx.fillRect(Camera.sx(gx),Camera.sy(gy),t,t);
       }
     }
     // grass/detail blades
-    for(let gy=sY; gy<Camera.y+Camera.h; gy+=20){
-      for(let gx=sX; gx<Camera.x+Camera.w; gx+=20){
+    for(let gy=sY; gy<ey; gy+=20){
+      for(let gx=sX; gx<ex; gx+=20){
         const b=World.biomeAt(gx,gy); const seed=((gx*31+gy*17)%97)/97;
         if(seed>0.74){ ctx.strokeStyle=b.blade; ctx.lineWidth=2;
           const px=Camera.sx(gx+seed*10),py=Camera.sy(gy+seed*8);
@@ -1447,7 +1733,7 @@ const Render = {
     }
     // mood darkness by biome at player
     const mood=World.biomeAt(World.player.x,World.player.y).mood;
-    if(mood>0){ ctx.fillStyle='rgba(0,0,8,'+(mood*0.4)+')'; ctx.fillRect(0,0,Camera.w,Camera.h); }
+    if(mood>0){ ctx.fillStyle='rgba(0,0,8,'+(mood*0.4)+')'; ctx.fillRect(0,0,Camera.vw(),Camera.vh()); }
   },
   wizard(p){
     const ctx=this.ctx, px=Camera.sx(p.x),py=Camera.sy(p.y);
@@ -1486,7 +1772,7 @@ const Render = {
   },
   enemy(en){
     const ctx=this.ctx, x=Camera.sx(en.x),y=Camera.sy(en.y);
-    if(x<-60||x>Camera.w+60||y<-60||y>Camera.h+60) return;
+    if(x<-60||x>Camera.vw()+60||y<-60||y>Camera.vh()+60) return;
     const f=en.hit>0, d=en.def;
     ctx.save(); ctx.translate(x,y);
     if(en.elite){ ctx.shadowColor='#ffcf3a'; ctx.shadowBlur=18;
@@ -1566,6 +1852,17 @@ const Render = {
         gg.addColorStop(0,'rgba(155,227,255,'+(0.22*a)+')'); gg.addColorStop(1,'rgba(120,180,255,0)');
         ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(x,y,f.r,0,6.28); ctx.fill();
         ctx.strokeStyle='rgba(200,240,255,'+(0.5*a)+')'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x,y,f.r,0,6.28); ctx.stroke();
+      } else if(f.kind==='burn'){ const gg=ctx.createRadialGradient(x,y,0,x,y,f.r);
+        gg.addColorStop(0,'rgba(255,170,60,'+(0.30*a)+')'); gg.addColorStop(.6,'rgba(255,90,20,'+(0.18*a)+')'); gg.addColorStop(1,'rgba(255,90,20,0)');
+        ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(x,y,f.r,0,6.28); ctx.fill();
+        for(let k=0;k<3;k++){ const fa=World.time*0.2+k*2.1; ctx.fillStyle='rgba(255,'+(150+k*30)+',60,'+(0.4*a)+')';
+          ctx.beginPath(); ctx.arc(x+Math.cos(fa)*f.r*0.4,y+Math.sin(fa)*f.r*0.4-2,3,0,6.28); ctx.fill(); }
+      } else if(f.kind==='hazard'){ const pulse=0.5+0.5*Math.sin(World.time*0.2);
+        const gg=ctx.createRadialGradient(x,y,0,x,y,f.r);
+        gg.addColorStop(0,'rgba(255,60,40,'+(0.30*a*pulse)+')'); gg.addColorStop(.7,'rgba(255,90,20,'+(0.16*a)+')'); gg.addColorStop(1,'rgba(255,90,20,0)');
+        ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(x,y,f.r,0,6.28); ctx.fill();
+        ctx.strokeStyle='rgba(255,120,80,'+(0.7*a*pulse)+')'; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.arc(x,y,f.r*(0.6+0.4*(1-f.life/f.maxlife)),0,6.28); ctx.stroke();
       } else { // singularity: dark core + swirling ring
         const gg=ctx.createRadialGradient(x,y,0,x,y,f.r*0.5);
         gg.addColorStop(0,'rgba(20,0,30,'+a+')'); gg.addColorStop(.6,'rgba(120,50,200,'+(0.4*a)+')'); gg.addColorStop(1,'rgba(120,50,200,0)');
@@ -1648,14 +1945,14 @@ const Render = {
     c.strokeStyle='#10180c'; c.lineWidth=1; c.stroke();
     // viewport box
     c.strokeStyle='rgba(255,255,255,.4)'; c.lineWidth=1;
-    c.strokeRect(Camera.x*scale,Camera.y*scale,Camera.w*scale,Camera.h*scale);
+    c.strokeRect(Camera.x*scale,Camera.y*scale,Camera.vw()*scale,Camera.vh()*scale);
   },
   frame(){
     const ctx=this.ctx;
     // end-game screen shake
     let shx=0,shy=0;
     if(Endgame.shake>0){ const m=Endgame.shake*0.4; shx=rand(-m,m); shy=rand(-m,m); }
-    ctx.save(); ctx.translate(shx,shy);
+    ctx.save(); ctx.translate(shx,shy); ctx.scale(Camera.zoom,Camera.zoom);
     this.ground();
     this.drops();
     for(const en of World.enemies) this.enemy(en);
@@ -1783,16 +2080,16 @@ const Game = {
     Render.init();
     Input.init(Render.cv);
     window.addEventListener('resize',()=>Render.resize());
-    document.getElementById('startBtn').onclick=()=>Game.begin();
+    document.getElementById('startBtn').onclick=()=>Game.openOrigins();
     document.getElementById('shopBuy').onclick=()=>Shop.buy();
     document.getElementById('shopSkip').onclick=()=>Shop.skip();
     // home menu
     const ov=document.getElementById('overlay');
-    document.getElementById('btnPlay').onclick=()=>Game.begin();
+    document.getElementById('btnPlay').onclick=()=>Game.openOrigins();
     document.getElementById('btnControls').onclick=()=>{ SFX.init();SFX.click(); ov.classList.add('state-controls'); };
     document.getElementById('btnInfo').onclick=()=>{ SFX.init();SFX.click(); ov.classList.add('state-info'); };
     document.querySelectorAll('#overlay [data-back]').forEach(b=>b.onclick=()=>{
-      SFX.click(); ov.classList.remove('state-controls'); ov.classList.remove('state-info'); });
+      SFX.click(); ov.classList.remove('state-controls','state-info','state-origin','state-end'); ov.classList.add('show'); });
     // populate element legend cards
     const eg=document.getElementById('elemGrid');
     if(eg){ const blurbs={
@@ -1809,13 +2106,35 @@ const Game = {
     // start the swirling title animation
     TitleFX.init(); TitleFX.start();
   },
-  begin(){
+  openOrigins(){
     SFX.init(); SFX.click();
     const ov=document.getElementById('overlay');
-    ov.classList.remove('show','state-controls','state-info','state-end');
+    const grid=document.getElementById('originGrid'); grid.innerHTML='';
+    ORIGINS.forEach(o=>{
+      const card=document.createElement('div'); card.className='origCard'; card.style.setProperty('--oc',o.c);
+      card.innerHTML='<div class="on">'+o.name+'</div>'+
+        '<div class="otag">'+o.tag+'</div>'+
+        (o.curse?'<div class="ocurse">'+o.curse+'</div>':'')+
+        '<div class="od">'+o.d+'</div>';
+      card.onclick=()=>{ SFX.click(); Game.begin(o); };
+      grid.appendChild(card);
+    });
+    ov.classList.remove('state-controls','state-info','state-end');
+    ov.classList.add('show','state-origin');
+    TitleFX.start();
+  },
+  begin(origin){
+    SFX.init(); SFX.click();
+    const ov=document.getElementById('overlay');
+    ov.classList.remove('show','state-controls','state-info','state-end','state-origin');
     document.getElementById('bossbar').classList.remove('show');
     World.init((Math.random()*1e9)|0);
-    World.player=makePlayer(); World.player.recalc(); World.player.hp=World.player.maxhp;
+    World.player=makePlayer();
+    // apply chosen Arcane Origin (boon + curse) before recalc
+    const O = origin && origin.apply ? origin : ORIGINS[0];
+    World.player.origin=O.id; O.apply(World.player); World.player._effDirty=true;
+    World.player.recalc(); World.player.hp=World.player.maxhp;
+    if(O.id!=='unchosen') UI.toast('Origin · '+O.name, O.c);
     Inventory.reset(); UI.sync();
     this.loop();
   },
@@ -1840,14 +2159,22 @@ const Game = {
     p.mp=Math.min(p.maxmp,p.mp+CONFIG.player.mpRegen);
     if(p.regen>0) p.hp=Math.min(p.maxhp,p.hp+p.regen);
     if(p.hurt>0)p.hurt--;
+    // biome rule modifiers (active while standing in the biome)
+    const bio=World.biomeAt(p.x,p.y);
+    World.castMod=bio.castMod||1; World.enemySpeedMod=bio.enemySpeedMod||1;
+    World.goldMod=bio.goldMod||1; World.critMod=bio.critMod||0;
+    if(World.lastBiome!==bio.name){ World.lastBiome=bio.name;
+      if(bio.rule) UI.toast(bio.rule, '#9fdcff'); }
     // aim + fire
-    Input.mouse.wx=Input.mouse.sx+Camera.x; Input.mouse.wy=Input.mouse.sy+Camera.y;
+    Input.mouse.wx=Input.mouse.sx/Camera.zoom+Camera.x; Input.mouse.wy=Input.mouse.sy/Camera.zoom+Camera.y;
     p.armAngle=Math.atan2(Input.mouse.wy-(p.y-18),Input.mouse.wx-p.x);
+    if(p.aimWobble) p.armAngle+=Math.sin(World.time*0.28)*p.aimWobble + rand(-p.aimWobble,p.aimWobble);
     if(p.cool>0)p.cool--;
-    if(Input.mouse.down&&p.cool<=0) Combat.fire();
+    if((Input.mouse.down||p.autoCast)&&p.cool<=0) Combat.fire();
     // systems
     Boss.maybeTrigger();
     Endgame.update();
+    Corruption.update();
     Spawner.update();
     Boss.update();
     Orbit.update();
@@ -1876,7 +2203,7 @@ const Game = {
   goHome(){
     World.running=false; World.won=false;
     // restore default Play-again behavior for the shared button, then show the home menu
-    const btn=document.getElementById('startBtn'); btn.textContent='Play Again'; btn.onclick=()=>Game.begin();
+    const btn=document.getElementById('startBtn'); btn.textContent='Play Again'; btn.onclick=()=>Game.openOrigins();
     const ov=document.getElementById('overlay');
     ov.classList.remove('state-end','state-controls','state-info');
     ov.classList.add('show');
