@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spellstorm v1.2</title>
+<title>Spellstorm v1.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -60,11 +60,14 @@
   .bar .txt{position:absolute;inset:0;display:grid;place-items:center;font-family:'Cinzel',serif;
     font-size:10px;font-weight:700;letter-spacing:.1em;text-shadow:0 1px 2px #000,0 0 4px #000;}
 
-  /* minimap bottom-left */
-  #minimapWrap{position:fixed;bottom:16px;left:16px;width:184px;height:184px;z-index:20;
+  /* minimap + ascent-progress bottom-left */
+  #minimapWrap{position:fixed;bottom:16px;left:16px;width:210px;height:184px;z-index:20;
     border:1px solid rgba(255,210,74,.28);border-radius:10px;overflow:hidden;background:#0a0f08;
-    box-shadow:0 10px 28px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.6);padding:6px;}
-  #minimap{display:block;width:100%;height:100%;border-radius:5px;}
+    box-shadow:0 10px 28px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.6);padding:8px 8px 8px 8px;
+    display:flex;flex-direction:column;}
+  #minimapRow{display:flex;gap:7px;flex:1;min-height:0;margin-top:12px;}
+  #progressbar{display:block;width:15px;height:100%;border-radius:4px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.5);}
+  #minimap{display:block;flex:1;height:100%;border-radius:5px;}
   #minimapWrap .mtitle{position:absolute;top:10px;left:14px;font-family:'Cinzel',serif;font-weight:700;
     font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--bright);opacity:.8;
     pointer-events:none;text-shadow:0 1px 3px #000;z-index:2;}
@@ -124,7 +127,7 @@
   #overlay{position:fixed;inset:0;display:none;place-items:center;
     background:radial-gradient(circle at center,rgba(20,8,4,.72),rgba(2,6,2,.96));text-align:center;z-index:60;}
   #overlay.show{display:grid;}
-  #overlay h1{font-family:'Cinzel',serif;font-weight:900;font-size:56px;letter-spacing:.1em;color:var(--ember);
+  #overlay h1:not(#bigtitle){font-family:'Cinzel',serif;font-weight:900;font-size:56px;letter-spacing:.1em;color:var(--ember);
     text-shadow:0 4px 0 #5a1c04,0 0 50px rgba(255,122,24,.55);line-height:1.1;}
   #overlay p{margin:20px auto 26px;font-size:17px;opacity:.9;max-width:600px;line-height:1.6;font-style:italic;}
   #overlay button{pointer-events:auto;cursor:pointer;font-family:'Cinzel',serif;font-weight:700;font-size:17px;letter-spacing:.1em;
@@ -141,17 +144,18 @@
   #home,#endState,.menuPanel{display:none;}
   /* default state: show home, hide others */
   #overlay.show #home{display:grid;place-items:center;position:relative;width:100%;height:100%;}
-  #overlay.state-controls #home,#overlay.state-info #home{display:none;}
+  #overlay.state-controls #home,#overlay.state-info #home,#overlay.state-upgrades #home{display:none;}
   #overlay.state-controls #panelControls{display:flex;}
   #overlay.state-info #panelInfo{display:flex;}
+  #overlay.state-upgrades #panelUpgrades{display:flex;}
   #overlay.state-end #home{display:none;}
   #overlay.state-end #endState{display:block;}
 
   #titlefx{position:absolute;inset:0;width:100%;height:100%;z-index:0;}
   #homeInner{position:relative;z-index:1;text-align:center;}
-  #bigtitle{font-family:'Cinzel',serif;font-weight:900;
+  #bigtitle{font-family:'Cinzel',serif;font-weight:4000;
     font-size:clamp(64px,15vw,180px);letter-spacing:.05em;line-height:.92;margin:0;
-    color:#6fdcff;
+    color:#00F5FF;
     text-shadow:0 0 22px rgba(80,210,255,1),0 0 70px rgba(50,170,255,.85),
       0 0 140px rgba(30,130,255,.7),0 6px 0 #0a3a6a,0 9px 3px rgba(0,0,0,.7);
     animation:titleGlow 3.2s ease-in-out infinite;}
@@ -192,6 +196,32 @@
   .elemCard .en{font-family:'Cinzel',serif;font-weight:700;font-size:13px;letter-spacing:.04em;}
   .elemCard .ed{font-size:11px;opacity:.8;line-height:1.35;margin-top:3px;}
   .chartnote{font-size:12.5px!important;opacity:.8!important;line-height:1.7!important;margin-top:10px!important;}
+
+  #upgradesScroll{overflow-y:auto;width:100%;padding-right:8px;margin-bottom:22px;}
+  #upgradesScroll::-webkit-scrollbar{width:8px;}
+  #upgradesScroll::-webkit-scrollbar-thumb{background:rgba(95,208,255,.3);border-radius:4px;}
+
+  #wandChain{display:flex;flex-direction:column;width:100%;margin:10px 0 20px;}
+  .wandNode{display:flex;gap:12px;position:relative;}
+  .wandNode .wnLine{width:30px;flex:none;display:flex;flex-direction:column;align-items:center;position:relative;}
+  .wandNode .wnDot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:'Cinzel',serif;font-weight:900;font-size:12px;color:#04121f;flex:none;z-index:1;box-shadow:0 0 9px currentColor;}
+  .wandNode .wnStem{flex:1;width:2px;min-height:16px;background:linear-gradient(rgba(255,255,255,.32),rgba(255,255,255,.08));margin:2px 0;}
+  .wandNode .wnBody{flex:1;border:1px solid;border-radius:9px;padding:8px 12px;background:rgba(0,0,0,.25);margin-bottom:12px;}
+  .wandNode .wnTop{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .wandNode .wnName{font-family:'Cinzel',serif;font-weight:700;font-size:13.5px;letter-spacing:.03em;}
+  .wandNode .wnCost{font-size:10.5px;opacity:.75;font-family:'Cinzel',serif;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;}
+  .wandNode .wnDesc{font-size:11.5px;opacity:.82;line-height:1.4;margin-top:3px;text-align:left;}
+
+  #mutOverviewGrid,#statOverviewGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px;margin:10px 0 20px;}
+  .miniCard{border:1px solid;border-radius:9px;padding:9px 10px;text-align:left;background:rgba(0,0,0,.25);}
+  .miniCard.risk{box-shadow:inset 0 0 0 1px rgba(255,77,109,.5);}
+  .miniCard .mcIconRow{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+  .miniCard .mcIconRow svg{width:26px;height:26px;flex:none;}
+  .miniCard .mn{font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:.02em;}
+  .miniCard .mstat{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;opacity:.9;font-weight:700;margin-bottom:3px;}
+  .miniCard .md{font-size:11px;opacity:.82;line-height:1.32;}
+
   .menuPanel .back{margin-top:4px;pointer-events:auto;cursor:pointer;font-family:'Cinzel',serif;font-weight:700;
     font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:#04121f;
     background:linear-gradient(#7fe0ff,#2a9be0);border:none;padding:12px 40px;border-radius:8px;
@@ -262,6 +292,17 @@
   #corrp .cbar{position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(90deg,rgba(192,106,255,.16),rgba(255,77,109,.28));z-index:0;transition:width .2s;}
   #corrp span,#corrp b{position:relative;z-index:1;}
 
+  /* mode select */
+  #overlay.state-mode #home{display:none;}
+  #overlay.state-mode #panelMode{display:flex;}
+  #modeGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;width:100%;margin-bottom:20px;}
+  .modeCard{cursor:pointer;text-align:left;border:2px solid var(--oc,#5fd0ff);border-radius:14px;padding:20px 20px;
+    background:linear-gradient(160deg,rgba(20,40,60,.55),rgba(8,18,30,.72));transition:transform .12s,box-shadow .12s;}
+  .modeCard:hover{transform:translateY(-4px);box-shadow:0 10px 26px rgba(0,0,0,.5),0 0 24px color-mix(in srgb,var(--oc) 42%,transparent);}
+  .modeCard .mn2{font-family:'Cinzel',serif;font-weight:900;font-size:21px;color:var(--oc);margin-bottom:6px;}
+  .modeCard .mtag{font-size:12px;color:#bfe6a0;opacity:.95;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;}
+  .modeCard .md2{font-size:13px;opacity:.85;line-height:1.5;font-style:italic;}
+
   /* origin select */
   #overlay.state-origin #home{display:none;}
   #overlay.state-origin #panelOrigin{display:flex;}
@@ -301,12 +342,13 @@
 <div id="wrap"><canvas id="game"></canvas></div>
 <div id="framefx"></div>
 <div id="brand">SPELLSTORM</div>
-<div id="disclaimer">2026 work in progress, v1.2 — build-evolution update</div>
+<div id="disclaimer">2026 work in progress, v1.3 — ascension update</div>
 <div id="warnBanner"><div class="wbig" id="warnBig">⚠ THE CORRUPTED CORE ⚠</div><div class="wsub" id="warnSub">Point of no return — the Warden stirs</div></div>
 
 <div id="hud">
   <div class="pill">Lvl <b id="lvlv">1</b></div>
-  <div class="pill">Biome <b id="biomev">Plains</b></div>
+  <div class="pill">Stage <b id="stagev">1 / 6</b></div>
+  <div class="pill">Biome <b id="biomev">Sunlit Plains</b></div>
   <div class="pill">Wave <b id="wavev">1</b></div>
   <div class="pill">Kills <b id="killsv">0</b></div>
   <div class="pill" id="goldp">Gold <b id="goldv">0</b></div>
@@ -316,7 +358,7 @@
 <div id="bossbar"><div class="label" id="bossName">Boss</div>
   <div class="track"><div class="fill" id="bossFill"></div></div></div>
 
-<div id="bossIntro"><div><div class="bititle" id="bossIntroName">ZARGOTH</div><div class="bisub" id="bossIntroSub">Warden of the Corrupted Core</div></div></div>
+<div id="bossIntro"><div><div class="bititle" id="bossIntroName">THISTLEMAW</div><div class="bisub" id="bossIntroSub">Warden of the Plains</div></div></div>
 
 <div id="toasts"></div>
 
@@ -326,7 +368,12 @@
   <div class="bar"><div class="fill" id="xpFill" style="width:0%"></div><div class="txt" id="xpTxt">XP</div></div>
 </div>
 
-<div id="minimapWrap"><span class="mtitle">Realm</span><canvas id="minimap" width="180" height="180"></canvas></div>
+<div id="minimapWrap"><span class="mtitle">Ascent</span>
+  <div id="minimapRow">
+    <canvas id="progressbar" width="15" height="160"></canvas>
+    <canvas id="minimap" width="160" height="160"></canvas>
+  </div>
+</div>
 
 <div id="gearWrap">
   <h3>Equipment</h3>
@@ -347,17 +394,24 @@
   <div id="home">
     <canvas id="titlefx"></canvas>
     <div id="homeInner">
-      <h1 id="bigtitle">SPELL</h1>
-	  <h1 id="bigtitle">STORM</h1>
-	  <h1 id="bigtitle">"S" "T" "O" "R" "M" "N"</h1>
-      <div id="tagline">Master the elements, kill the dark lords bat hamster</div>
+      <h1 id="bigtitle">SPELLSTORM</h1>
+      <div id="tagline">Master the elements. Climb the storm. Break the Wardens.</div>
       <div id="menu">
         <button id="btnPlay">Play</button>
         <button id="btnControls" class="alt">Controls</button>
         <button id="btnInfo" class="alt">Mechanics</button>
+        <button id="btnUpgrades" class="alt">Upgrades</button>
       </div>
     </div>
-    <div id="credit">Developed by silicon, water, AI & Tizz3r </div>
+    <div id="credit">Developed by Tizz3r & Sharmz</div>
+  </div>
+
+  <!-- MODE SELECT -->
+  <div id="panelMode" class="menuPanel">
+    <h2>Choose your Path</h2>
+    <p style="text-align:center;margin-bottom:14px;opacity:.8;">Same spells, same magic — two very different fights.</p>
+    <div id="modeGrid"></div>
+    <button class="back" data-back>Back</button>
   </div>
 
   <!-- ORIGIN SELECT -->
@@ -398,27 +452,45 @@
       <p class="chartnote">Triangle of power — <b style="color:#ff7a18">Fire</b> beats <b style="color:#8be36b">Nature</b> · <b style="color:#7ec8ff">Frost</b> breaks <b style="color:#bfe0ff">Storm</b> · <b style="color:#bfe0ff">Storm</b> wins over <b style="color:#7ec8ff">Frost</b> · <b style="color:#8be36b">Nature</b> settles <b style="color:#bfe0ff">Storm</b> · <b style="color:#c06aff">Arcane</b> pierces all (true damage, no weakness).</p>
 
       <h3>Enemies</h3>
-      <p>Swarms grow per wave and hit harder the more you roam from the safe center. <b>Wolves</b> dash quick, <b>slimes</b> move all weird, <b>sporelings &amp; golems</b> fling projectiles at you, <b>gargoyles</b> fly around. Gold-glowing <b>Elites</b> have triple health but reward gold, gear, potions and rare wands.</p>
+      <p>Swarms grow per wave and hit harder the higher you climb. <b>Wolves</b> dash quick, <b>slimes</b> move all weird, <b>sporelings &amp; golems</b> fling projectiles at you, <b>gargoyles</b> fly around. Gold-glowing <b>Elites</b> have triple health but reward gold, gear, potions and rare wands.</p>
 
       <h3>Key Spells</h3>
-      <p>Wands evolve from a <b>Wood Wand</b> to the absolute animals that are <b>Avatar</b> and <b>Nova</b>. Wand mechanics: <b>AoE blasts</b>, <b>chain lightning</b>, <b>orbiting saw-blades</b>, <b>homing</b> and <b>boomerang</b> bolts, <b>freeze fields</b>, <b>black-hole singularities</b>, <b>ricochet</b>, <b>railgun beams</b>, <b>cluster shards</b>, and full <b>360° novas</b>. Buy upgrades with gold, or find rare wands as drops.</p>
+      <p>Wands evolve from a plain <b>Wood Wand</b> through eleven tiers, each earning a genuinely new trick rather than just bigger numbers: <b>AoE blasts</b>, tight twin bolts, a <b>piercing lance</b>, <b>chain lightning</b>, <b>ricochet</b>, <b>homing</b> comets, <b>boomerang</b> bolts, an instant <b>railgun beam</b>, <b>orbiting blades</b>, <b>freeze fields</b>, and finally a gravity-well <b>singularity</b>. Every spell fires within a tight, aimable cone — nothing sprays a full circle — so where you point the wand always matters. Buy upgrades with gold, or find rare wands as drops.</p>
 
       <h3>Arcane Origins</h3>
       <p>Every run now begins by choosing an <b>Origin</b> — an identity with a <b style="color:#8be36b">boon</b> and a <b style="color:#ff9aa0">curse</b>. A Glass Savant hits like a meteor but is desperately fragile; a Feral Conduit casts endlessly on its own but can't aim straight. No two origins play the same.</p>
 
       <h3>Spell Mutations</h3>
-      <p>Level-ups now offer <b style="color:#c06aff">mutations</b> alongside stat boons. Mutations <b>reshape</b> your spell rather than just buffing numbers — split shots, chaining lightning, homing, ricochet, burning trails, shard bursts, freeze fields. They stack onto <i>any</i> wand you hold, so builds emerge: "I became a chain-lightning burn mage." <b style="color:#ff4d6d">Risk</b> mutations are stronger but bite back.</p>
+      <p>Level-ups now offer <b style="color:#c06aff">mutations</b> alongside stat boons. Mutations <b>reshape</b> your spell rather than just buffing numbers — split shots, chaining lightning, homing, ricochet, burning trails, shard bursts, freeze fields. They stack onto <i>any</i> wand you hold, so builds emerge: "I became a chain-lightning burn mage." No matter how many stack, your spread is always reined back in to a fair firing cone. <b style="color:#ff4d6d">Risk</b> mutations are stronger but bite back.</p>
 
       <h3>Arcane Corruption</h3>
-      <p>The <b style="color:#c06aff">Corruption</b> meter climbs as you take power and push toward the Core. At <b>33 / 66 / 100%</b> the run transforms — you're granted power, but the world bends back and foes hit harder. Late runs drift into glorious chaos.</p>
+      <p>The <b style="color:#c06aff">Corruption</b> meter climbs as you take power and push higher up the Storm. At <b>33 / 66 / 100%</b> the run transforms — you're granted power, but the world bends back and foes hit harder. Late runs drift into glorious chaos.</p>
 
-      <h3>Biome Rules &amp; Warden Trials</h3>
-      <p>Each biome bends the rules while you stand in it — Frostreach slows foes but chills your casting, Emberdeep enrages enemies but showers gold. The Wardens are <b>build checks</b>: one regenerates unless you burst it, one floods the arena with hazards, one hardens against your favourite element, and the last dampens your raw power so skill decides it.</p>
+      <h3>Biomes &amp; Warden Gates <span style="font-size:11px;opacity:.6;text-transform:none;letter-spacing:0;">— Journey</span></h3>
+      <p>The realm rises in six stages — <b>grass, stone, snow, forest, desert</b>, and finally the <b style="color:#c06aff">chaotic Stormscar</b> — and you climb from one to the next. Each biome bends the rules while you stand in it: Frostreach slows foes but chills your casting, Sunscar Waste enrages enemies but showers gold, the Stormscar does a little of everything at once. A <b>Warden</b> guards the top of every stage — beat it and the way opens above. The Wardens are <b>build checks</b>: some regenerate unless you burst them, some flood the arena with hazards, some harden against your favourite element, some summon endless reinforcements, and some dampen your raw power so skill decides it. <i>Endless instead drops you at the center of the original radial realm — the same Wardens gate your path outward, but the gauntlet loops forever instead of ending.</i></p>
 
       <h3>The End</h3>
-      <p>The world darkens with as you approach the <b style="color:#ff5a5a">Corrupted Core</b> at the far edge. Cross the point of no return and face a <b>gauntlet of Wardens</b>, each fiercer than the last, ending in the final boss for now.</p>
-	  <p>Survive the whole gauntlet, then do it again faster if you can, <b style="color:#ff5a5a">TEMPORARY ENDGAME</b> </p>
-	  <p>
+      <p>In <b>Journey</b>, the higher you climb the more the world darkens. Each Warden you break lets you push further into the Stormscar at the top of the map, where the <b style="color:#ff5a5a">Hollow King</b> waits as the final trial — a Warden that cycles through every kind of check the others tested you on. Break it, and the storm finally settles.</p>
+      <p>In <b>Endless</b>, there is no final trial — only survival. Waves climb past 99 and the Warden gauntlet cycles forever, both growing exponentially harder, until the storm inevitably wins.</p>
+    </div>
+    <button class="back" data-back>Back</button>
+  </div>
+
+  <!-- UPGRADE PATHS PANEL -->
+  <div id="panelUpgrades" class="menuPanel">
+    <h2>Upgrade Paths</h2>
+    <div id="upgradesScroll">
+      <h3>Wand Progression</h3>
+      <p>Gold buys the next wand tier automatically when you can afford it. It's a single fixed path — no branching — but every tier adds a genuinely new trick, never just bigger numbers.</p>
+      <div id="wandChain"></div>
+
+      <h3>Spell Mutations</h3>
+      <p>Level-ups offer 3 random choices, weighted toward showing at least one mutation. Mutations reshape how your bolts behave and stack onto whatever wand you're holding. <b style="color:#ff4d6d">Risk</b> ones hit harder but bite back.</p>
+      <div id="mutOverviewGrid"></div>
+
+      <h3>Stat Boons</h3>
+      <p>The rest of the level-up pool — straightforward numeric buffs that stack with any build.</p>
+      <div id="statOverviewGrid"></div>
     </div>
     <button class="back" data-back>Back</button>
   </div>
@@ -469,7 +541,7 @@ function hexLerp(a,b,t){const pa=[1,3,5].map(i=>parseInt(a.substr(i,2),16));
   const pb=[1,3,5].map(i=>parseInt(b.substr(i,2),16));
   return 'rgb('+pa.map((v,i)=>Math.round(v+(pb[i]-v)*t)).join(',')+')';}
 
-// ---------- value-noise (deterministic, seedable) for biomes ----------
+// ---------- value-noise (deterministic, seedable) for Endless-mode biomes ----------
 function makeNoise(seed){
   const p=new Uint8Array(512); const perm=[];
   for(let i=0;i<256;i++) perm[i]=i;
@@ -494,7 +566,9 @@ function makeNoise(seed){
 // CONFIG / DATA REGISTRIES  (data-driven so a server could share these)
 // =====================================================================
 const CONFIG = {
-  world:{ size:6000, tile:80 },
+  // Journey uses a tall vertical shaft: fixed width, height = one band per
+  // biome stage. Endless restores the original square radial world (size).
+  world:{ width:2600, height:12000, bandHeight:2000, tile:80, size:6000 },
   player:{ speed:3.7, hp:120, mp:100, mpRegen:0.25, dashCost:25, dashPower:11, dashFrames:9, dashCd:42 },
 };
 
@@ -533,7 +607,47 @@ const ELEM_CHART = {
 function elemMult(atk,def){ if(!atk||!def) return 1; return (ELEM_CHART[atk] && ELEM_CHART[atk][def])||1; }
 
 
-// BIOMES — each a noise/temperature band with its own palette, enemies, difficulty, loot bias
+// =====================================================================
+// STAGES — the vertical climb. Six biome bands, bottom (grass, spawn) to
+// top (chaos), each keeping one of the old biome rule-effects and adding
+// its own Warden guarding the way up. Clear a Warden to open the path
+// into the next stage above.
+// =====================================================================
+const STAGES = [
+  { key:'grass', name:'Sunlit Plains', ground:'#3f7d2e', alt:'#477f31', blade:'rgba(40,90,28,.5)', diff:1.0, mood:0,
+    enemies:['goblin','slime','wolf'],
+    boss:{name:'THISTLEMAW', title:'Warden of the Plains', hp:2200, dmgMul:1.00, speedMul:1.00, atkCdMul:1.00, color:'#8be36b', check:'dps'} },
+  { key:'stone', name:'The Stoneworks', ground:'#55535c', alt:'#5d5b64', blade:'rgba(25,24,30,.45)', diff:1.8, mood:.15,
+    enemies:['goblin','wolf','gargoyle'], rule:'The Stoneworks — leyline echoes sharpen your critical strikes.', critMod:0.10,
+    boss:{name:'GRAVEMAW', title:'Warden of Stone', hp:3600, dmgMul:1.15, speedMul:1.05, atkCdMul:0.90, color:'#9a978f', check:'hazard'} },
+  { key:'snow', name:'Frostreach', ground:'#cdd9e2', alt:'#d6e1ea', blade:'rgba(150,170,190,.4)', diff:2.6, mood:.25,
+    enemies:['icegolem','wolf','gargoyle'], rule:'Frostreach — cold slows enemies, but your spells cool slower too.', enemySpeedMod:0.78, castMod:1.22,
+    boss:{name:'VYRELIS', title:'Eclipse of the Frost', hp:5600, dmgMul:1.30, speedMul:1.12, atkCdMul:0.80, color:'#5bc0ff', check:'adapt'} },
+  { key:'forest', name:'Whisperwood', ground:'#2c5226', alt:'#315a2a', blade:'rgba(20,50,18,.5)', diff:3.2, mood:.3,
+    enemies:['mushroom','wolf','gargoyle'], rule:'Whisperwood — foes hide in the trees; loot is a touch richer.', goldMod:1.2,
+    boss:{name:'MOSSWRAITH', title:'Herald of the Deepwood', hp:8200, dmgMul:1.45, speedMul:1.18, atkCdMul:0.72, color:'#3f8a4a', check:'swarm'} },
+  { key:'desert', name:'Sunscar Waste', ground:'#b89a52', alt:'#c0a45c', blade:'rgba(120,100,50,.4)', diff:4.0, mood:.2,
+    enemies:['scorpion','firedemon','gargoyle'], rule:'Sunscar Waste — heat quickens everything; more gold spills.', enemySpeedMod:1.12, goldMod:1.35,
+    boss:{name:'MORDRETH', title:'Herald of Ruin', hp:12000, dmgMul:1.65, speedMul:1.25, atkCdMul:0.62, color:'#ff7a18', check:'invert'} },
+  { key:'chaos', name:'The Stormscar', ground:'#241830', alt:'#2c1e3a', blade:'rgba(190,140,255,.35)', diff:5.2, mood:.5,
+    enemies:['goblin','slime','wolf','mushroom','scorpion','icegolem','firedemon','gargoyle'],
+    rule:'The Stormscar — reality glitches here: your power surges, but corruption floods in fast.',
+    enemySpeedMod:1.15, goldMod:1.6, critMod:0.08, castMod:1.1, corruptRate:2.6, flicker:true, flickColor:'#4a2a70',
+    boss:{name:'THE HOLLOW KING', title:'Final Warden of the Core', hp:20000, dmgMul:2.00, speedMul:1.40, atkCdMul:0.55, color:'#c06aff', check:'final'} },
+];
+// lay out each stage's vertical band: topY (smaller, further up) .. bottomY (larger, lower down)
+(function layoutStages(){
+  const BH=CONFIG.world.bandHeight;
+  for(let i=0;i<STAGES.length;i++){
+    STAGES[i].index=i;
+    STAGES[i].topY=CONFIG.world.height-(i+1)*BH;
+    STAGES[i].bottomY=CONFIG.world.height-i*BH;
+  }
+})();
+
+// BIOMES — Endless mode's original radial layout: a noise/temperature band
+// with its own palette, enemies, difficulty, and loot bias, keyed by
+// distance from the world center rather than by vertical stage.
 const BIOMES = {
   plains:   {name:'Plains',     ground:'#3f7d2e',alt:'#477f31',blade:'rgba(40,90,28,.5)',diff:1,mood:0,
              enemies:['goblin','slime','wolf']},
@@ -565,54 +679,26 @@ const ENEMIES = {
   gargoyle: {name:'Gargoyle',r:18,hp:16,speed:1.3,dmg:12,color:'#5a6478',head:'#3a4254',move:'fly',shoot:false,winged:true,xp:11,gold:.40},
 };
 
-// WAND TIERS — gold-forced upgrade ladder (Wood→Mythic), blends our thunder feel
+// WAND TIERS — a focused ladder from Wood Wand to Singularity Wand. Every
+// tier earns exactly one new, clearly-readable trick (never a stack of
+// five mechanics bolted together), and every spell stays inside a narrow
+// forward cone — nothing here ever fires across more than a 90° arc.
 const WANDS = [
- {name:'Wood Wand',cost:0,rarity:'common',desc:'A simple bolt of flame.',cool:10,dmg:3,boltR:7,speed:9,multi:1,spread:0,pierce:0,aoe:0,thunder:false,color:'#ffd24a'},
- {name:'Oak Wand',cost:50,rarity:'common',desc:'Sturdier oak. Bolts erupt in a small blast.',cool:9,dmg:4,boltR:8,speed:10,multi:1,spread:0,pierce:0,aoe:46,aoeDmg:2,thunder:false,color:'#ffd24a'},
- {name:'Twin Oak',cost:120,rarity:'uncommon',desc:'Two parallel bolts, each detonating.',cool:8,dmg:4,boltR:8,speed:10.5,multi:2,spread:0.12,pierce:0,aoe:52,aoeDmg:2,thunder:false,color:'#ffd24a'},
- {name:'Arcane Wand',cost:230,rarity:'rare',desc:'A three-bolt spread blooming into fire.',cool:7,dmg:5,boltR:9,speed:11,multi:3,spread:0.30,pierce:0,aoe:62,aoeDmg:3,thunder:false,color:'#9be3ff'},
- {name:'Piercing Crystal',cost:380,rarity:'rare',desc:'Searing bolts punch through, exploding at each.',cool:7,dmg:6,boltR:9,speed:13,multi:2,spread:0.10,pierce:3,aoe:62,aoeDmg:3,thunder:false,color:'#9be3ff'},
- {name:'Thunder Rod',cost:560,rarity:'epic',desc:'Every impact calls lightning across the field.',cool:6,dmg:7,boltR:10,speed:13,multi:3,spread:0.34,pierce:1,aoe:78,aoeDmg:4,thunder:true,thunderR:140,thunderDmg:7,color:'#bfe0ff'},
- {name:'Storm Crystal',cost:800,rarity:'epic',desc:'Five bolts; thunder leaps between foes.',cool:5,dmg:8,boltR:11,speed:14,multi:5,spread:0.5,pierce:2,aoe:96,aoeDmg:6,thunder:true,thunderR:180,thunderDmg:9,chain:3,color:'#c06aff'},
- {name:'Ancient Wand',cost:1100,rarity:'legendary',desc:'Seven forking bolts; apocalyptic fire and storm.',cool:4,dmg:11,boltR:12,speed:15,multi:7,spread:0.62,pierce:3,aoe:120,aoeDmg:8,thunder:true,thunderR:230,thunderDmg:13,chain:4,color:'#ff9a2e'},
- {name:'Void Wand',cost:1600,rarity:'legendary',desc:'Nine bolts that tear reality; chained void-lightning.',cool:3,dmg:14,boltR:13,speed:16,multi:9,spread:0.72,pierce:5,aoe:140,aoeDmg:11,thunder:true,thunderR:270,thunderDmg:17,chain:5,color:'#c06aff'},
- {name:'Celestial Wand',cost:2300,rarity:'mythic',desc:'The heavens fire with you. A storm without end.',cool:3,dmg:18,boltR:14,speed:17,multi:11,spread:0.8,pierce:6,aoe:160,aoeDmg:14,thunder:true,thunderR:320,thunderDmg:22,chain:6,color:'#ff4d6d'},
- {name:'Mythic Wand',cost:3200,rarity:'mythic',desc:'GODSTORM. The realm itself bends to your wrath.',cool:2,dmg:26,boltR:16,speed:19,multi:13,spread:0.9,pierce:9,aoe:200,aoeDmg:20,thunder:true,thunderR:400,thunderDmg:32,chain:9,color:'#ff4d6d'},
- // ---- crazier endgame tier: each adds a signature mechanic (VS / Brotato inspired) ----
- {name:'Bloodthorn Wand',cost:4200,rarity:'legendary',desc:'Crimson bolts that drink life. Crits heal you for a slice of the damage.',cool:3,dmg:22,boltR:13,speed:16,multi:7,spread:0.5,pierce:4,aoe:130,aoeDmg:12,thunder:false,color:'#ff4d6d',crit:0.30,critMult:2.5,lifesteal:0.10},
- {name:'Saw Halo',cost:5000,rarity:'epic',desc:'Three orbiting saw-blades shred everything you brush past — fire bolts as normal.',cool:4,dmg:18,boltR:12,speed:15,multi:5,spread:0.4,pierce:3,aoe:90,aoeDmg:8,thunder:false,color:'#9be3ff',orbit:3,orbitDmg:9,orbitR:78},
- {name:'Boomerang Staff',cost:6000,rarity:'epic',desc:'Bolts curve back like a returning scythe, hitting on the way out AND back.',cool:4,dmg:24,boltR:14,speed:16,multi:5,spread:0.45,pierce:6,aoe:110,aoeDmg:10,thunder:true,thunderR:180,thunderDmg:12,chain:3,color:'#8be36b',boomerang:true},
- {name:'Seeking Star',cost:7500,rarity:'legendary',desc:'Homing starfire hunts the nearest foe. Pierces, detonates, and rains chained lightning.',cool:3,dmg:28,boltR:14,speed:14,multi:7,spread:0.55,pierce:8,aoe:150,aoeDmg:14,thunder:true,thunderR:240,thunderDmg:18,chain:5,color:'#ffd24a',homing:0.12,crit:0.2,critMult:2},
- {name:'Glacial Scepter',cost:9000,rarity:'legendary',desc:'Bolts leave freezing fields that slow all enemies caught inside to a crawl.',cool:3,dmg:30,boltR:15,speed:16,multi:9,spread:0.6,pierce:6,aoe:150,aoeDmg:15,thunder:true,thunderR:240,thunderDmg:18,chain:5,color:'#9be3ff',slowField:{r:130,life:120,factor:0.4},crit:0.2,critMult:2},
- {name:'Singularity Wand',cost:12000,rarity:'mythic',desc:'Each impact tears open a black hole that drags foes in before annihilating them.',cool:3,dmg:34,boltR:16,speed:17,multi:9,spread:0.7,pierce:8,aoe:170,aoeDmg:18,thunder:true,thunderR:300,thunderDmg:24,chain:7,color:'#c06aff',singularity:{r:220,pull:2.6,life:60},crit:0.25,critMult:2.5,lifesteal:0.06},
- {name:'Wand of the Maelstrom',cost:16000,rarity:'mythic',desc:'Eleven homing bolts, orbiting blades, freeze-fields, chained storm — total annihilation.',cool:2,dmg:40,boltR:17,speed:18,multi:11,spread:0.85,pierce:10,aoe:200,aoeDmg:24,thunder:true,thunderR:360,thunderDmg:34,chain:9,color:'#ff9a2e',homing:0.1,orbit:4,orbitDmg:16,orbitR:90,slowField:{r:150,life:100,factor:0.45},crit:0.3,critMult:2.5,lifesteal:0.08},
- {name:'AVATAR',cost:24000,rarity:'mythic',desc:'You are no longer a wizard. Thirteen seeking suns, a halo of blades, black holes, an endless storm, and crits that heal. The realm cannot hold you.',cool:2,dmg:60,boltR:20,speed:20,multi:13,spread:0.95,pierce:14,aoe:260,aoeDmg:36,thunder:true,thunderR:460,thunderDmg:52,chain:12,color:'#ff4d6d',homing:0.14,orbit:6,orbitDmg:28,orbitR:104,slowField:{r:170,life:90,factor:0.5},singularity:{r:240,pull:3,life:55},crit:0.4,critMult:3,lifesteal:0.12},
- // ---- new attack archetypes (shotgun / ricochet / railgun / cluster-split / nova) ----
- {name:'Scattergun Rod',cost:5500,rarity:'epic',desc:'A point-blank SHOTGUN blast — a wide cone of short-range pellets that erupt in fire.',cool:7,dmg:9,boltR:8,speed:13,multi:9,spread:0.16,pierce:1,aoe:60,aoeDmg:6,thunder:false,color:'#ff9a2e',pelletLife:34},
- {name:'Ricochet Wand',cost:7000,rarity:'epic',desc:'Bolts RICOCHET off the air, bouncing between foes up to five times.',cool:5,dmg:20,boltR:11,speed:15,multi:3,spread:0.3,pierce:2,aoe:80,aoeDmg:8,thunder:true,thunderR:160,thunderDmg:10,chain:3,color:'#5bc0ff',bounce:5},
- {name:'Railgun Staff',cost:9500,rarity:'legendary',desc:'Charges a devastating RAILGUN BEAM that instantly pierces everything in a line.',cool:14,dmg:70,boltR:0,speed:0,multi:1,spread:0,pierce:999,aoe:90,aoeDmg:18,thunder:true,thunderR:200,thunderDmg:20,chain:4,color:'#bfe0ff',beam:{len:900,width:26},crit:0.25,critMult:2.5},
- {name:'Cluster Wand',cost:13000,rarity:'mythic',desc:'Bolts BURST into a ring of fiery shards on impact — death blooms outward.',cool:5,dmg:26,boltR:13,speed:16,multi:5,spread:0.5,pierce:4,aoe:120,aoeDmg:12,thunder:true,thunderR:220,thunderDmg:16,chain:4,color:'#ff7a18',split:{count:8,dmg:12,speed:7,life:26},crit:0.2,critMult:2},
- {name:'Nova Wand',cost:18000,rarity:'mythic',desc:'Forget aiming. Unleash a full 360° NOVA of bolts every shot — annihilation in all directions.',cool:6,dmg:30,boltR:13,speed:14,multi:20,spread:0.314,pierce:6,aoe:130,aoeDmg:14,thunder:true,thunderR:240,thunderDmg:18,chain:5,color:'#c06aff',nova:true,homing:0.04,crit:0.25,critMult:2.5,lifesteal:0.06},
+ {name:'Wood Wand',cost:0,rarity:'common',elem:'nature',desc:'A simple, honest bolt of arcane spark.',cool:10,dmg:4,boltR:7,speed:9,multi:1,spread:0,pierce:0,aoe:0},
+ {name:'Ember Wand',cost:70,rarity:'common',elem:'fire',desc:'Bolts erupt in a small fiery blast on impact.',cool:9,dmg:5,boltR:8,speed:10,multi:1,spread:0,pierce:0,aoe:50,aoeDmg:3},
+ {name:'Twin Fang',cost:170,rarity:'uncommon',elem:'ice',desc:'Two bolts fly out in a tight, parallel line.',cool:8,dmg:6,boltR:8,speed:10.5,multi:2,spread:0.10,pierce:0,aoe:0},
+ {name:'Piercing Lance',cost:340,rarity:'rare',elem:'arcane',desc:'A searing lance punches clean through several foes.',cool:8,dmg:12,boltR:9,speed:13,multi:1,spread:0,pierce:4,aoe:0},
+ {name:'Thunder Rod',cost:560,rarity:'rare',elem:'storm',desc:'Every impact calls chain lightning across nearby foes.',cool:7,dmg:9,boltR:9,speed:12,multi:1,spread:0,pierce:0,aoe:0,thunder:true,thunderR:150,thunderDmg:8,chain:3},
+ {name:'Ricochet Wand',cost:820,rarity:'epic',elem:'ice',desc:'Bolts skip between foes instead of dying, bouncing again and again.',cool:6,dmg:13,boltR:10,speed:14,multi:1,spread:0,pierce:0,aoe:0,bounce:5},
+ {name:'Homing Comet',cost:1150,rarity:'epic',elem:'fire',desc:'A blazing star bends through the air, hunting the nearest foe.',cool:6,dmg:15,boltR:10,speed:9,multi:1,spread:0,pierce:0,aoe:38,aoeDmg:6,homing:0.13},
+ {name:'Boomerang Staff',cost:1600,rarity:'legendary',elem:'nature',desc:'The bolt arcs out and returns, striking on the way out and back.',cool:5,dmg:19,boltR:11,speed:13,multi:1,spread:0,pierce:2,aoe:0,boomerang:true},
+ {name:'Railgun Staff',cost:2200,rarity:'legendary',elem:'storm',desc:'Charges an instant beam that pierces everything in a line.',cool:16,dmg:60,boltR:0,speed:0,multi:1,spread:0,pierce:999,aoe:0,beam:{len:900,width:24},crit:0.2,critMult:2.2},
+ {name:'Saw Halo',cost:3000,rarity:'legendary',elem:'arcane',desc:'Orbiting blades shred anything that strays close, while bolts still fly.',cool:6,dmg:14,boltR:10,speed:13,multi:2,spread:0.10,pierce:0,aoe:0,orbit:3,orbitDmg:10,orbitR:82},
+ {name:'Glacial Scepter',cost:4200,rarity:'mythic',elem:'ice',desc:'Bolts shatter into freezing fields that slow every foe caught inside.',cool:5,dmg:24,boltR:12,speed:14,multi:2,spread:0.10,pierce:0,aoe:0,slowField:{r:140,life:120,factor:0.4}},
+ {name:'Singularity Wand',cost:6000,rarity:'mythic',elem:'arcane',desc:'Bolts tear open gravity wells that drag foes in and crush them.',cool:4,dmg:32,boltR:13,speed:15,multi:3,spread:0.45,pierce:0,aoe:0,singularity:{r:220,pull:2.6,life:60},crit:0.22,critMult:2.3,lifesteal:0.05},
 ];
-
-// Assign an element to each wand by its flavor (keeps the data tables untouched above).
-(function assignWandElements(){
-  const map={
-    'Wood Wand':'nature','Oak Wand':'fire','Twin Oak':'fire','Arcane Wand':'arcane',
-    'Piercing Crystal':'ice','Thunder Rod':'storm','Storm Crystal':'storm','Ancient Wand':'arcane',
-    'Void Wand':'arcane','Celestial Wand':'storm','Mythic Wand':'arcane',
-    'Bloodthorn Wand':'nature','Saw Halo':'ice','Boomerang Staff':'nature','Seeking Star':'fire',
-    'Glacial Scepter':'ice','Singularity Wand':'arcane','Wand of the Maelstrom':'storm','AVATAR':'arcane',
-    'Scattergun Rod':'fire','Ricochet Wand':'ice','Railgun Staff':'storm','Cluster Wand':'fire','Nova Wand':'arcane',
-  };
-  for(const w of WANDS){ w.elem=map[w.name]||'arcane';
-    const E=ELEMENTS[w.elem];
-    // tie projectile look/speed/AoE to the element (subtle, keeps balance)
-    w.color=E.color;
-    w.speed=+(w.speed*E.speedMul).toFixed(2);
-    if(w.aoe) w.aoe=Math.round(w.aoe*E.aoeMul);
-  }
-})();
+// tie each wand's projectile colour to its element
+for(const w of WANDS) w.color=ELEMENTS[w.elem].color;
 
 // Give each enemy archetype an elemental "body" (what it's made of => resists same, weak to counter).
 (function assignEnemyElements(){
@@ -633,7 +719,7 @@ const GEAR_PREFIX=['Worn','Sturdy','Fine','Glowing','Runed','Ancient','Astral'];
 // WORLD — central authoritative state (serializable; server could own it)
 // =====================================================================
 const World = {
-  seed:0, noiseA:null, noiseB:null,
+  seed:0, frontierStage:0, mode:'journey', noiseA:null, noiseB:null,
   player:null, enemies:[], bolts:[], eBolts:[], coins:[], drops:[], particles:[],
   shockwaves:[], lightnings:[], fields:[], beamFx:null, floaters:[], flash:0, muzzle:null, boss:null, bossActive:false,
   kills:0, gold:0, wave:1, spawnCd:0, toSpawn:0, time:0,
@@ -647,24 +733,41 @@ const World = {
     Upgrades.queue=0; Upgrades.open=false;
     this.castMod=1; this.enemySpeedMod=1; this.goldMod=1; this.critMod=0;
     this.corruptEnemyDmg=1; this.lastBiome=null;
+    this.frontierStage=0; Boss.endlessTier=0; Boss.endlessCycle=0;
     Corruption.reset();
     Endgame.reset();
-    Boss.tier=0;
     document.getElementById('levelup').classList.remove('show');
   },
-  // biome lookup from world position via two noise fields (temp / moisture)
+  // stage lookup from world Y — pure band lookup, bottom (easy) to top (hard). Journey only.
+  stageIndexAt(y){
+    const BH=CONFIG.world.bandHeight;
+    const i=Math.floor((CONFIG.world.height-y)/BH);
+    return clamp(i,0,STAGES.length-1);
+  },
   biomeAt(x,y){
-    const s=this.seed;
-    const cx=CONFIG.world.size/2, cy=CONFIG.world.size/2;
-    const distC=dist(x,y,cx,cy)/(CONFIG.world.size*0.5); // 0 center .. 1 edge
-    const n=this.noiseA(x/900,y/900);
-    const m=this.noiseB(x/1100+5,y/1100+5);
-    // center is safe Plains; difficulty grows outward (doc: harder farther out)
-    if(distC>0.82) return BIOMES.corrupt;
-    if(distC>0.66) return n>0.5?BIOMES.ruins:BIOMES.volcano;
-    if(distC>0.5)  return m>0.55?BIOMES.snow:(n>0.5?BIOMES.desert:BIOMES.swamp);
-    if(distC>0.3)  return n>0.5?BIOMES.forest:BIOMES.swamp;
-    return n>0.45?BIOMES.plains:BIOMES.forest;
+    if(this.mode==='endless'){
+      // original radial layout: safe Plains at the center, harder biomes outward
+      const cx=CONFIG.world.size/2, cy=CONFIG.world.size/2;
+      const distC=dist(x,y,cx,cy)/(CONFIG.world.size*0.5);
+      const n=this.noiseA(x/900,y/900);
+      const m=this.noiseB(x/1100+5,y/1100+5);
+      if(distC>0.82) return BIOMES.corrupt;
+      if(distC>0.66) return n>0.5?BIOMES.ruins:BIOMES.volcano;
+      if(distC>0.5)  return m>0.55?BIOMES.snow:(n>0.5?BIOMES.desert:BIOMES.swamp);
+      if(distC>0.3)  return n>0.5?BIOMES.forest:BIOMES.swamp;
+      return n>0.45?BIOMES.plains:BIOMES.forest;
+    }
+    return STAGES[this.stageIndexAt(y)];
+  },
+  // top boundary of the current frontier stage — player is walled out above this
+  // until that stage's warden is defeated. Journey only.
+  ceilingY(){
+    return STAGES[this.frontierStage].topY;
+  },
+  // Endless-mode difficulty multiplier: compounds every wave, forever — this
+  // is what makes "no end" actually mean unwinnable eventually, not just long.
+  endlessPower(){
+    return Math.pow(1.045, Math.max(0,this.wave-1));
   },
 };
 
@@ -693,8 +796,10 @@ const Camera = {
   zoom:0.80,                         // <1 = camera pulled further back (more world on screen)
   vw(){return this.w/this.zoom;},    // visible world width
   vh(){return this.h/this.zoom;},    // visible world height
-  follow(p){ this.x=clamp(p.x-this.vw()/2,0,Math.max(0,CONFIG.world.size-this.vw()));
-             this.y=clamp(p.y-this.vh()/2,0,Math.max(0,CONFIG.world.size-this.vh())); },
+  follow(p){ const ww=World.mode==='endless'?CONFIG.world.size:CONFIG.world.width,
+               wh=World.mode==='endless'?CONFIG.world.size:CONFIG.world.height;
+             this.x=clamp(p.x-this.vw()/2,0,Math.max(0,ww-this.vw()));
+             this.y=clamp(p.y-this.vh()/2,0,Math.max(0,wh-this.vh())); },
   sx(x){return x-this.x;}, sy(y){return y-this.y;}
 };
 
@@ -837,7 +942,10 @@ const UI = {
     const p=World.player;
     document.getElementById('lvlv').textContent=p.level;
     document.getElementById('biomev').textContent=World.biomeAt(p.x,p.y).name;
-    document.getElementById('wavev').textContent=World.wave;
+    document.getElementById('stagev').textContent = World.mode==='endless'
+      ? (Boss.endlessTier+1)+' / '+BOSSES.length+(Boss.endlessCycle>0?'  (lap '+(Boss.endlessCycle+1)+')':'')
+      : (World.frontierStage+1)+' / '+STAGES.length;
+    document.getElementById('wavev').textContent=World.mode==='endless'?Math.min(World.wave,99):World.wave;
     document.getElementById('killsv').textContent=World.kills;
     document.getElementById('goldv').textContent=World.gold;
     { const c=Math.round(Corruption.v);
@@ -989,8 +1097,10 @@ const Inventory = {
 // =====================================================================
 function makePlayer(){
   const c=CONFIG.player;
+  const spawnX=World.mode==='endless'?CONFIG.world.size/2:CONFIG.world.width/2;
+  const spawnY=World.mode==='endless'?CONFIG.world.size/2:CONFIG.world.height-300;
   return {
-    x:CONFIG.world.size/2, y:CONFIG.world.size/2, r:14,
+    x:spawnX, y:spawnY, r:14,
     baseSpeed:c.speed, speed:c.speed,
     maxhp:c.hp, hp:c.hp, maxmp:c.mp, mp:c.mp,
     def:0, armAngle:0, cool:0, hurt:0,
@@ -1067,9 +1177,12 @@ const Combat = {
     if(w.glass){ const miss=1-clamp(p.hp/p.maxhp,0,1); dmg=Math.round(dmg*(1+miss*1.1)); } // Volatile Core
     let count=w.multi+(p.mMulti||0);
     let spread=count>1?w.spread:0;
-    if(w.nova){ spread=6.283/count; } // full circle
+    // Safety net: whatever mutations/upgrades stack onto bolt count or spread,
+    // the total firing cone can never exceed 90 degrees.
+    const MAX_ARC=Math.PI/2;
+    if(count>1 && (count-1)*spread>MAX_ARC) spread=MAX_ARC/(count-1);
     for(let i=0;i<count;i++){
-      const off=w.nova ? i*spread : (i-(count-1)/2)*spread;
+      const off=(i-(count-1)/2)*spread;
       const ba=a+off;
       World.bolts.push({x:wx,y:wy,vx:Math.cos(ba)*w.speed,vy:Math.sin(ba)*w.speed,
         r:w.boltR,life:w.pelletLife||(w.boomerang?70:90),dmg,pierce:w.pierce||0,hit:new Set(),
@@ -1160,14 +1273,22 @@ const Combat = {
     boss.hp-=dmg; boss.hit=8; boss.lastHit=boss.t; // DPS-check timer
     if(boss.hp<=0 && !boss.dead){
       boss.dead=true; SFX.bossDie();
-      if(Boss.tier<BOSSES.length-1){
-        const bx=boss.x, by=boss.y;
-        document.getElementById('bossbar').classList.remove('show');
-        UI.toast(boss.B.name+' falls... but the Core is not yet still.','#ff9a2e');
-        World.boss=null;
-        Boss.tier++;
-        setTimeout(()=>{ if(World.running) Boss.spawn(bx,by); },2600);
+      document.getElementById('bossbar').classList.remove('show');
+      World.boss=null; World.bossActive=false;
+      if(World.mode==='endless'){
+        if(Boss.endlessTier<BOSSES.length-1){
+          UI.toast(boss.B.name+' falls... but the Core is not yet still.','#ff9a2e');
+          Boss.endlessTier++;
+        } else {
+          UI.toast(boss.B.name+' falls — and the Wardens rise again, stronger.','#ff4d6d');
+          Boss.endlessTier=0; Boss.endlessCycle++;
+        }
+        // no win condition here: the gauntlet just loops, ever harder
+      } else if(World.frontierStage<STAGES.length-1){
+        UI.toast(boss.B.name+' falls... the way up opens.','#ff9a2e');
+        World.frontierStage++;
       } else {
+        UI.toast(boss.B.name+' falls. The Storm quiets.','#ff9a2e');
         Game.win();
       }
     }
@@ -1211,14 +1332,22 @@ const Spawner = {
   spawnOne(){
     const p=World.player;
     const ang=Math.random()*6.28, d=Math.max(Camera.vw(),Camera.vh())*0.6;
-    let x=clamp(p.x+Math.cos(ang)*d,40,CONFIG.world.size-40),
-        y=clamp(p.y+Math.sin(ang)*d,40,CONFIG.world.size-40);
+    let x,y;
+    if(World.mode==='endless'){
+      x=clamp(p.x+Math.cos(ang)*d,40,CONFIG.world.size-40);
+      y=clamp(p.y+Math.sin(ang)*d,40,CONFIG.world.size-40);
+    } else {
+      x=clamp(p.x+Math.cos(ang)*d,40,CONFIG.world.width-40);
+      y=clamp(p.y+Math.sin(ang)*d,40,CONFIG.world.height-40);
+      y=Math.max(y, World.ceilingY()+30); // never spawn above the current frontier ceiling
+    }
     const b=World.biomeAt(x,y);
     const type=pick(b.enemies); const base=ENEMIES[type];
     const scale=1+(b.diff-1)*0.6;
-    // ENEMY HEALTH — bumped up overall (1.8x base) plus steeper per-wave growth so fights stay
-    // meaningful for longer and the endgame doesn't get trivialized by sheer DPS stacking.
-    let hp=Math.round(base.hp*scale*1.8*(1+World.wave*0.08));
+    // ENEMY HEALTH — bumped up overall (1.8x base). Journey grows linearly per wave;
+    // Endless compounds exponentially forever so it truly never stops getting worse.
+    const growth = World.mode==='endless' ? World.endlessPower() : (1+World.wave*0.08);
+    let hp=Math.round(base.hp*scale*1.8*growth);
     const elite=Math.random()<0.06+b.diff*0.015;
     let r=base.r, dmg=Math.round(base.dmg*scale), spd=base.speed*(1+(b.diff-1)*0.04);
     if(elite){ hp=Math.round(hp*3.4); r=Math.round(r*1.5); dmg=Math.round(dmg*1.5); spd*=0.92; }
@@ -1228,7 +1357,7 @@ const Spawner = {
   },
   update(){
     if(World.bossActive) return;
-    if(World.toSpawn>0){ World.spawnCd--;
+    if(World.toSpawn>0 && World.enemies.length<220){ World.spawnCd--;
       if(World.spawnCd<=0){ this.spawnOne(); World.toSpawn--; World.spawnCd=Math.max(6,30-World.wave*1.5); }
     } else if(World.enemies.length===0){
       World.wave++; World.toSpawn=this.forWave(World.wave);
@@ -1257,7 +1386,7 @@ const Spawner = {
 };
 
 // =====================================================================
-// BOSS MANAGER — bullet-hell wardens guarding the Corrupted Core
+// BOSS MANAGER — bullet-hell wardens guarding the climb
 // =====================================================================
 // ENDGAME — classic "approaching the final area" tropes
 //   stage 0: nothing · 1: distant dread · 2: warning banner · 3: boss
@@ -1267,9 +1396,13 @@ const Endgame = {
   reset(){ this.stage=0; this.intensity=0; this.shake=0;
     document.getElementById('warnBanner').classList.remove('show');
     document.getElementById('bossIntro').classList.remove('show'); },
-  coreDist(){ const p=World.player; return dist(p.x,p.y,CONFIG.world.size/2,CONFIG.world.size/2)/(CONFIG.world.size*0.5); },
+  progress(){ // 0 safe .. 1 deep-in-danger; radial for Endless, vertical for Journey
+    const p=World.player;
+    if(World.mode==='endless') return dist(p.x,p.y,CONFIG.world.size/2,CONFIG.world.size/2)/(CONFIG.world.size*0.5);
+    return clamp((CONFIG.world.height-p.y)/CONFIG.world.height,0,1);
+  },
   update(){
-    const d=this.coreDist();
+    const d=this.progress();
     this.intensity=clamp((d-0.6)/0.26,0,1);
     if(this.shake>0)this.shake--;
     if(this.stage<1 && d>0.62){ this.stage=1;
@@ -1288,8 +1421,9 @@ const Endgame = {
 };
 
 // =====================================================================
-// BOSSES — a gauntlet of Wardens guarding the Core. Each is tougher,
-// faster, and meaner than the last; the final one is the true test.
+// BOSSES — one Warden gates each stage of the climb (Journey; boss data
+// lives on STAGES[i].boss). Endless mode instead cycles through this
+// original 4-Warden gauntlet forever, growing stronger every lap.
 // =====================================================================
 const BOSSES = [
   {name:'ZARGOTH', title:'Warden of the Core', hp:3000, dmgMul:1.00, speedMul:1.00, atkCdMul:1.00, color:'#ff4d6d'},
@@ -1297,46 +1431,88 @@ const BOSSES = [
   {name:'VYRELIS', title:'Eclipse of the Storm', hp:8200, dmgMul:1.50, speedMul:1.20, atkCdMul:0.72, color:'#5bc0ff'},
   {name:'THE HOLLOW KING', title:'Final Warden of the Core', hp:13000, dmgMul:1.90, speedMul:1.35, atkCdMul:0.60, color:'#c06aff'},
 ];
+const ENDLESS_CHECKS=['dps','hazard','adapt','invert']; // one check per Endless Warden, cycling with BOSSES
+
+const FINAL_CYCLE=['dps','hazard','adapt','swarm','invert']; // the Hollow King cycles every check as it weakens
 
 const Boss = {
-  tier:0,
+  endlessTier:0, endlessCycle:0,
   maybeTrigger(){
-    const p=World.player;
-    const distC=dist(p.x,p.y,CONFIG.world.size/2,CONFIG.world.size/2)/(CONFIG.world.size*0.5);
-    if(distC>0.86 && !World.bossActive && !World.boss){ this.tier=0; this.spawn(p.x,p.y); }
+    if(World.mode==='endless'){
+      const p=World.player;
+      const distC=dist(p.x,p.y,CONFIG.world.size/2,CONFIG.world.size/2)/(CONFIG.world.size*0.5);
+      if(distC>0.86 && !World.bossActive && !World.boss){ this.spawnEndless(p.x,p.y); }
+      return;
+    }
+    const p=World.player, stage=STAGES[World.frontierStage];
+    if(p.y<=stage.topY+220 && !World.bossActive && !World.boss){ this.spawn(p.x,p.y); }
   },
   topElem(){ const u=World.player.elemUse; let best='arcane',bv=-1;
     for(const k in u){ if(u[k]>bv){ bv=u[k]; best=k; } } return best; },
-  spawn(x,y){
-    const B=BOSSES[this.tier];
-    World.boss={x,y:y-200,r:64+this.tier*4,hp:B.hp,maxhp:B.hp,hit:0,t:0,phase:0,dead:false,atkCd:80,eye:0,lastHit:0,B};
-    World.bossActive=true;
-    // BUILD CHECK per warden (doc §5): each tests a different thing, not just raw power
+  // BUILD CHECK per warden (doc §5): each tests a different thing, not just raw power
+  applyCheck(boss,kind){
+    boss.dpsCheck=boss.hazard=boss.adapt=boss.swarm=boss.invert=false;
     World.player.dmgDamp=1;
-    const boss=World.boss, t=this.tier;
-    boss.check='';
-    if(t===0){ boss.dpsCheck=true; boss.check='DPS CHECK — regenerates unless you keep hurting it'; }
-    else if(t===1){ boss.hazard=true; boss.check='MOBILITY CHECK — the arena erupts; do not stand still'; }
-    else if(t===2){ boss.adapt=true; boss.resistElem=this.topElem();
+    if(kind==='dps'){ boss.dpsCheck=true; boss.check='DPS CHECK — regenerates unless you keep hurting it'; }
+    else if(kind==='hazard'){ boss.hazard=true; boss.check='MOBILITY CHECK — the arena erupts; do not stand still'; }
+    else if(kind==='adapt'){ boss.adapt=true; boss.resistElem=this.topElem();
       boss.check='ADAPTATION — hardens against your favorite element ('+(ELEMENTS[boss.resistElem]?ELEMENTS[boss.resistElem].name:'?')+')'; }
-    else { boss.invert=true; World.player.dmgDamp=0.85;
-      boss.check='INVERSION — your raw power is dampened; skill decides this'; }
+    else if(kind==='swarm'){ boss.swarm=true; boss.check='SWARM CALL — summons flood in; thin the pack'; }
+    else { boss.invert=true; World.player.dmgDamp=0.85; boss.check='INVERSION — your raw power is dampened; skill decides this'; }
+  },
+  spawn(x,y){
+    const stage=STAGES[World.frontierStage], B=stage.boss;
+    World.boss={x,y:y-200,r:64+World.frontierStage*4,hp:B.hp,maxhp:B.hp,hit:0,t:0,phase:0,dead:false,atkCd:80,eye:0,lastHit:0,B,
+      finalBoss:B.check==='final', finalPhase:0};
+    World.bossActive=true;
+    const boss=World.boss;
+    this.applyCheck(boss, B.check==='final' ? FINAL_CYCLE[0] : B.check);
     document.getElementById('bossName').textContent=B.name+', '+B.title;
     document.getElementById('bossbar').classList.add('show');
     document.getElementById('bossFill').style.width='100%';
     document.getElementById('bossIntroName').textContent=B.name;
     const sub=document.getElementById('bossIntroSub'); if(sub) sub.textContent=B.title;
     Endgame.onBoss();
-    UI.toast(this.tier===0?'The Warden awakens.':B.name+' rises to meet you.',B.color);
+    UI.toast(World.frontierStage===0?'The Warden awakens.':B.name+' rises to meet you.',B.color);
+    if(boss.check) setTimeout(()=>{ if(World.boss===boss) UI.toast('⚔ '+boss.check,'#ffcf3a'); },900);
+    SFX.boss();
+  },
+  // Endless: the original 4-Warden gauntlet, but it never ends — clearing
+  // THE HOLLOW KING just loops back to ZARGOTH, stronger than before.
+  spawnEndless(x,y){
+    const B=BOSSES[this.endlessTier];
+    const mul=World.endlessPower();
+    const scaled=Object.assign({},B,{hp:Math.round(B.hp*mul), dmgMul:B.dmgMul*Math.min(Math.sqrt(mul),3)});
+    World.boss={x,y:y-200,r:64+this.endlessTier*4,hp:scaled.hp,maxhp:scaled.hp,hit:0,t:0,phase:0,dead:false,atkCd:80,eye:0,lastHit:0,B:scaled};
+    World.bossActive=true;
+    const boss=World.boss;
+    this.applyCheck(boss, ENDLESS_CHECKS[this.endlessTier]);
+    document.getElementById('bossName').textContent=B.name+', '+B.title;
+    document.getElementById('bossbar').classList.add('show');
+    document.getElementById('bossFill').style.width='100%';
+    document.getElementById('bossIntroName').textContent=B.name;
+    const sub=document.getElementById('bossIntroSub'); if(sub) sub.textContent=B.title;
+    Endgame.onBoss();
+    UI.toast((this.endlessTier===0&&this.endlessCycle===0)?'The Warden awakens.':B.name+' rises to meet you.',B.color);
     if(boss.check) setTimeout(()=>{ if(World.boss===boss) UI.toast('⚔ '+boss.check,'#ffcf3a'); },900);
     SFX.boss();
   },
   update(){
     const boss=World.boss, p=World.player; if(!boss||boss.dead) return;
-    const B=boss.B||BOSSES[this.tier];
+    const B=boss.B;
     boss.t++; boss.eye+=0.05; if(boss.hit>0)boss.hit--;
     const hpR=boss.hp/boss.maxhp;
     boss.phase = hpR<0.33?2 : hpR<0.66?1 : 0;
+    // the Hollow King alone cycles through every build-check as it weakens
+    if(boss.finalBoss){
+      const wantPhase = hpR<0.2?4 : hpR<0.4?3 : hpR<0.6?2 : hpR<0.8?1 : 0;
+      if(wantPhase>boss.finalPhase){
+        boss.finalPhase=wantPhase;
+        this.applyCheck(boss,FINAL_CYCLE[boss.finalPhase]);
+        UI.toast('⚔ '+boss.check,'#ffcf3a');
+        FX.ring(boss.x,boss.y,boss.r*1.6,20,'#c06aff');
+      }
+    }
     // --- build-check behaviors (doc §5) ---
     if(boss.dpsCheck && boss.t-boss.lastHit>110){           // regenerates unless you keep hurting it
       boss.hp=Math.min(boss.maxhp, boss.hp+boss.maxhp*0.0009);
@@ -1351,12 +1527,14 @@ const Boss = {
     if(boss.adapt && boss.t%240===0){ boss.resistElem=Boss.topElem(); } // re-reads your favorite element
     const a=Math.atan2(p.y-boss.y,p.x-boss.x);
     boss.x+=Math.cos(a)*(1.0+boss.phase*0.5)*B.speedMul; boss.y+=Math.sin(a)*(1.0+boss.phase*0.5)*B.speedMul;
-    boss.x=clamp(boss.x,boss.r,CONFIG.world.size-boss.r); boss.y=clamp(boss.y,boss.r,CONFIG.world.size-boss.r);
+    if(World.mode==='endless'){ boss.x=clamp(boss.x,boss.r,CONFIG.world.size-boss.r); boss.y=clamp(boss.y,boss.r,CONFIG.world.size-boss.r); }
+    else { boss.x=clamp(boss.x,boss.r,CONFIG.world.width-boss.r); boss.y=clamp(boss.y,boss.r,CONFIG.world.height-boss.r); }
     if(dist(boss.x,boss.y,p.x,p.y)<boss.r+p.r) Combat.hurtPlayer(Math.round(24*B.dmgMul));
     boss.atkCd--;
     if(boss.atkCd<=0){
       boss.atkCd=Math.max(20,Math.round((80-boss.phase*18)*B.atkCdMul));
-      const pat=randi(0,2+boss.phase);
+      let pat=randi(0,2+boss.phase);
+      if(boss.swarm && Math.random()<0.45) pat=3;         // SWARM CALL wardens lean hard on summon-adds
       if(pat===0){ // radial ring
         const n=14+boss.phase*8; for(let k=0;k<n;k++){const ba=k/n*6.28+boss.t*0.02;
           World.eBolts.push({x:boss.x,y:boss.y,vx:Math.cos(ba)*3.4,vy:Math.sin(ba)*3.4,r:9,life:200,dmg:Math.round(16*B.dmgMul),color:B.color});}
@@ -1368,7 +1546,8 @@ const Boss = {
           World.eBolts.push({x:boss.x,y:boss.y,vx:Math.cos(ba)*4,vy:Math.sin(ba)*4,r:8,life:200,dmg:Math.round(14*B.dmgMul),color:'#e8d0ff'});}
       } else { // summon adds
         for(let s=0;s<4;s++){const ang2=Math.random()*6.28,d=140;
-          const base=ENEMIES.gargoyle, hp=Math.round(40*(1+Boss.tier*0.5));
+          const base=ENEMIES.gargoyle, addTier=World.mode==='endless'?(Boss.endlessTier+Boss.endlessCycle*BOSSES.length):World.frontierStage,
+            hp=Math.round(40*(1+addTier*0.5));
           World.enemies.push({x:boss.x+Math.cos(ang2)*d,y:boss.y+Math.sin(ang2)*d,r:18,type:'gargoyle',def:base,bi:5,
             hp,maxhp:hp,speed:2.2,dmg:Math.round(16*B.dmgMul),hit:0,t:0,fireCd:0,dashT:0});}
       }
@@ -1479,6 +1658,19 @@ const Shop = {
 };
 
 // =====================================================================
+// GAME MODES — same spells, wands, mutations, and origins in both; only
+// the world shape, boss progression, and ending differ.
+// =====================================================================
+const GAME_MODES = [
+  {id:'journey', name:'Journey', c:'#5fd0ff',
+   tag:'A vertical climb through 6 staged biomes',
+   d:'Fight upward from the Sunlit Plains to the Stormscar. One Warden gates the top of every stage — clear all six and the realm is yours.'},
+  {id:'endless', name:'Endless', c:'#ff9a2e',
+   tag:'The original radial gauntlet — now with no end',
+   d:'Push outward from a safe center through eight biomes toward the Corrupted Core. The Warden gauntlet loops forever, waves climb past 99, and the storm only ever gets worse. There is no winning here — only surviving.'},
+];
+
+// =====================================================================
 // ARCANE ORIGINS — each run begins with a chosen identity: a flavor,
 // a boon, and a curse. (design doc §8 "origin selection")
 // =====================================================================
@@ -1568,7 +1760,7 @@ const Mutations = {
 
 // =====================================================================
 // ARCANE CORRUPTION — a run-wide chaos meter. It rises as you take power
-// (mutations, wand tiers) and as you push toward the Core. At thresholds
+// (mutations, wand tiers) and as you push higher up the Storm. At thresholds
 // the run transforms: you gain power, and the world bends back.
 // (design doc §4 "build corruption — the fun chaos engine")
 // =====================================================================
@@ -1579,7 +1771,7 @@ const Corruption = {
   add(n){ this.v=clamp(this.v+n,0,100); this.checkThresholds(); },
   update(){
     const rate=(World.biomeAt(World.player.x,World.player.y).corruptRate||0);
-    if(rate>0) this.add(rate*0.02);          // seeps in faster near the Core
+    if(rate>0) this.add(rate*0.02);          // seeps in faster the higher you climb
     else this.add(0.003);                    // slow ambient drift
   },
   checkThresholds(){
@@ -1706,9 +1898,11 @@ const Upgrades = {
 // RENDERER
 // =====================================================================
 const Render = {
-  cv:null, ctx:null, mm:null, mmctx:null,
+  cv:null, ctx:null, mm:null, mmctx:null, pb:null, pbctx:null,
   init(){ this.cv=document.getElementById('game'); this.ctx=this.cv.getContext('2d');
-    this.mm=document.getElementById('minimap'); this.mmctx=this.mm.getContext('2d'); this.resize(); },
+    this.mm=document.getElementById('minimap'); this.mmctx=this.mm.getContext('2d');
+    this.pb=document.getElementById('progressbar'); this.pbctx=this.pb.getContext('2d');
+    this.resize(); },
   resize(){ Camera.w=this.cv.width=Math.min(window.innerWidth,1100);
             Camera.h=this.cv.height=Math.min(window.innerHeight,720); },
   ground(){
@@ -1720,6 +1914,11 @@ const Render = {
         const b=World.biomeAt(gx+t/2,gy+t/2);
         ctx.fillStyle=(((gx/t)+(gy/t))%2===0)?b.ground:b.alt;
         ctx.fillRect(Camera.sx(gx),Camera.sy(gy),t,t);
+        if(b.flicker){ // reality-glitch pulse across the Stormscar's tiles
+          const ph=Math.sin(World.time*0.08+(gx*0.013+gy*0.017));
+          if(ph>0.6){ ctx.globalAlpha=0.3*(ph-0.6)/0.4; ctx.fillStyle=b.flickColor;
+            ctx.fillRect(Camera.sx(gx),Camera.sy(gy),t,t); ctx.globalAlpha=1; }
+        }
       }
     }
     // grass/detail blades
@@ -1734,6 +1933,18 @@ const Render = {
     // mood darkness by biome at player
     const mood=World.biomeAt(World.player.x,World.player.y).mood;
     if(mood>0){ ctx.fillStyle='rgba(0,0,8,'+(mood*0.4)+')'; ctx.fillRect(0,0,Camera.vw(),Camera.vh()); }
+  },
+  gateWall(){
+    if(World.mode==='endless' || World.frontierStage>=STAGES.length-1) return; // no gate to show
+    const ctx=this.ctx, wy=World.ceilingY(), sy=Camera.sy(wy);
+    if(sy<-40||sy>Camera.vh()+40) return; // gate is off-screen right now
+    const x0=Camera.sx(0), x1=Camera.sx(CONFIG.world.width);
+    const pulse=0.5+0.5*Math.sin(World.time*0.08);
+    const g=ctx.createLinearGradient(0,sy-16,0,sy+16);
+    g.addColorStop(0,'rgba(192,106,255,0)'); g.addColorStop(.5,'rgba(192,106,255,'+(0.35+0.25*pulse)+')'); g.addColorStop(1,'rgba(192,106,255,0)');
+    ctx.fillStyle=g; ctx.fillRect(x0,sy-16,x1-x0,32);
+    ctx.strokeStyle='#c06aff'; ctx.lineWidth=2+pulse*1.5;
+    ctx.beginPath(); ctx.moveTo(x0,sy); ctx.lineTo(x1,sy); ctx.stroke();
   },
   wizard(p){
     const ctx=this.ctx, px=Camera.sx(p.x),py=Camera.sy(p.y);
@@ -1921,31 +2132,91 @@ const Render = {
     ctx.beginPath(); ctx.moveTo(x-14,y);ctx.lineTo(x-4,y);ctx.moveTo(x+4,y);ctx.lineTo(x+14,y);
     ctx.moveTo(x,y-14);ctx.lineTo(x,y-4);ctx.moveTo(x,y+4);ctx.lineTo(x,y+14); ctx.stroke(); ctx.restore(); },
   minimap(){
-    const c=this.mmctx, S=180, scale=S/CONFIG.world.size;
-    // sample biome colors at a grid
-    const step=CONFIG.world.size/30;
-    for(let gy=0;gy<CONFIG.world.size;gy+=step){
-      for(let gx=0;gx<CONFIG.world.size;gx+=step){
-        const b=World.biomeAt(gx+step/2,gy+step/2);
-        c.fillStyle=b.ground; c.fillRect(gx*scale,gy*scale,step*scale+1,step*scale+1);
+    const c=this.mmctx, S=160;
+    c.clearRect(0,0,S,S);
+    if(World.mode==='endless'){
+      const scale=S/CONFIG.world.size;
+      const step=CONFIG.world.size/24;
+      for(let gy=0;gy<CONFIG.world.size;gy+=step){
+        for(let gx=0;gx<CONFIG.world.size;gx+=step){
+          const b=World.biomeAt(gx+step/2,gy+step/2);
+          c.fillStyle=b.ground; c.fillRect(gx*scale,gy*scale,step*scale+1,step*scale+1);
+        }
       }
+      for(const en of World.enemies){ c.fillStyle=en.def.shoot?'#ff8a5a':'#ff5a5a';
+        c.fillRect(en.x*scale-1,en.y*scale-1,2.5,2.5); }
+      if(World.boss&&!World.boss.dead){ c.fillStyle='#ff2ad0';
+        c.beginPath(); c.arc(World.boss.x*scale,World.boss.y*scale,4,0,6.28); c.fill(); }
+      for(const dr of World.drops){ c.fillStyle=dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
+        c.fillRect(dr.x*scale-1,dr.y*scale-1,2,2); }
+      const p=World.player; c.fillStyle='#ffffff';
+      c.beginPath(); c.arc(p.x*scale,p.y*scale,3,0,6.28); c.fill();
+      c.strokeStyle='#10180c'; c.lineWidth=1; c.stroke();
+      c.strokeStyle='rgba(255,255,255,.4)'; c.lineWidth=1;
+      c.strokeRect(Camera.x*scale,Camera.y*scale,Camera.vw()*scale,Camera.vh()*scale);
+      return;
+    }
+    const scale=S/CONFIG.world.width;
+    const winH=S/scale; // world-units tall shown — one uniform scale on both axes
+    const winTop=clamp(World.player.y-winH/2,0,Math.max(0,CONFIG.world.height-winH));
+    // sample biome colors at a grid, windowed to the player's local slice of the shaft
+    const step=CONFIG.world.width/24;
+    for(let gy=winTop; gy<winTop+winH; gy+=step){
+      for(let gx=0; gx<CONFIG.world.width; gx+=step){
+        const b=World.biomeAt(gx+step/2,gy+step/2);
+        c.fillStyle=b.ground; c.fillRect(gx*scale,(gy-winTop)*scale,step*scale+1,step*scale+1);
+      }
+    }
+    // gate line — current frontier ceiling, if it falls within this window
+    const gy=World.ceilingY();
+    if(World.frontierStage<STAGES.length-1 && gy>=winTop-40 && gy<=winTop+winH+40){
+      c.strokeStyle='#c06aff'; c.lineWidth=2;
+      c.beginPath(); c.moveTo(0,(gy-winTop)*scale); c.lineTo(S,(gy-winTop)*scale); c.stroke();
     }
     // enemies
     for(const en of World.enemies){ c.fillStyle=en.def.shoot?'#ff8a5a':'#ff5a5a';
-      c.fillRect(en.x*scale-1,en.y*scale-1,2.5,2.5); }
+      c.fillRect(en.x*scale-1,(en.y-winTop)*scale-1,2.5,2.5); }
     // boss
     if(World.boss&&!World.boss.dead){ c.fillStyle='#ff2ad0';
-      c.beginPath(); c.arc(World.boss.x*scale,World.boss.y*scale,4,0,6.28); c.fill(); }
+      c.beginPath(); c.arc(World.boss.x*scale,(World.boss.y-winTop)*scale,4,0,6.28); c.fill(); }
     // drops
     for(const dr of World.drops){ c.fillStyle=dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
-      c.fillRect(dr.x*scale-1,dr.y*scale-1,2,2); }
+      c.fillRect(dr.x*scale-1,(dr.y-winTop)*scale-1,2,2); }
     // player
     const p=World.player; c.fillStyle='#ffffff';
-    c.beginPath(); c.arc(p.x*scale,p.y*scale,3,0,6.28); c.fill();
+    c.beginPath(); c.arc(p.x*scale,(p.y-winTop)*scale,3,0,6.28); c.fill();
     c.strokeStyle='#10180c'; c.lineWidth=1; c.stroke();
     // viewport box
     c.strokeStyle='rgba(255,255,255,.4)'; c.lineWidth=1;
-    c.strokeRect(Camera.x*scale,Camera.y*scale,Camera.vw()*scale,Camera.vh()*scale);
+    c.strokeRect(Camera.x*scale,(Camera.y-winTop)*scale,Camera.vw()*scale,Camera.vh()*scale);
+  },
+  progressBar(){
+    const c=this.pbctx; if(!c) return;
+    const W=15, H=160;
+    c.clearRect(0,0,W,H);
+    if(World.mode==='endless'){
+      // fills up to wave 99, then stays full forever while the storm keeps worsening
+      const t=clamp(World.wave/99,0,1), fillH=t*H;
+      const grad=c.createLinearGradient(0,H,0,0);
+      grad.addColorStop(0,'#5bc0ff'); grad.addColorStop(1,'#ff4d6d');
+      c.fillStyle=grad; c.fillRect(0,H-fillH,W,fillH);
+      c.strokeStyle='rgba(255,255,255,.3)'; c.lineWidth=1; c.strokeRect(0.5,0.5,W-1,H-1);
+      return;
+    }
+    const n=STAGES.length, segH=H/n;
+    for(let i=0;i<n;i++){
+      const row=n-1-i, y=row*segH; // stage 0 (grass) drawn at the bottom row
+      c.globalAlpha = i>World.frontierStage ? 0.25 : 1;
+      c.fillStyle=STAGES[i].ground;
+      c.fillRect(0,y,W,segH-1);
+    }
+    c.globalAlpha=1;
+    // player marker — a small triangle at the player's overall ascent progress
+    const t=clamp((CONFIG.world.height-World.player.y)/CONFIG.world.height,0,1);
+    const py=H-t*H;
+    c.fillStyle='#ffffff'; c.strokeStyle='#10180c'; c.lineWidth=1;
+    c.beginPath(); c.moveTo(W,py); c.lineTo(W-8,py-5); c.lineTo(W-8,py+5); c.closePath();
+    c.fill(); c.stroke();
   },
   frame(){
     const ctx=this.ctx;
@@ -1954,13 +2225,14 @@ const Render = {
     if(Endgame.shake>0){ const m=Endgame.shake*0.4; shx=rand(-m,m); shy=rand(-m,m); }
     ctx.save(); ctx.translate(shx,shy); ctx.scale(Camera.zoom,Camera.zoom);
     this.ground();
+    this.gateWall();
     this.drops();
     for(const en of World.enemies) this.enemy(en);
     this.boss();
     this.effects();
     this.wizard(World.player);
     ctx.restore();
-    // creeping crimson dread as you near the Corrupted Core
+    // creeping crimson dread as you near the peak
     if(Endgame.intensity>0.02){ const k=Endgame.intensity;
       const g=ctx.createRadialGradient(Camera.w/2,Camera.h/2,Camera.h*0.25,Camera.w/2,Camera.h/2,Camera.h*0.8);
       g.addColorStop(0,'rgba(60,0,0,0)'); g.addColorStop(1,'rgba(90,0,0,'+(k*0.5)+')');
@@ -1974,6 +2246,7 @@ const Render = {
       g.addColorStop(0,'rgba(255,240,180,0)'); g.addColorStop(1,'rgba(255,220,120,'+a+')');
       ctx.fillStyle=g; ctx.fillRect(0,0,Camera.w,Camera.h); }
     this.minimap();
+    this.progressBar();
   }
 };
 
@@ -2021,7 +2294,7 @@ const TitleFX = {
     const ov=document.getElementById('overlay');
     // keep animating only while the home view is actually showing
     if(!ov.classList.contains('show') || ov.classList.contains('state-controls')
-       || ov.classList.contains('state-info') || ov.classList.contains('state-end')){
+       || ov.classList.contains('state-info') || ov.classList.contains('state-upgrades') || ov.classList.contains('state-mode') || ov.classList.contains('state-end')){
       this.raf=requestAnimationFrame(()=>this.run()); this.clear(); return;
     }
     this.t++; this.draw();
@@ -2080,16 +2353,17 @@ const Game = {
     Render.init();
     Input.init(Render.cv);
     window.addEventListener('resize',()=>Render.resize());
-    document.getElementById('startBtn').onclick=()=>Game.openOrigins();
+    document.getElementById('startBtn').onclick=()=>Game.openModes();
     document.getElementById('shopBuy').onclick=()=>Shop.buy();
     document.getElementById('shopSkip').onclick=()=>Shop.skip();
     // home menu
     const ov=document.getElementById('overlay');
-    document.getElementById('btnPlay').onclick=()=>Game.openOrigins();
+    document.getElementById('btnPlay').onclick=()=>Game.openModes();
     document.getElementById('btnControls').onclick=()=>{ SFX.init();SFX.click(); ov.classList.add('state-controls'); };
     document.getElementById('btnInfo').onclick=()=>{ SFX.init();SFX.click(); ov.classList.add('state-info'); };
+    document.getElementById('btnUpgrades').onclick=()=>{ SFX.init();SFX.click(); ov.classList.add('state-upgrades'); };
     document.querySelectorAll('#overlay [data-back]').forEach(b=>b.onclick=()=>{
-      SFX.click(); ov.classList.remove('state-controls','state-info','state-origin','state-end'); ov.classList.add('show'); });
+      SFX.click(); ov.classList.remove('state-controls','state-info','state-upgrades','state-mode','state-origin','state-end'); ov.classList.add('show'); });
     // populate element legend cards
     const eg=document.getElementById('elemGrid');
     if(eg){ const blurbs={
@@ -2103,8 +2377,56 @@ const Game = {
         d.style.borderColor=E.color;
         d.innerHTML='<div class="en" style="color:'+E.glow+'">'+E.icon+' '+E.name+'</div><div class="ed">'+blurbs[k]+'</div>';
         eg.appendChild(d); } }
+    // populate wand progression chain
+    const wc=document.getElementById('wandChain');
+    if(wc){ WANDS.forEach((w,i)=>{
+        const node=document.createElement('div'); node.className='wandNode';
+        node.innerHTML=
+          '<div class="wnLine"><div class="wnDot" style="background:'+w.color+';color:'+w.color+'">'+(i+1)+'</div>'+
+            (i<WANDS.length-1?'<div class="wnStem"></div>':'')+'</div>'+
+          '<div class="wnBody" style="border-color:'+w.color+'">'+
+            '<div class="wnTop"><span class="wnName" style="color:'+w.color+'">'+w.name+'</span>'+
+              '<span class="wnCost">'+(w.cost?w.cost+' gold':'starting wand')+'</span></div>'+
+            '<div class="wnDesc">'+w.desc+'</div></div>';
+        wc.appendChild(node); }); }
+    // populate spell mutation overview
+    const mg2=document.getElementById('mutOverviewGrid');
+    if(mg2){ MUTATIONS.forEach(m=>{
+        const card=document.createElement('div'); card.className='miniCard'+(m.risk?' risk':''); card.style.borderColor=m.c;
+        card.innerHTML=
+          '<div class="mcIconRow">'+Upgrades.mutIcon(m.c,m.risk)+'<span class="mn" style="color:'+m.c+'">'+m.name+'</span></div>'+
+          '<div class="mstat" style="color:'+m.c+'">'+m.stat+(m.max>1?' · up to '+m.max+'×':'')+'</div>'+
+          '<div class="md">'+m.d+'</div>';
+        mg2.appendChild(card); }); }
+    // populate stat boon overview
+    const sg=document.getElementById('statOverviewGrid');
+    if(sg){ Upgrades.POOL.forEach(u=>{
+        const card=document.createElement('div'); card.className='miniCard'; card.style.borderColor=u.c;
+        card.innerHTML=
+          '<div class="mcIconRow">'+u.icon+'<span class="mn" style="color:'+u.c+'">'+u.name+'</span></div>'+
+          '<div class="mstat" style="color:'+u.c+'">'+u.stat+'</div>'+
+          '<div class="md">'+u.d+'</div>';
+        sg.appendChild(card); }); }
+    // populate mode-select cards
+    const mgd=document.getElementById('modeGrid');
+    if(mgd){ GAME_MODES.forEach(md=>{
+        const card=document.createElement('div'); card.className='modeCard'; card.style.setProperty('--oc',md.c);
+        card.innerHTML='<div class="mn2">'+md.name+'</div><div class="mtag">'+md.tag+'</div><div class="md2">'+md.d+'</div>';
+        card.onclick=()=>{ SFX.click(); Game.chooseMode(md.id); };
+        mgd.appendChild(card); }); }
     // start the swirling title animation
     TitleFX.init(); TitleFX.start();
+  },
+  openModes(){
+    SFX.init(); SFX.click();
+    const ov=document.getElementById('overlay');
+    ov.classList.remove('state-controls','state-info','state-upgrades','state-origin','state-end');
+    ov.classList.add('show','state-mode');
+    TitleFX.start();
+  },
+  chooseMode(id){
+    World.mode=id;
+    this.openOrigins();
   },
   openOrigins(){
     SFX.init(); SFX.click();
@@ -2119,14 +2441,14 @@ const Game = {
       card.onclick=()=>{ SFX.click(); Game.begin(o); };
       grid.appendChild(card);
     });
-    ov.classList.remove('state-controls','state-info','state-end');
+    ov.classList.remove('state-controls','state-info','state-upgrades','state-mode','state-end');
     ov.classList.add('show','state-origin');
     TitleFX.start();
   },
   begin(origin){
     SFX.init(); SFX.click();
     const ov=document.getElementById('overlay');
-    ov.classList.remove('show','state-controls','state-info','state-end','state-origin');
+    ov.classList.remove('show','state-controls','state-info','state-upgrades','state-mode','state-end','state-origin');
     document.getElementById('bossbar').classList.remove('show');
     World.init((Math.random()*1e9)|0);
     World.player=makePlayer();
@@ -2154,8 +2476,14 @@ const Game = {
     }
     let sp=p.speed;
     if(p.dashFrames>0){ p.dashFrames--; dx=p.dashDX; dy=p.dashDY; sp=CONFIG.player.dashPower; FX.spark(p.x,p.y,0,'#bfe0ff',1); }
-    p.x=clamp(p.x+dx*sp,p.r,CONFIG.world.size-p.r);
-    p.y=clamp(p.y+dy*sp,p.r,CONFIG.world.size-p.r);
+    if(World.mode==='endless'){
+      p.x=clamp(p.x+dx*sp,p.r,CONFIG.world.size-p.r);
+      p.y=clamp(p.y+dy*sp,p.r,CONFIG.world.size-p.r);
+    } else {
+      p.x=clamp(p.x+dx*sp,p.r,CONFIG.world.width-p.r);
+      p.y=clamp(p.y+dy*sp,p.r,CONFIG.world.height-p.r);
+      p.y=Math.max(p.y, World.ceilingY()); // walled out of the next stage until its Warden falls
+    }
     p.mp=Math.min(p.maxmp,p.mp+CONFIG.player.mpRegen);
     if(p.regen>0) p.hp=Math.min(p.maxhp,p.hp+p.regen);
     if(p.hurt>0)p.hurt--;
@@ -2193,9 +2521,12 @@ const Game = {
   over(){
     World.running=false;
     document.getElementById('bossbar').classList.remove('show');
-    document.getElementById('title').innerHTML='YOU HAVE DIED';
+    const endless=World.mode==='endless';
+    document.getElementById('title').innerHTML = endless ? 'You fought bravely' : 'YOU HAVE DIED';
     document.getElementById('sub').innerHTML='You reached level <b style="color:#5fd0ff">'+World.player.level+
-      '</b>, slew <b style="color:#5fd0ff">'+World.kills+'</b> foes, and hoarded <b style="color:#ffcf3a">'+World.gold+'</b> gold.';
+      '</b> in <b style="color:#c06aff">'+World.biomeAt(World.player.x,World.player.y).name+'</b>, slew <b style="color:#5fd0ff">'+World.kills+
+      '</b> foes, and hoarded <b style="color:#ffcf3a">'+World.gold+'</b> gold'+
+      (endless?' — surviving to wave <b style="color:#ff9a2e">'+Math.min(World.wave,99)+(World.wave>99?'+':'')+'</b>.':'.');
     const btn=document.getElementById('startBtn');
     btn.textContent='Home'; btn.onclick=()=>Game.goHome();
     const ov=document.getElementById('overlay'); ov.classList.add('show','state-end');
@@ -2203,17 +2534,17 @@ const Game = {
   goHome(){
     World.running=false; World.won=false;
     // restore default Play-again behavior for the shared button, then show the home menu
-    const btn=document.getElementById('startBtn'); btn.textContent='Play Again'; btn.onclick=()=>Game.openOrigins();
+    const btn=document.getElementById('startBtn'); btn.textContent='Play Again'; btn.onclick=()=>Game.openModes();
     const ov=document.getElementById('overlay');
-    ov.classList.remove('state-end','state-controls','state-info');
+    ov.classList.remove('state-end','state-controls','state-info','state-upgrades','state-mode');
     ov.classList.add('show');
     TitleFX.start();
   },
   win(){
     World.won=true; World.running=false;
     document.getElementById('bossbar').classList.remove('show');
-    document.getElementById('title').innerHTML='The lands are safe<br><span style="font-size:24px;color:#5fd0ff;letter-spacing:.06em;">The storm settles</span>';
-    document.getElementById('sub').innerHTML='The Warden gauntlet is broken. Level <b style="color:#5fd0ff">'+World.player.level+
+    document.getElementById('title').innerHTML='Realm is yours';
+    document.getElementById('sub').innerHTML='The Hollow King has fallen and the climb is complete. Level <b style="color:#5fd0ff">'+World.player.level+
       '</b> · <b style="color:#5fd0ff">'+World.kills+'</b> kills · <b style="color:#ffcf3a">'+World.gold+
       '</b> gold · wand <b style="color:'+RARITY[WANDS[World.player.wandTier].rarity].color+'">'+WANDS[World.player.wandTier].name+'</b>.';
     const btn=document.getElementById('startBtn'); btn.textContent='Home'; btn.onclick=()=>Game.goHome();
