@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spellstorm v1.32</title>
+<title>Spellstorm v1.50</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -42,9 +42,18 @@
   #hud .pill{background:linear-gradient(rgba(18,24,12,.82),rgba(10,14,8,.82));
     padding:6px 14px;border-radius:6px;border:1px solid rgba(255,210,74,.22);
     box-shadow:0 2px 10px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05);
-    color:#b9c4a4;}
-  #hud b{color:var(--bright);font-weight:900;margin-left:.3em;}
+    color:#b9c4a4;display:flex;align-items:center;gap:6px;transition:border-color .2s,box-shadow .2s;}
+  #hud .pico{font-size:12px;opacity:.85;filter:drop-shadow(0 0 3px rgba(0,0,0,.7));}
+  #hud b{color:var(--bright);font-weight:900;margin-left:.1em;}
+  #hud .pill.pop{ animation:hudPop .38s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes hudPop{ 0%{transform:scale(1);} 35%{transform:scale(1.22);} 100%{transform:scale(1);} }
+  #lvlp{border-color:rgba(155,227,107,.4);}
+  #stagep{border-color:rgba(95,208,255,.4);}
+  #wavep{border-color:rgba(255,154,46,.4);}
+  #killsp{border-color:rgba(255,90,90,.4);}
+  #goldp{border-color:rgba(255,207,58,.5);box-shadow:0 2px 10px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05),0 0 10px rgba(255,207,58,.12);}
   #goldp b{color:var(--gold);text-shadow:0 0 8px rgba(255,207,58,.5);}
+  #corrp{border-color:rgba(192,106,255,.5);}
 
   /* health / xp bars bottom-center */
   #bars{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
@@ -52,13 +61,54 @@
   .bar{height:18px;background:linear-gradient(#0c1107,#11160d);border:1px solid rgba(255,210,74,.18);
     border-radius:6px;overflow:hidden;position:relative;
     box-shadow:0 3px 12px rgba(0,0,0,.5),inset 0 1px 2px rgba(0,0,0,.6);}
-  .bar .fill{height:100%;transition:width .18s ease-out;position:relative;}
+  .bar .fill{height:100%;transition:width .18s ease-out;position:relative;z-index:1;}
   .bar .fill::after{content:'';position:absolute;inset:0 0 50% 0;background:linear-gradient(rgba(255,255,255,.28),transparent);}
+  .bar .fill.ghost{position:absolute;inset:0;z-index:0;transition:none;opacity:.65;}
   #hpFill{background:linear-gradient(#ff8a8a,#c01818);box-shadow:0 0 12px rgba(255,80,80,.4);}
+  #hpGhost{background:linear-gradient(#fff0c8,#c98a2a);}
   #xpFill{background:linear-gradient(#b6f08a,#3a8a2a);box-shadow:0 0 12px rgba(155,227,107,.4);}
   #mpFill{background:linear-gradient(#9ed6ff,#2a6abf);box-shadow:0 0 12px rgba(126,200,255,.4);}
-  .bar .txt{position:absolute;inset:0;display:grid;place-items:center;font-family:'Cinzel',serif;
+  .bar .txt{position:absolute;inset:0;display:grid;place-items:center;font-family:'Cinzel',serif;z-index:2;
     font-size:10px;font-weight:700;letter-spacing:.1em;text-shadow:0 1px 2px #000,0 0 4px #000;}
+  #hpBar.critical{ animation:hpCritPulse .8s ease-in-out infinite; }
+  @keyframes hpCritPulse{ 0%,100%{box-shadow:0 3px 12px rgba(0,0,0,.5),inset 0 1px 2px rgba(0,0,0,.6),0 0 0 rgba(255,20,20,0);}
+    50%{box-shadow:0 3px 12px rgba(0,0,0,.5),inset 0 1px 2px rgba(0,0,0,.6),0 0 16px rgba(255,20,20,.85);} }
+
+  /* low-HP screen-edge warning, à la Diablo/most action RPGs */
+  #lowHpVignette{position:fixed;inset:0;z-index:19;pointer-events:none;opacity:0;
+    background:radial-gradient(ellipse at center, transparent 52%, rgba(160,0,0,.6) 100%);}
+  #lowHpVignette.show{ animation:lowHpPulse 1.1s ease-in-out infinite; }
+  @keyframes lowHpPulse{ 0%,100%{opacity:.32;} 50%{opacity:.65;} }
+
+  /* Q / E spell hotbar, sits just above the health/mana/xp bars */
+  #spellBar{position:fixed;bottom:106px;left:50%;transform:translateX(-50%);display:flex;gap:26px;z-index:20;pointer-events:none;}
+  .spellSlot{position:relative;width:60px;height:60px;border-radius:50%;
+    background:radial-gradient(circle at 50% 32%, #1e2814, #0a0d07 74%);
+    border:2px solid rgba(255,210,74,.3);
+    box-shadow:0 6px 16px rgba(0,0,0,.55), inset 0 0 10px rgba(0,0,0,.65);
+    display:grid; place-items:center; transition:border-color .25s;}
+  .spellSlot.unlocked{ border-color:var(--ec, rgba(255,210,74,.45)); }
+  .spellSlot .spIcon{position:relative;font-size:27px;z-index:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.75));line-height:1;}
+  .spellSlot .spSweep{position:absolute;inset:-2px;border-radius:50%;z-index:2;pointer-events:none;
+    background:conic-gradient(rgba(4,6,3,.85) calc(var(--pct,0)*1%), transparent 0);}
+  .spellSlot .spRing{position:absolute;inset:-3px;border-radius:50%;z-index:0;pointer-events:none;border:2px solid transparent;}
+  .spellSlot.ready .spRing{ animation:spReadyPulse 1.5s ease-in-out infinite; }
+  @keyframes spReadyPulse{
+    0%,100%{ box-shadow:0 0 6px 1px var(--ec, rgba(255,225,140,.5)); }
+    50%{ box-shadow:0 0 18px 5px var(--ec, rgba(255,225,140,.85)); } }
+  .spellSlot .spKey{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);z-index:4;
+    font-family:'Cinzel',serif;font-weight:900;font-size:10px;letter-spacing:.05em;color:#04121f;
+    background:linear-gradient(#ffe07a,#ffb347);padding:2px 8px;border-radius:6px;
+    box-shadow:0 2px 0 #9a6a10,0 2px 6px rgba(0,0,0,.5);}
+  .spellSlot .spLock{position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;
+    font-size:16px;background:rgba(4,6,3,.8);z-index:5;color:#7c8a68;}
+  .spellSlot.unlocked .spLock{display:none;}
+  .spellSlot .spFlash{position:absolute;inset:-11px;border-radius:50%;z-index:3;pointer-events:none;
+    border:2px solid rgba(255,255,255,0);opacity:0;}
+  .spellSlot.casting .spFlash{ animation:spCastFlash .4s ease-out; }
+  @keyframes spCastFlash{
+    0%{ transform:scale(.55); opacity:1; border-color:rgba(255,255,255,.95); }
+    100%{ transform:scale(1.7); opacity:0; border-color:rgba(255,255,255,0); } }
 
   /* minimap + ascent-progress bottom-left */
   #minimapWrap{position:fixed;bottom:16px;left:16px;width:210px;height:184px;z-index:20;
@@ -134,6 +184,12 @@
     text-transform:uppercase;color:#10180c;background:linear-gradient(#ffd24a,#ff7a18);border:none;
     padding:15px 38px;border-radius:8px;box-shadow:0 6px 0 #8a3a06,0 12px 34px rgba(255,122,24,.45);transition:transform .08s;}
   #overlay button:hover{filter:brightness(1.08);}
+  #bestBadge{display:none;margin:0 auto 22px;font-family:'Cinzel',serif;font-weight:900;font-size:15px;
+    letter-spacing:.18em;text-transform:uppercase;color:#3a2400;background:linear-gradient(#fff6c8,#ffcf3a);
+    padding:9px 26px;border-radius:22px;box-shadow:0 0 24px rgba(255,210,74,.6),0 6px 14px rgba(0,0,0,.4);
+    width:fit-content;animation:bestBadgePop .5s cubic-bezier(.3,1.6,.5,1);}
+  #bestBadge.show{display:block;}
+  @keyframes bestBadgePop{0%{transform:scale(.4);opacity:0;}60%{transform:scale(1.12);opacity:1;}100%{transform:scale(1);}}
   #overlay button:active{transform:translateY(3px);box-shadow:0 3px 0 #8a3a06;}
   #overlay .keys{margin-top:22px;font-size:12px;opacity:.55;letter-spacing:.1em;font-family:'Cinzel',serif;}
 
@@ -228,7 +284,7 @@
   .wandNode .wnCost{font-size:10.5px;opacity:.75;font-family:'Cinzel',serif;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;}
   .wandNode .wnDesc{font-size:11.5px;opacity:.82;line-height:1.4;margin-top:3px;text-align:left;}
 
-  #mutOverviewGrid,#statOverviewGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px;margin:10px 0 20px;}
+  #mutOverviewGrid,#statOverviewGrid,#spellOverviewGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px;margin:10px 0 20px;}
   .miniCard{border:1px solid;border-radius:9px;padding:9px 10px;text-align:left;background:rgba(0,0,0,.25);}
   .miniCard.risk{box-shadow:inset 0 0 0 1px rgba(255,77,109,.5);}
   .miniCard .mcIconRow{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
@@ -317,6 +373,8 @@
   .modeCard .mn2{font-family:'Cinzel',serif;font-weight:900;font-size:21px;color:var(--oc);margin-bottom:6px;}
   .modeCard .mtag{font-size:12px;color:#bfe6a0;opacity:.95;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;}
   .modeCard .md2{font-size:13px;opacity:.85;line-height:1.5;font-style:italic;}
+  .modeCard .mbest{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12);
+    font-size:11.5px;font-family:'Cinzel',serif;letter-spacing:.03em;color:#ffd24a;opacity:.9;font-style:normal;}
 
   /* origin select */
   #overlay.state-origin #home{display:none;}
@@ -357,17 +415,17 @@
 <div id="wrap"><canvas id="game"></canvas></div>
 <div id="framefx"></div>
 <div id="brand">SPELLSTORM</div>
-<div id="disclaimer">02/07/26 v1.32 - Ascension Update</div>
+<div id="disclaimer">08/07/26 v1.50 - Stormcaller Update</div>
 <div id="warnBanner"><div class="wbig" id="warnBig">⚠ THE CORRUPTED CORE ⚠</div><div class="wsub" id="warnSub">Point of no return — the Warden stirs</div></div>
 
 <div id="hud">
-  <div class="pill">Lvl <b id="lvlv">1</b></div>
-  <div class="pill">Stage <b id="stagev">1 / 6</b></div>
-  <div class="pill">Biome <b id="biomev">Sunlit Plains</b></div>
-  <div class="pill">Wave <b id="wavev">1</b></div>
-  <div class="pill">Kills <b id="killsv">0</b></div>
-  <div class="pill" id="goldp">Gold <b id="goldv">0</b></div>
-  <div class="pill" id="corrp"><div class="cbar" id="corrBar"></div><span>Corruption</span> <b id="corrv">0%</b></div>
+  <div class="pill" id="lvlp"><span class="pico">✦</span>Lvl <b id="lvlv">1</b></div>
+  <div class="pill" id="stagep"><span class="pico">⛰</span>Stage <b id="stagev">1 / 6</b></div>
+  <div class="pill" id="biomep"><span class="pico">🌿</span>Biome <b id="biomev">Sunlit Plains</b></div>
+  <div class="pill" id="wavep"><span class="pico">🌊</span>Wave <b id="wavev">1</b></div>
+  <div class="pill" id="killsp"><span class="pico">☠</span>Kills <b id="killsv">0</b></div>
+  <div class="pill" id="goldp"><span class="pico">🪙</span>Gold <b id="goldv">0</b></div>
+  <div class="pill" id="corrp"><div class="cbar" id="corrBar"></div><span class="pico">⚛</span><span>Corruption</span> <b id="corrv">0%</b></div>
 </div>
 
 <div id="bossbar"><div class="label" id="bossName">Boss</div>
@@ -377,10 +435,31 @@
 
 <div id="toasts"></div>
 
+<div id="lowHpVignette"></div>
+
 <div id="bars">
-  <div class="bar"><div class="fill" id="hpFill" style="width:100%"></div><div class="txt" id="hpTxt">100 / 100</div></div>
+  <div class="bar" id="hpBar"><div class="fill ghost" id="hpGhost" style="width:100%"></div><div class="fill" id="hpFill" style="width:100%"></div><div class="txt" id="hpTxt">100 / 100</div></div>
   <div class="bar"><div class="fill" id="mpFill" style="width:100%"></div><div class="txt" id="mpTxt">MP</div></div>
   <div class="bar"><div class="fill" id="xpFill" style="width:0%"></div><div class="txt" id="xpTxt">XP</div></div>
+</div>
+
+<div id="spellBar">
+  <div class="spellSlot" id="spellQSlot">
+    <div class="spRing"></div>
+    <div class="spIcon" id="spellQIcon"></div>
+    <div class="spSweep" id="spellQSweep"></div>
+    <div class="spFlash" id="spellQFlash"></div>
+    <div class="spLock" id="spellQLock">🔒</div>
+    <div class="spKey">Q</div>
+  </div>
+  <div class="spellSlot" id="spellESlot">
+    <div class="spRing"></div>
+    <div class="spIcon" id="spellEIcon"></div>
+    <div class="spSweep" id="spellESweep"></div>
+    <div class="spFlash" id="spellEFlash"></div>
+    <div class="spLock" id="spellELock">🔒</div>
+    <div class="spKey">E</div>
+  </div>
 </div>
 
 <div id="minimapWrap"><span class="mtitle">Ascent</span>
@@ -441,11 +520,13 @@
   <div id="panelControls" class="menuPanel">
     <h2>Controls</h2>
     <div class="ctrlGrid">
-      <div class="key">W A S D</div><div class="cd">Move, this is important</div>
-      <div class="key">Mouse</div><div class="cd">The wand aims towards this</div>
-      <div class="key">Hold L-Click</div><div class="cd">Cast spell</div>
-      <div class="key">Space</div><div class="cd">Use mana to dash</div>
-      <div class="key">1 – 8</div><div class="cd">Equip the matching item from your inventory</div>
+      <div class="key">W A S D</div><div class="cd">Move</div>
+      <div class="key">Mouse</div><div class="cd">Aim</div>
+      <div class="key">Hold L-Click</div><div class="cd">Cast your wand</div>
+      <div class="key">Q</div><div class="cd">Cast your Q spell — once unlocked</div>
+      <div class="key">E</div><div class="cd">Cast your E spell — once unlocked</div>
+      <div class="key">Space</div><div class="cd">Dash (costs mana)</div>
+      <div class="key">1 – 8</div><div class="cd">Equip that inventory slot</div>
     </div>
     <button class="back" data-back>Back</button>
   </div>
@@ -455,38 +536,52 @@
     <h2>The Realm, Explained</h2>
     <div id="infoScroll">
       <h3>The Wizard</h3>
-      <p>You're a wizard with <b>health</b> (red), <b>mana</b> (blue), and <b>experience</b> (green). Pick up <b>gold</b> and <b>health potions</b> that enemies drop when they die. Fill up your XP bar and you'll <b>level up</b>, letting you pick one permanent upgrade — more damage, faster firing, more speed, extra projectiles, crit chance, more health, regen, lifesteal, or a bigger pickup range.</p>
+      <p>You have health in red, mana in blue, and experience in green. Kill enemies to earn XP and gold. When you level up, you pick a permanent upgrade.</p>
 
-      <h3>Damage &amp; Crits</h3>
-      <p>Your damage goes up with the upgrades and gear you pick.</p>
-	  <p>Hits can <b>crit</b> for extra damage — you'll see a big gold number flash on screen. The floating damage numbers also tell you how a hit landed: <b style="color:#ff5a5a">red</b> = it worked really well, <b style="color:#9aa6c0">grey</b> = the enemy resisted it, <b style="color:#fff0a8">gold</b> = critical hit.</p>
+      <h3>Damage and Crits</h3>
+      <p>A critical hit flashes gold on screen. The color of each damage number tells you how the hit landed. Red means it was super effective. Grey means the enemy resisted it. Gold means it was a critical hit.</p>
 
-      <h3>Elements - don't stress about this yet</h3>
-      <p>Every wand has an element, and so does every enemy. Use the right element and you'll do a lot more damage; use the wrong one and you'll do less. The element also changes how the spell looks, how fast it moves, and how big the blast is.</p>
+      <h3>Elements</h3>
+      <p>Every wand and every enemy has an element. If you match well, you hit harder. If you mismatch, you hit softer.</p>
       <div id="elemGrid"></div>
-      <p class="chartnote">How they beat each other — <b style="color:#ff7a18">Fire</b> beats <b style="color:#8be36b">Nature</b> · <b style="color:#7ec8ff">Frost</b> beats <b style="color:#bfe0ff">Storm</b> · <b style="color:#bfe0ff">Storm</b> beats <b style="color:#7ec8ff">Frost</b> · <b style="color:#8be36b">Nature</b> beats <b style="color:#bfe0ff">Storm</b> · <b style="color:#c06aff">Arcane</b> ignores all of this and just deals full damage every time.</p>
+      <p class="chartnote"><b style="color:#ff7a18">Fire</b> beats <b style="color:#8be36b">Nature</b>. <b style="color:#7ec8ff">Frost</b> beats <b style="color:#bfe0ff">Storm</b>. <b style="color:#bfe0ff">Storm</b> beats <b style="color:#7ec8ff">Frost</b>. <b style="color:#8be36b">Nature</b> beats <b style="color:#bfe0ff">Storm</b>. <b style="color:#c06aff">Arcane</b> ignores the chart and always hits true.</p>
 
       <h3>Enemies</h3>
-      <p>More enemies show up each wave, and they get tougher the further you go. <b>Wolves</b> are fast and dash at you, <b>slimes</b> move in a weird bouncy pattern, <b>sporelings and golems</b> shoot projectiles, and <b>gargoyles</b> fly. The gold-glowing <b>Elites</b> have three times the health but drop more gold, gear, potions, and sometimes a rare wand.</p>
+      <p>Wolves dash at you. Slimes hop around. Sporelings and golems shoot projectiles. Gargoyles fly. Elites glow gold, hit harder, and drop more loot.</p>
 
-      <h3>Key Spells</h3>
-      <p>You start with a basic <b>Wood Wand</b> and it upgrades through eleven stages, and each one adds something new instead of just hitting harder: <b>AoE blasts</b>, twin bolts, a <b>piercing lance</b>, <b>chain lightning</b>, <b>ricochet</b> shots, <b>homing</b> comets, <b>boomerang</b> bolts, an instant <b>railgun beam</b>, <b>orbiting blades</b>, <b>freeze fields</b>, and finally a <b>singularity</b> that pulls enemies in. Every spell fires in a narrow cone in the direction you're aiming, so aim still matters. You upgrade your wand with gold, or find better ones as drops.</p>
+      <h3>Your Wand</h3>
+      <p>Left click is your main attack. Your wand upgrades through eleven tiers, and each tier adds a new trick instead of just bigger numbers. Tricks include area blasts, chain lightning, ricochet, homing shots, a railgun beam, orbiting blades, and a pulling singularity. Buy the next tier with gold, or find a better wand as a drop.</p>
+
+      <h3>Active Spells, Q and E</h3>
+      <p>There are two spell slots, Q and E, and three possible spells. Fire Nova, Frost Lance, and Blade Cyclone. Which two you end up with changes from run to run. All three hit hard, cost real mana, and sit on long cooldowns. Level ups offer to fill an empty slot, right alongside your usual upgrade choices. If you skip one, it can come back later. Once a slot is filled, its choices become upgrades for that spell instead. These include more damage, wider reach, a burn, a freeze, an extra blade, a faster cooldown, or cheaper casting.</p>
+
+      <h3>Blade Cyclone</h3>
+      <p>This summons a ring of spectral blades that spins around you for several seconds. It damages anything inside its radius the whole time, including a crowd pressed right up against you. More blades also means faster strikes, not just more sparkle.</p>
 
       <h3>Origins</h3>
-      <p>At the start of a run you pick an <b>Origin</b> — basically a class with one upside and one downside. For example, the Glass Savant hits really hard but has very little health, while the Feral Conduit fires on its own constantly but can't aim well. Each one plays pretty differently.</p>
+      <p>Each run starts with an Origin, which gives you a boon and a curse. Glass Savant hits hard but is fragile. Feral Conduit casts on its own but aims loosely. Pick your poison.</p>
 
       <h3>Spell Mutations</h3>
-      <p>When you level up, some of your choices will be <b style="color:#c06aff">mutations</b> instead of plain stat boosts. Mutations actually change how your spell works — split shots, chain lightning, homing, ricochet, burning trails, shard bursts, freeze fields, that kind of thing. They stack on any wand, so you can end up with some pretty different combos. Even if you stack a lot of them, your shots stay inside a reasonable cone so it doesn't get unmanageable. <b style="color:#ff4d6d">Risk</b> mutations hit harder but come with a downside.</p>
+      <p>Most level ups offer a mutation. Mutations include split shots, chain lightning, homing, ricochet, burn trails, and more, and they stack on any wand. Risk mutations hit harder, but come with a real downside.</p>
 
       <h3>Corruption</h3>
-      <p>A <b style="color:#c06aff">Corruption</b> meter fills up as you gain power and go further. At <b>33%, 66%, and 100%</b> something changes — you get stronger, but enemies get stronger too. Late in a run things can get pretty chaotic.</p>
+      <p>Corruption is a meter that rises as you gain power. At 33%, 66%, and 100%, the run transforms. You get stronger, and so do your enemies.</p>
 
-      <h3>Biomes &amp; Wardens <span style="font-size:11px;opacity:.6;text-transform:none;letter-spacing:0;">— Journey</span></h3>
-      <p>The world has six stages — <b>grass, stone, snow, forest, desert</b>, and finally the <b style="color:#c06aff">Stormscar</b> — and you move up through them one at a time. Each biome has its own twist while you're in it: Frostreach slows enemies down but also slows your casting, Sunscar Waste makes enemies angrier but drops more gold, and the Stormscar mixes a bit of everything. A <b>Warden</b> blocks the way at the top of each stage, and you need to beat it to move on. Each Warden tests something different: some heal unless you burst them down fast, some fill the arena with hazards, some resist your main element, some keep summoning more enemies, and some weaken your damage so it comes down to skill. <i>In Endless mode you instead start in the middle of the map and fight your way outward through the same Wardens, except the loop never ends.</i></p>
+      <h3>The Landscape <span style="font-size:11px;opacity:.6;text-transform:none;letter-spacing:0;">(Journey mode)</span></h3>
+      <p>The climb is not a straight corridor. Forest lines both sides of the path and winds it left and right as you go, narrowing into tight squeezes and opening into wider clearings. Rivers still cut across it. Wade through and you are slowed, or cross fast over a wooden bridge. Trees block your footing but not your spells, so you can still fight from behind them.</p>
+
+      <h3>Biomes and Wardens <span style="font-size:11px;opacity:.6;text-transform:none;letter-spacing:0;">(Journey mode)</span></h3>
+      <p>There are six stages. Grass, stone, snow, forest, desert, and finally the Stormscar. Each one has its own twist. Frostreach slows enemies but also slows your casting. Sunscar Waste angers enemies but pays out more gold. A Warden guards the top of each stage, and each one tests something different. Some heal unless you burst them down fast. Some fill the arena with hazards. Some resist your strongest element. Some keep summoning more enemies. Some weaken your damage, so it comes down to skill. <i>Endless mode starts you in the middle and sends the same Wardens at you in a loop that never ends and only gets harder.</i></p>
+
+      <h3>Endless Waves <span style="font-size:11px;opacity:.6;text-transform:none;letter-spacing:0;">(Endless mode)</span></h3>
+      <p>Every fifth wave sends a tough miniboss after you. It spawns far away and walks toward you, so you get a moment of warning before it arrives. Every tenth wave, a full Warden spawns the same way, and the screen turns to a blood moon while it hunts you down. Survive it, and normal waves resume until the next milestone.</p>
+
+      <h3>Local Best Runs</h3>
+      <p>Your best result for each mode is saved on this device. Check the mode select screen to see your personal best before you start a run, and look for the New Best badge when a run beats it.</p>
 
       <h3>The End</h3>
-      <p>In <b>Journey</b> mode, the world gets darker the higher you climb. Beating a Warden lets you push further up toward the Stormscar, where the <b style="color:#ff5a5a">Hollow King</b> is waiting as the final boss — it combines everything the other Wardens tested you on. Beat it and the run is complete.</p>
-      <p>In <b>Endless</b> mode there's no final boss, just survival. Waves keep coming past 99 and the Wardens keep looping, both getting harder each time, until eventually you don't make it.</p>
+      <p>Journey ends at the Stormscar, where the Hollow King combines every Warden's trick into one final fight. Beat it, and the realm is yours.</p>
+      <p>Endless has no ending. Waves and Wardens keep climbing in difficulty until you do not make it.</p>
     </div>
     <button class="back" data-back>Back</button>
   </div>
@@ -496,24 +591,30 @@
     <h2>Upgrade Paths</h2>
     <div id="upgradesScroll">
       <h3>Wand Progression</h3>
-      <p>Once you have enough gold, your wand upgrades to the next one automatically.</p>
+      <p>Your wand upgrades itself once you have enough gold. Just keep collecting.</p>
       <div id="wandChain"></div>
 
+      <h3>Q and E Spells</h3>
+      <p>Three spells compete for two slots. Whichever unlock you choose first claims Q or E for the run. Each spell then grows through its own tree of upgrades.</p>
+      <div id="spellOverviewGrid"></div>
+
       <h3>Spell Mutations</h3>
-      <p>Each level-up gives you 3 choices, and at least one is usually a mutation. Mutations change how your bolts actually behave, and they stack onto whatever wand you're using. <b style="color:#ff4d6d">"Risk" ones</b> are stronger but can make things messy — be careful with those.</p>
+      <p>Most level ups offer a mutation, a way your bolts behave differently instead of just hitting harder. They stack on any wand. <b style="color:#ff4d6d">Risk</b> mutations hit harder, but bite back.</p>
       <div id="mutOverviewGrid"></div>
 
       <h3>Stat Boons</h3>
-      <p>Plain upgrades that work with any build.</p>
+      <p>Simple, reliable upgrades that work with any build.</p>
       <div id="statOverviewGrid"></div>
     </div>
     <button class="back" data-back>Back</button>
   </div>
 
+
   <!-- END STATE (game over / win) -->
   <div id="endState">
     <h1 id="title">SPELLSTORM</h1>
     <p id="sub"></p>
+    <div id="bestBadge"></div>
     <button id="startBtn">Play Again</button>
   </div>
 </div>
@@ -722,6 +823,75 @@ for(const w of WANDS) w.color=ELEMENTS[w.elem].color;
   for(const k in ENEMIES){ ENEMIES[k].elem=map[k]||'arcane'; }
 })();
 
+// =====================================================================
+// SPELLS — the active abilities that can occupy the Q and E slots. There
+// are more spells here than slots: unlocking is "pick one of the pool for
+// this empty slot", so different runs land on different Q+E pairings.
+// Left Click stays the bread-and-butter attack; these are the big,
+// expensive, cooldown-gated plays. Each grows through its own small
+// upgrade tree (also drawn from the level-up pool) once it's occupying a slot.
+// =====================================================================
+const SPELLS = {
+  firenova:{
+    id:'firenova', name:'Fire Nova', elem:'fire', icon:'🔥',
+    manaCost:36, cooldown:480, baseDmg:52, baseRadius:125,
+    unlockDesc:'Detonate a ring of fire centered on you, scorching everything caught inside.',
+    tree:[
+      {id:'dmg',   name:'Molten Core',      max:3, stat:'+20% DAMAGE',        d:'The Nova hits 20% harder.',
+        apply(p,st){ st.dmgMul=(st.dmgMul||1)*1.2; }},
+      {id:'radius',name:'Widening Blast',   max:3, stat:'+30% RADIUS',        d:'The blast reaches 30% further.',
+        apply(p,st){ st.radMul=(st.radMul||1)*1.3; }},
+      {id:'burn',  name:'Wildfire',         max:1, stat:'BURNS THE GROUND',   d:'Leaves the ground burning after it goes off.',
+        apply(p,st){ st.burn=true; }},
+      {id:'cdr',   name:'Kindled Focus',    max:2, stat:'COOLDOWN 15% SHORTER',      d:'Recovers 15% faster.',
+        apply(p,st){ st.cdMul=(st.cdMul||1)*0.85; }},
+      {id:'cost',  name:'Efficient Casting',max:2, stat:'MANA COST 20% LOWER',     d:'Costs 20% less mana.',
+        apply(p,st){ st.costMul=(st.costMul||1)*0.8; }},
+      {id:'double',name:'Twin Eruption',    max:1, stat:'ADDITIONAL EXPLOSION',d:'A second blast follows a beat after the first.',
+        apply(p,st){ st.double=true; }},
+    ]
+  },
+  frostlance:{
+    id:'frostlance', name:'Frost Lance', elem:'ice', icon:'❄',
+    manaCost:30, cooldown:360, baseDmg:66, baseWidth:24,
+    unlockDesc:'Hurl a piercing lance of ice that skewers everything in a line and chills what it hits.',
+    tree:[
+      {id:'dmg',   name:'Glacial Might',    max:3, stat:'+20% DAMAGE',        d:'The Lance hits 20% harder.',
+        apply(p,st){ st.dmgMul=(st.dmgMul||1)*1.2; }},
+      {id:'width', name:'Broadening Edge',  max:3, stat:'+30% WIDTH',         d:'The Lance is 30% wider.',
+        apply(p,st){ st.widMul=(st.widMul||1)*1.3; }},
+      {id:'freeze',name:'Deep Freeze',      max:1, stat:'FREEZES ENEMIES',    d:'Enemies it hits are frozen solid, briefly.',
+        apply(p,st){ st.freeze=true; }},
+      {id:'cdr',   name:'Sharpened Focus',  max:2, stat:'COOLDOWN 15% SHORTER',      d:'Recovers 15% faster.',
+        apply(p,st){ st.cdMul=(st.cdMul||1)*0.85; }},
+      {id:'cost',  name:'Efficient Casting',max:2, stat:'MANA COST 20% LOWER',     d:'Costs 20% less mana.',
+        apply(p,st){ st.costMul=(st.costMul||1)*0.8; }},
+      {id:'double',name:'Twin Lance',       max:1, stat:'ADDITIONAL LANCE',   d:'Fires a second lance in a narrow spread.',
+        apply(p,st){ st.double=true; }},
+    ]
+  },
+  bladecyclone:{
+    id:'bladecyclone', name:'Blade Cyclone', elem:'storm', icon:'🌀',
+    manaCost:42, cooldown:600, baseDmg:15, baseRadius:95, baseDuration:240, baseBlades:3,
+    unlockDesc:'Summon a ring of spectral blades that spins around you for several seconds, shredding anything that strays too close.',
+    tree:[
+      {id:'dmg',     name:'Charged Edges',  max:3, stat:'+20% DAMAGE',    d:'The blades hit 20% harder.',
+        apply(p,st){ st.dmgMul=(st.dmgMul||1)*1.2; }},
+      {id:'radius',  name:'Widening Gyre',  max:3, stat:'+20% RADIUS',    d:'The cyclone spins 20% wider.',
+        apply(p,st){ st.radMul=(st.radMul||1)*1.2; }},
+      {id:'duration',name:'Lasting Storm',  max:3, stat:'+25% DURATION',  d:'The cyclone spins 25% longer.',
+        apply(p,st){ st.durMul=(st.durMul||1)*1.25; }},
+      {id:'blade',   name:'Extra Blade',    max:2, stat:'+1 BLADE',       d:'One more blade joins the spin, striking faster.',
+        apply(p,st){ st.bladeBonus=(st.bladeBonus||0)+1; }},
+      {id:'cdr',     name:'Charged Focus',  max:2, stat:'COOLDOWN 15% SHORTER',  d:'Recovers 15% faster.',
+        apply(p,st){ st.cdMul=(st.cdMul||1)*0.85; }},
+      {id:'cost',    name:'Efficient Casting',max:2, stat:'MANA COST 20% LOWER', d:'Costs 20% less mana.',
+        apply(p,st){ st.costMul=(st.costMul||1)*0.8; }},
+    ]
+  }
+};
+const SPELL_LIST = ['firenova','frostlance','bladecyclone'];
+
 const GEAR_BASES = {
   helmet:[{n:'Cap',hp:8},{n:'Hood',hp:10,mp:8},{n:'Helm',hp:16,def:1},{n:'Crown',hp:14,mp:14,def:1}],
   chest: [{n:'Robe',hp:14,mp:10},{n:'Vestment',hp:18,mp:16},{n:'Cuirass',hp:28,def:2},{n:'Aegis',hp:24,def:2,mp:10}],
@@ -735,13 +905,16 @@ const GEAR_PREFIX=['Worn','Sturdy','Fine','Glowing','Runed','Ancient','Astral'];
 // =====================================================================
 const World = {
   seed:0, frontierStage:0, mode:'journey', noiseA:null, noiseB:null,
-  player:null, enemies:[], bolts:[], eBolts:[], coins:[], drops:[], particles:[],
+  player:null, enemies:[], bolts:[], eBolts:[], coins:[], drops:[], particles:[], timers:[],
   shockwaves:[], lightnings:[], fields:[], beamFx:null, floaters:[], flash:0, muzzle:null, boss:null, bossActive:false,
   kills:0, gold:0, wave:1, spawnCd:0, toSpawn:0, time:0,
   running:false, won:false, shopOpen:false, paused:false,
+  after(frames,fn){ this.timers.push({t:this.time+frames, fn}); },
+  runTimers(){ for(let i=this.timers.length-1;i>=0;i--){ if(this.time>=this.timers[i].t){
+    const fn=this.timers[i].fn; this.timers.splice(i,1); try{ fn(); }catch(e){} } } },
   init(seed){
     this.seed=seed>>>0; this.noiseA=makeNoise(this.seed); this.noiseB=makeNoise(this.seed^0x9e3779b9);
-    this.enemies=[];this.bolts=[];this.eBolts=[];this.coins=[];this.drops=[];this.particles=[];
+    this.enemies=[];this.bolts=[];this.eBolts=[];this.coins=[];this.drops=[];this.particles=[];this.timers=[];
     this.shockwaves=[];this.lightnings=[];this.fields=[];this.beamFx=null;this.floaters=[];this.flash=0;this.muzzle=null;this.boss=null;this.bossActive=false;
     this.kills=0;this.gold=0;this.wave=1;this.spawnCd=0;this.toSpawn=Spawner.forWave(1);this.time=0;
     this.running=true;this.won=false;this.shopOpen=false;this.paused=false;
@@ -749,8 +922,11 @@ const World = {
     this.castMod=1; this.enemySpeedMod=1; this.goldMod=1; this.critMod=0;
     this.corruptEnemyDmg=1; this.lastBiome=null;
     this.frontierStage=0; Boss.endlessTier=0; Boss.endlessCycle=0;
+    this.lastBossWave=0; this.lastMiniWave=0;
+    UI._hpGhost=100;
     Corruption.reset();
     Endgame.reset();
+    BloodMoon.reset();
     document.getElementById('levelup').classList.remove('show');
   },
   // stage lookup from world Y — pure band lookup, bottom (easy) to top (hard). Journey only.
@@ -784,6 +960,121 @@ const World = {
   endlessPower(){
     return Math.pow(1.045, Math.max(0,this.wave-1));
   },
+};
+
+// =====================================================================
+// TERRAIN — Journey-mode landscape. A single walkable corridor winds left
+// and right as it climbs (never a straight line), flanked by forest on
+// both sides that blocks the player with real tree collision. The corridor
+// is also crossed every so often by a river band (wade through it slowly,
+// or cross fast on one of its wooden bridges). Endless mode is unaffected
+// (open radial field, as before). Everything here is derived from World.seed
+// and world Y, not stored, so arbitrarily large worlds cost nothing to keep
+// in memory.
+// =====================================================================
+const Terrain = {
+  cell:150, riverSpacing:1450, riverThickness:70, bridgeWidth:110,
+  active(){ return World.mode==='journey'; },
+  hash(a,b){ let h=(a*374761393+b*668265263+World.seed*2654435761)|0;
+    h=(h^(h>>>13))*1274126177; h^=h>>>16; return ((h>>>0)%100000)/100000; },
+  // ---- the walkable corridor: a meandering centerline (a few blended sine
+  // waves, seeded per run) with a half-width that also breathes a little,
+  // so the climb naturally alternates narrow squeezes and wider clearings ----
+  corridorCenterX(y){
+    const s=World.seed||0;
+    const w1=Math.sin(y*0.0011 + s*0.0011);
+    const w2=Math.sin(y*0.00045 + s*0.0021 + 1.7)*0.6;
+    const w3=Math.sin(y*0.0021 + s*0.0006 + 3.1)*0.3;
+    // ramp the wind in gradually over the first stretch of climb so the
+    // player starts dead-center on the path, not shoved sideways at spawn
+    const depth=clamp((CONFIG.world.height-300-y)/1500, 0, 1);
+    const cx=CONFIG.world.width/2 + ((w1+w2+w3)/1.9)*760*depth;
+    return clamp(cx, 480, CONFIG.world.width-480);
+  },
+  corridorHalfWidth(y){
+    const s=World.seed||0;
+    const n=Math.sin(y*0.0017 + s*0.0009 + 0.6)*0.5+0.5;
+    return 170 + n*170; // 170 (narrow squeeze) .. 340 (wide clearing)
+  },
+  // ---- rivers: a horizontal band every ~riverSpacing units, gently wavy,
+  // with two bridge crossings placed near the corridor so a fast route
+  // through the forest is always reachable ----
+  riverBand(idx){
+    const h1=this.hash(idx,101), h2=this.hash(idx,202), h3=this.hash(idx,303), h4=this.hash(idx,404);
+    const centerY = idx*this.riverSpacing + 300 + h1*260;
+    const pathX=this.corridorCenterX(centerY), hw=this.corridorHalfWidth(centerY);
+    return { idx, centerY,
+      thickness: this.riverThickness*(0.75+h2*0.85),
+      bridges: [ pathX-hw*(0.35+h3*0.3), pathX+hw*(0.35+h4*0.3) ] };
+  },
+  riverBandsNear(y,range){
+    const first=Math.floor((y-range)/this.riverSpacing), last=Math.ceil((y+range)/this.riverSpacing);
+    const out=[]; for(let i=first;i<=last;i++){ if(i<0) continue; out.push(this.riverBand(i)); } return out;
+  },
+  waveY(band,x){ return band.centerY + Math.sin(x*0.006+band.idx*11.3)*18; },
+  riverInfoAt(x,y){
+    if(!this.active()) return null;
+    for(const band of this.riverBandsNear(y,160)){
+      const cy=this.waveY(band,x), half=band.thickness/2;
+      if(y>cy-half && y<cy+half){
+        const onBridge=band.bridges.some(bx=>Math.abs(x-bx)<this.bridgeWidth/2);
+        return {inRiver:true, onBridge, band};
+      }
+    }
+    return null;
+  },
+  speedFactorAt(x,y){ const info=this.riverInfoAt(x,y); return (info && !info.onBridge) ? 0.45 : 1; },
+  // ---- trees: dense forest fills both flanks outside the corridor, with a
+  // soft, ragged treeline (not a hard edge) so it reads as natural rather
+  // than a mowed lane. Kept clear of rivers, bridges, spawn and boss gates ----
+  treeExclusion(x,y){
+    if(y > CONFIG.world.height-420) return true; // spawn platform stays open
+    for(const s of STAGES){ if(Math.abs(y-s.topY) < 260) return true; } // boss arenas stay open
+    if(this.riverInfoAt(x,y)) return true; // river channel & banks stay clear
+    return false;
+  },
+  // how "outside the corridor" a point is (negative = safely on the path,
+  // 0 = the edge, positive = deeper into the forest), with a little organic
+  // wobble on top of the corridor's own wind so the treeline looks hand-grown
+  edgeDist(x,y){
+    const pathX=this.corridorCenterX(y), hw=this.corridorHalfWidth(y);
+    const wiggle = World.noiseA ? (World.noiseA(x/260,y/260)-0.5)*70 : 0;
+    return Math.abs(x-pathX)-hw+wiggle;
+  },
+  treeDensity(edgeDist){
+    if(edgeDist < -30) return 0;              // comfortably on the path: clear
+    if(edgeDist < 0) return 0.10;             // a few stray trees right at the edge
+    if(edgeDist < 90) return 0.10+(edgeDist/90)*0.75; // ragged treeline, thickening fast
+    return 0.85;                              // solid-feeling forest beyond that
+  },
+  treesInCell(ix,iy){
+    if(!World.noiseA) return [];
+    const cx=(ix+0.5)*this.cell, cy=(iy+0.5)*this.cell;
+    const dens=this.treeDensity(this.edgeDist(cx,cy));
+    if(dens<=0) return [];
+    if(this.hash(ix,iy) > dens) return [];
+    const jx=cx+(this.hash(ix,iy+900)-0.5)*this.cell*0.8;
+    const jy=cy+(this.hash(ix+900,iy)-0.5)*this.cell*0.8;
+    if(this.treeExclusion(jx,jy)) return [];
+    return [{x:jx,y:jy,r:13+this.hash(ix+50,iy+50)*7}];
+  },
+  treesNear(x,y,pad){
+    if(!this.active()) return [];
+    const out=[];
+    const ix0=Math.floor((x-pad)/this.cell), ix1=Math.floor((x+pad)/this.cell);
+    const iy0=Math.floor((y-pad)/this.cell), iy1=Math.floor((y+pad)/this.cell);
+    for(let iy=iy0;iy<=iy1;iy++) for(let ix=ix0;ix<=ix1;ix++) out.push(...this.treesInCell(ix,iy));
+    return out;
+  },
+  // push a {x,y,r} entity out of any tree trunk it's overlapping
+  collide(ent){
+    if(!this.active()) return;
+    for(const t of this.treesNear(ent.x,ent.y,60)){
+      const d=dist(ent.x,ent.y,t.x,t.y), min=ent.r+t.r*0.55;
+      if(d<min && d>0.0001){ const push=(min-d), a=Math.atan2(ent.y-t.y,ent.x-t.x);
+        ent.x+=Math.cos(a)*push; ent.y+=Math.sin(a)*push; }
+    }
+  }
 };
 
 // =====================================================================
@@ -953,27 +1244,48 @@ const UI = {
   toast(text,color){ const t=document.getElementById('toasts');
     const d=document.createElement('div'); d.className='toast'; d.style.color=color||'#eef3e0'; d.textContent=text;
     t.appendChild(d); setTimeout(()=>d.remove(),2400); },
+  // set an element's text and give its pill a satisfying little "pop" the
+  // instant the value actually changes, instead of a flat, static HUD
+  setText(id,val,pillId){
+    const el=document.getElementById(id); if(!el) return;
+    const str=String(val);
+    if(el.textContent!==str){
+      el.textContent=str;
+      if(pillId){ const pill=document.getElementById(pillId);
+        if(pill){ pill.classList.remove('pop'); void pill.offsetWidth; pill.classList.add('pop'); } }
+    }
+  },
+  _hpGhost:100,
   sync(){
     const p=World.player;
-    document.getElementById('lvlv').textContent=p.level;
-    document.getElementById('biomev').textContent=World.biomeAt(p.x,p.y).name;
-    document.getElementById('stagev').textContent = World.mode==='endless'
+    this.setText('lvlv', p.level, 'lvlp');
+    this.setText('biomev', World.biomeAt(p.x,p.y).name, 'biomep');
+    this.setText('stagev', World.mode==='endless'
       ? (Boss.endlessTier+1)+' / '+BOSSES.length+(Boss.endlessCycle>0?'  (lap '+(Boss.endlessCycle+1)+')':'')
-      : (World.frontierStage+1)+' / '+STAGES.length;
-    document.getElementById('wavev').textContent=World.mode==='endless'?Math.min(World.wave,99):World.wave;
-    document.getElementById('killsv').textContent=World.kills;
-    document.getElementById('goldv').textContent=World.gold;
+      : (World.frontierStage+1)+' / '+STAGES.length, 'stagep');
+    this.setText('wavev', World.mode==='endless'?Math.min(World.wave,99):World.wave, 'wavep');
+    this.setText('killsv', World.kills, 'killsp');
+    this.setText('goldv', World.gold, 'goldp');
     { const c=Math.round(Corruption.v);
-      const cv=document.getElementById('corrv'), cb=document.getElementById('corrBar');
-      if(cv){ cv.textContent=c+'%'; cv.style.color=c>=66?'#ff4d6d':c>=33?'#ff9a2e':'#c06aff'; }
+      const cb=document.getElementById('corrBar');
+      this.setText('corrv', c+'%', 'corrp');
+      const cv=document.getElementById('corrv');
+      if(cv) cv.style.color=c>=66?'#ff4d6d':c>=33?'#ff9a2e':'#c06aff';
       if(cb){ cb.style.width=c+'%'; } }
     const hpP=clamp(p.hp/p.maxhp*100,0,100), mpP=clamp(p.mp/p.maxmp*100,0,100), xpP=clamp(p.xp/p.xpNext*100,0,100);
     document.getElementById('hpFill').style.width=hpP+'%';
+    // damage-trail ghost bar: heals snap the trail up instantly, damage lets
+    // it drain slowly afterward so a hit's size actually reads on the HUD
+    this._hpGhost = hpP>this._hpGhost ? hpP : Math.max(hpP, this._hpGhost-0.6);
+    document.getElementById('hpGhost').style.width=this._hpGhost+'%';
     document.getElementById('mpFill').style.width=mpP+'%';
     document.getElementById('xpFill').style.width=xpP+'%';
     document.getElementById('hpTxt').textContent=Math.ceil(p.hp)+' / '+p.maxhp;
     document.getElementById('mpTxt').textContent='MP '+Math.ceil(p.mp);
     document.getElementById('xpTxt').textContent='LVL '+p.level+'  ·  '+Math.floor(p.xp)+'/'+p.xpNext+' XP';
+    const hpBar=document.getElementById('hpBar'), vign=document.getElementById('lowHpVignette');
+    if(hpBar) hpBar.classList.toggle('critical', hpP<25);
+    if(vign) vign.classList.toggle('show', hpP<25);
     { const w=WANDS[p.wandTier], E=ELEMENTS[w.elem]||ELEMENTS.arcane;
       const ws=document.getElementById('slot-wand'); ws.textContent=E.icon+' '+w.name; ws.style.color=E.glow;
       ws.parentElement.style.borderColor=E.color; ws.parentElement.style.boxShadow='inset 0 0 12px '+E.color+'55, 0 0 10px '+E.color+'33'; }
@@ -983,6 +1295,31 @@ const UI = {
     document.getElementById('slot-helmet').parentElement.style.borderColor=p.gear.helmet?RARITY[p.gear.helmet.rarity].color:'#2a3320';
     document.getElementById('slot-chest').parentElement.style.borderColor=p.gear.chest?RARITY[p.gear.chest.rarity].color:'#2a3320';
     document.getElementById('slot-legs').parentElement.style.borderColor=p.gear.legs?RARITY[p.gear.legs.rarity].color:'#2a3320';
+    this.syncSpellSlot('Q',p.spellQ); this.syncSpellSlot('E',p.spellE);
+  },
+  syncSpellSlot(slot,st){
+    const box=document.getElementById('spell'+slot+'Slot'); if(!box) return;
+    const icon=document.getElementById('spell'+slot+'Icon');
+    const sweep=document.getElementById('spell'+slot+'Sweep');
+    if(!st.id){
+      box.classList.remove('unlocked','ready');
+      if(icon) icon.textContent='';
+      if(sweep) sweep.style.setProperty('--pct',100);
+      return;
+    }
+    const S=SPELLS[st.id], E=ELEMENTS[S.elem];
+    box.classList.add('unlocked');
+    box.style.setProperty('--ec', E.color);
+    if(icon && icon.textContent!==S.icon) icon.textContent=S.icon;
+    const cool=Math.round(S.cooldown*(st.cdMul||1)*(World.castMod||1));
+    const pct=clamp((st.cd/Math.max(1,cool))*100,0,100);
+    if(sweep) sweep.style.setProperty('--pct',pct);
+    box.classList.toggle('ready', pct<=0);
+  },
+  // brief expanding-ring flash on the hotbar icon the instant a spell is cast
+  spellFlash(slot){
+    const box=document.getElementById('spell'+slot+'Slot'); if(!box) return;
+    box.classList.remove('casting'); void box.offsetWidth; box.classList.add('casting');
   }
 };
 
@@ -1127,6 +1464,12 @@ function makePlayer(){
     // --- build-evolution state ---
     mods:{}, mutations:[], elemUse:{},
     healMul:1, autoCast:false, aimWobble:0, timebent:false, dmgDamp:1,
+    // --- Q / E active spells: each slot starts unassigned. Unlocking a spell
+    // via the level-up pool claims whichever slot is still empty; from then on
+    // that slot grows through its own upgrade tree (also drawn from the pool) ---
+    spellQ:{id:null, unlocked:false, cd:0, upg:{}},
+    spellE:{id:null, unlocked:false, cd:0, upg:{}},
+    cyclone:null, // active Blade Cyclone state, if that spell is slotted and running
     origin:null, _eff:null, _effTier:-1, _effDirty:true,
     recalc(){ // apply gear stats + upgrade bonuses
       let hp=CONFIG.player.hp, mp=CONFIG.player.mp, def=0, spd=CONFIG.player.speed;
@@ -1220,7 +1563,8 @@ const Combat = {
       return dist(tx,ty,px,py) < tr+w.beam.width;
     };
     for(const en of World.enemies){ if(!en.dead && hitLine(en.x,en.y,en.r)){ this.hurt(en,dmg,true); this.explode(en.x,en.y,w); } }
-    if(World.boss&&!World.boss.dead && hitLine(World.boss.x,World.boss.y,World.boss.r)){ this.hurtBoss(dmg,true); this.explode(World.boss.x,World.boss.y,w); }
+    const boss=World.boss;
+    if(boss&&!boss.dead && hitLine(boss.x,boss.y,boss.r)){ this.hurtBoss(dmg,true); this.explode(boss.x,boss.y,w); }
     World.beamFx={wx,wy,ex,ey,width:w.beam.width,life:10,color:w.color};
   },
   explode(x,y,w){
@@ -1256,34 +1600,34 @@ const Combat = {
   },
   heal(amount){ const p=World.player; amount*= (p.healMul||1); if(amount<=0)return; p.hp=Math.min(p.maxhp,p.hp+amount);
     FX.spark(p.x,p.y-10,Math.random()*6.28,'#ff6a9a',2); },
-  hurt(en,dmg,fromPlayer){
+  hurt(en,dmg,fromPlayer,elemOverride){
     if(en.dead) return;
     let crit=false, eff=1;
     if(fromPlayer){ const r=this.rollDmg(dmg); dmg=r.dmg; crit=r.crit;
-      const w=this.wand();
-      eff=elemMult(w.elem, en.def.elem); dmg=Math.round(dmg*eff);
-      World.player.elemUse[w.elem]=(World.player.elemUse[w.elem]||0)+1;
+      const w=this.wand(); const elem=elemOverride||w.elem;
+      eff=elemMult(elem, en.def.elem); dmg=Math.round(dmg*eff);
+      World.player.elemUse[elem]=(World.player.elemUse[elem]||0)+1;
       const ls=(w.lifesteal||0)+(World.player.mLifesteal||0); if(ls>0) this.heal(dmg*ls);
-      FX.dmgNumber(en.x,en.y-en.r, dmg, crit, eff, ELEMENTS[w.elem]);
-      FX.impact(en.x,en.y,w.elem,crit);
+      FX.dmgNumber(en.x,en.y-en.r, dmg, crit, eff, ELEMENTS[elem]);
+      FX.impact(en.x,en.y,elem,crit);
       if(eff<0.85) SFX.resist(); else SFX.hit(crit);
     }
     en.hp-=dmg; en.hit=8;
     if(en.hp<=0){ en.dead=true; FX.spark(en.x,en.y,Math.random()*6.28,en.def.head,14); SFX.die(); Loot.onKill(en); }
   },
-  hurtBoss(dmg,fromPlayer){
+  hurtBoss(dmg,fromPlayer,elemOverride){
     const boss=World.boss; if(!boss||boss.dead) return;
     let crit=false, eff=1;
     if(fromPlayer){ const r=this.rollDmg(dmg); dmg=r.dmg; crit=r.crit;
-      const w=this.wand();
-      World.player.elemUse[w.elem]=(World.player.elemUse[w.elem]||0)+1;
-      eff=elemMult(w.elem, 'arcane'); dmg=Math.round(dmg*eff); // boss is arcane-bodied
+      const w=this.wand(); const elem=elemOverride||w.elem;
+      World.player.elemUse[elem]=(World.player.elemUse[elem]||0)+1;
+      eff=elemMult(elem, 'arcane'); dmg=Math.round(dmg*eff); // boss is arcane-bodied
       // ADAPTATION boss: hardens against your most-used element
-      if(boss.resistElem && w.elem===boss.resistElem){ dmg=Math.round(dmg*0.5);
-        FX.dmgNumber(boss.x+rand(-30,30),boss.y-boss.r,'RESIST',false,0.5,ELEMENTS[w.elem]); }
+      if(boss.resistElem && elem===boss.resistElem){ dmg=Math.round(dmg*0.5);
+        FX.dmgNumber(boss.x+rand(-30,30),boss.y-boss.r,'RESIST',false,0.5,ELEMENTS[elem]); }
       const ls=(w.lifesteal||0)+(World.player.mLifesteal||0); if(ls>0) this.heal(dmg*ls);
-      FX.dmgNumber(boss.x+rand(-30,30),boss.y-boss.r, dmg, crit, eff, ELEMENTS[w.elem]);
-      FX.impact(boss.x+rand(-40,40),boss.y+rand(-40,40),w.elem,crit);
+      FX.dmgNumber(boss.x+rand(-30,30),boss.y-boss.r, dmg, crit, eff, ELEMENTS[elem]);
+      FX.impact(boss.x+rand(-40,40),boss.y+rand(-40,40),elem,crit);
     }
     boss.hp-=dmg; boss.hit=8; boss.lastHit=boss.t; // DPS-check timer
     if(boss.hp<=0 && !boss.dead){
@@ -1314,6 +1658,98 @@ const Combat = {
     const real=Math.max(1,Math.round(dmg*(World.corruptEnemyDmg||1))-p.def);
     p.hp-=real; p.hurt=28; FX.spark(p.x,p.y,Math.random()*6.28,'#ff3030',8);
     if(p.hp<=0){ p.hp=0; Game.over(); }
+  },
+  // ---- Q / E active spells ----
+  spellCost(slot){
+    const p=World.player, st=slot==='Q'?p.spellQ:p.spellE, S=SPELLS[st.id];
+    return Math.round(S.manaCost*(st.costMul||1));
+  },
+  castSpell(slot){
+    const p=World.player, st=slot==='Q'?p.spellQ:p.spellE, S=SPELLS[st.id];
+    const cost=this.spellCost(slot);
+    if(p.mp<cost) return;
+    p.mp-=cost;
+    st.cd=Math.round(S.cooldown*(st.cdMul||1)*(World.castMod||1));
+    UI.spellFlash(slot);
+    if(S.id==='firenova') this.castFireNova(p,st,S);
+    else if(S.id==='frostlance') this.castFrostLance(p,st,S);
+    else if(S.id==='bladecyclone') this.castBladeCyclone(p,st,S);
+  },
+  castFireNova(p,st,S){
+    const dmg=Math.round(S.baseDmg*(st.dmgMul||1)*(p.mDmg||1));
+    const rad=Math.round(S.baseRadius*(st.radMul||1));
+    const detonate=(cx,cy)=>{
+      FX.ring(cx,cy,rad,22,'#ff9a2e'); FX.ring(cx,cy,rad*0.6,16,'#ffd24a');
+      FX.spark(cx,cy,Math.random()*6.28,'#ff7a18',26,3.4);
+      World.flash=Math.max(World.flash,10); Endgame.shake=Math.max(Endgame.shake,10);
+      SFX.blip(120,0.28,'sawtooth',0.24,0.6); SFX.noise(0.22,0.22,200);
+      for(const en of World.enemies){ if(en.dead) continue;
+        const d=dist(en.x,en.y,cx,cy); if(d<rad+en.r){
+          const falloff=1-0.3*Math.min(1,d/rad);
+          Combat.hurt(en, Math.round(dmg*falloff), true, 'fire'); } }
+      if(World.boss&&!World.boss.dead&&dist(World.boss.x,World.boss.y,cx,cy)<rad+World.boss.r) Combat.hurtBoss(dmg,true,'fire');
+      if(st.burn) World.fields.push({x:cx,y:cy,r:rad,life:180,maxlife:180,kind:'burn',dmg:Math.max(2,Math.round(dmg*0.08))});
+    };
+    detonate(p.x,p.y);
+    if(st.double) World.after(26, ()=>{ if(World.running && !World.paused) detonate(World.player.x,World.player.y); });
+  },
+  castFrostLance(p,st,S){
+    const dmg=Math.round(S.baseDmg*(st.dmgMul||1)*(p.mDmg||1));
+    const width=Math.round(S.baseWidth*(st.widMul||1));
+    const len=920;
+    const fireLance=(angOff)=>{
+      const a=p.armAngle+angOff;
+      const wx=p.x+Math.cos(a)*20, wy=p.y+Math.sin(a)*20-14;
+      const ex=wx+Math.cos(a)*len, ey=wy+Math.sin(a)*len;
+      for(let s=0;s<10;s++){ const t=s/10; FX.spark(wx+(ex-wx)*t, wy+(ey-wy)*t, a, '#bfe6ff', 2, 2.6); }
+      World.beamFx={wx,wy,ex,ey,width,life:14,color:'#cfeeff'};
+      FX.ring(wx,wy,36,14,'#bfe6ff');
+      const hitLine=(tx,ty,tr)=>{ const dx=ex-wx, dy=ey-wy, len2=dx*dx+dy*dy;
+        let t=((tx-wx)*dx+(ty-wy)*dy)/len2; t=clamp(t,0,1);
+        const px=wx+dx*t, py=wy+dy*t; return dist(tx,ty,px,py) < tr+width/2; };
+      for(const en of World.enemies){ if(!en.dead && hitLine(en.x,en.y,en.r)){
+        Combat.hurt(en,dmg,true,'ice'); if(st.freeze) en._frozenUntil=World.time+90; } }
+      if(World.boss&&!World.boss.dead&&hitLine(World.boss.x,World.boss.y,World.boss.r)){
+        const boss=World.boss;
+        Combat.hurtBoss(dmg,true,'ice'); if(st.freeze) boss._frozenUntil=World.time+60; }
+    };
+    fireLance(0);
+    if(st.double) fireLance(0.16*(Math.random()<0.5?1:-1));
+    SFX.blip(200,0.22,'triangle',0.22,0.5); SFX.noise(0.14,0.16,900);
+  },
+  castBladeCyclone(p,st,S){
+    const dmg=Math.round(S.baseDmg*(st.dmgMul||1)*(p.mDmg||1));
+    const rad=Math.round(S.baseRadius*(st.radMul||1));
+    const dur=Math.round(S.baseDuration*(st.durMul||1));
+    const blades=S.baseBlades+(st.bladeBonus||0);
+    p.cyclone={active:true, untilTime:World.time+dur, blades, radius:rad, dmg, spinSpeed:0.24, ang:0};
+    FX.ring(p.x,p.y,rad,20,'#bfe0ff'); FX.ring(p.x,p.y,rad*0.5,14,'#ffffff');
+    World.flash=Math.max(World.flash,8); Endgame.shake=Math.max(Endgame.shake,8);
+    SFX.blip(200,0.3,'sawtooth',0.22,1.3); SFX.blip(300,0.3,'triangle',0.18,1.1);
+  },
+  // per-frame tick for an active Blade Cyclone — the rotating blades are the
+  // visual, but the actual damage zone is the whole radius around the player,
+  // so a crowd pressed right up against you doesn't slip through untouched
+  updateCyclone(){
+    const p=World.player, c=p.cyclone;
+    if(!c||!c.active) return;
+    if(World.time>=c.untilTime){ c.active=false; p._cycloneBlades=null; return; }
+    c.ang+=c.spinSpeed;
+    const blades=[];
+    for(let k=0;k<c.blades;k++){
+      const a=c.ang+k*(6.283/c.blades);
+      blades.push({x:p.x+Math.cos(a)*c.radius, y:p.y+Math.sin(a)*c.radius, a});
+    }
+    p._cycloneBlades=blades;
+    const tickCd=Math.max(4, Math.round(30/c.blades)); // more blades spinning = faster ticks
+    for(const en of World.enemies){ if(en.dead) continue;
+      if(dist(en.x,en.y,p.x,p.y)<c.radius+en.r){ if(!en._cyCd||en._cyCd<=0){ this.hurt(en,c.dmg,true,'storm'); en._cyCd=tickCd; } } }
+    const boss=World.boss;
+    if(boss&&!boss.dead&&dist(boss.x,boss.y,p.x,p.y)<c.radius+boss.r){
+      if(!boss._cyCd||boss._cyCd<=0){ this.hurtBoss(c.dmg,true,'storm'); boss._cyCd=tickCd; } }
+    for(const en of World.enemies) if(en._cyCd>0) en._cyCd--;
+    if(World.boss&&World.boss._cyCd>0) World.boss._cyCd--;
+    if(World.time%2===0) for(const b of blades) FX.spark(b.x,b.y,b.a,'#bfe0ff',1,2.4);
   }
 };
 
@@ -1331,8 +1767,9 @@ const Orbit = {
       p._orbits.push({x:ox,y:oy,a});
       for(const en of World.enemies){ if(en.dead)continue;
         if(dist(en.x,en.y,ox,oy)<en.r+12){ if(!en._oCd||en._oCd<=0){ Combat.hurt(en,w.orbitDmg,true); en._oCd=10; } } }
-      if(World.boss&&!World.boss.dead&&dist(World.boss.x,World.boss.y,ox,oy)<World.boss.r+12){
-        if(!World.boss._oCd||World.boss._oCd<=0){ Combat.hurtBoss(w.orbitDmg,true); World.boss._oCd=8; } }
+      const boss=World.boss;
+      if(boss&&!boss.dead&&dist(boss.x,boss.y,ox,oy)<boss.r+12){
+        if(!boss._oCd||boss._oCd<=0){ Combat.hurtBoss(w.orbitDmg,true); boss._oCd=8; } }
     }
     for(const en of World.enemies) if(en._oCd>0)en._oCd--;
     if(World.boss&&World.boss._oCd>0)World.boss._oCd--;
@@ -1382,12 +1819,14 @@ const Spawner = {
     const p=World.player;
     for(const en of World.enemies){
       en.t++; if(en.hit>0)en.hit--;
-      const a=Math.atan2(p.y-en.y,p.x-en.x), m=en.def.move; let sp=en.speed*(en.slowMul||1)*(World.enemySpeedMod||1);
+      const a=Math.atan2(p.y-en.y,p.x-en.x), m=en.def.move; let sp=en.speed*(en.slowMul||1)*(World.enemySpeedMod||1)*Terrain.speedFactorAt(en.x,en.y);
+      if(en._frozenUntil && World.time<en._frozenUntil) sp*=0.25;
       if(m==='hop'){ sp*=(Math.sin(en.t*0.15)>0.6?2.2:0.5); }
       else if(m==='dash'){ en.dashT--; if(en.dashT<=0&&dist(en.x,en.y,p.x,p.y)<320){en.dashT=70;} sp*=(en.dashT>50?2.6:1); }
       else if(m==='slow'){ sp*=0.8; }
       if(m==='wobble'){ en.x+=Math.cos(a)*sp+Math.cos(en.t*0.2)*0.5; en.y+=Math.sin(a)*sp+Math.sin(en.t*0.2)*0.5; }
       else { en.x+=Math.cos(a)*sp; en.y+=Math.sin(a)*sp; }
+      Terrain.collide(en);
       // shooting enemies
       if(en.def.shoot){ en.fireCd--; if(en.fireCd<=0&&dist(en.x,en.y,p.x,p.y)<420){
         en.fireCd=en.def.fireCd;
@@ -1436,6 +1875,30 @@ const Endgame = {
 };
 
 // =====================================================================
+// BLOOD MOON — an Endless-mode event, the screen turns a deep blood red for
+// a while every tenth wave, timed to cover the proper boss that spawns then.
+// =====================================================================
+const BloodMoon = {
+  active:false, until:0,
+  reset(){ this.active=false; this.until=0; },
+  trigger(durationFrames){
+    this.active=true; this.until=World.time+durationFrames;
+    UI.toast('🌑 A blood moon rises 🌑','#ff2a2a');
+  },
+  update(){ if(this.active && World.time>=this.until) this.active=false; },
+  // full screen tint, drawn once per frame over everything else
+  draw(ctx,w,h){
+    if(!this.active) return;
+    const pulse=0.5+0.5*Math.sin(World.time*0.05);
+    const g=ctx.createRadialGradient(w/2,h/2,h*0.15,w/2,h/2,h*0.95);
+    g.addColorStop(0,'rgba(120,0,0,0)'); g.addColorStop(1,'rgba(160,0,0,'+(0.38+0.12*pulse)+')');
+    ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='rgba(150,0,10,'+(0.05+0.05*pulse)+')';
+    ctx.fillRect(0,0,w,h);
+  }
+};
+
+// =====================================================================
 // BOSSES — one Warden gates each stage of the climb (Journey; boss data
 // lives on STAGES[i].boss). Endless mode instead cycles through this
 // original 4-Warden gauntlet forever, growing stronger every lap.
@@ -1455,12 +1918,48 @@ const Boss = {
   maybeTrigger(){
     if(World.mode==='endless'){
       const p=World.player;
-      const distC=dist(p.x,p.y,CONFIG.world.size/2,CONFIG.world.size/2)/(CONFIG.world.size*0.5);
-      if(distC>0.86 && !World.bossActive && !World.boss){ this.spawnEndless(p.x,p.y); }
+      if(!World.bossActive && !World.boss){
+        if(World.wave>0 && World.wave%10===0 && World.lastBossWave!==World.wave){
+          World.lastBossWave=World.wave;
+          const ang=Math.random()*6.28, farD=1600+Math.random()*500;
+          const fx=clamp(p.x+Math.cos(ang)*farD,80,CONFIG.world.size-80);
+          const fy=clamp(p.y+Math.sin(ang)*farD,80,CONFIG.world.size-80);
+          BloodMoon.trigger(2400);
+          this.spawnEndless(fx,fy);
+        } else if(World.wave>0 && World.wave%5===0 && World.wave%10!==0 && World.lastMiniWave!==World.wave){
+          World.lastMiniWave=World.wave;
+          this.spawnMiniBoss();
+        }
+      }
       return;
     }
     const p=World.player, stage=STAGES[World.frontierStage];
     if(p.y<=stage.topY+220 && !World.bossActive && !World.boss){ this.spawn(p.x,p.y); }
+  },
+  // a tough, uniquely marked enemy rather than a full scripted boss, spawned
+  // far from the player so it visibly closes in rather than appearing on top of you
+  spawnMiniBoss(){
+    const p=World.player;
+    const ang=Math.random()*6.28, farD=1200+Math.random()*400;
+    let x,y;
+    if(World.mode==='endless'){
+      x=clamp(p.x+Math.cos(ang)*farD,60,CONFIG.world.size-60);
+      y=clamp(p.y+Math.sin(ang)*farD,60,CONFIG.world.size-60);
+    } else {
+      x=clamp(p.x+Math.cos(ang)*farD,60,CONFIG.world.width-60);
+      y=clamp(p.y+Math.sin(ang)*farD,60,CONFIG.world.height-60);
+      y=Math.max(y, World.ceilingY()+30);
+    }
+    const b=World.biomeAt(x,y);
+    const type=pick(b.enemies), base=ENEMIES[type];
+    const growth=World.mode==='endless'?World.endlessPower():(1+World.wave*0.08);
+    const hp=Math.round(base.hp*11*growth);
+    const dmg=Math.round(base.dmg*2.2);
+    const r=Math.round(base.r*2.1);
+    World.enemies.push({x,y,r,type,def:base,bi:b.diff,elite:true,miniBoss:true,
+      hp,maxhp:hp,speed:base.speed*0.85,dmg,hit:0,t:rand(0,99),fireCd:base.fireCd||0,dashT:0});
+    UI.toast('⚠ A miniboss stirs in the distance.','#ff9a2e');
+    SFX.boss();
   },
   topElem(){ const u=World.player.elemUse; let best='arcane',bv=-1;
     for(const k in u){ if(u[k]>bv){ bv=u[k]; best=k; } } return best; },
@@ -1498,7 +1997,7 @@ const Boss = {
     const B=BOSSES[this.endlessTier];
     const mul=World.endlessPower();
     const scaled=Object.assign({},B,{hp:Math.round(B.hp*mul), dmgMul:B.dmgMul*Math.min(Math.sqrt(mul),3)});
-    World.boss={x,y:y-200,r:64+this.endlessTier*4,hp:scaled.hp,maxhp:scaled.hp,hit:0,t:0,phase:0,dead:false,atkCd:80,eye:0,lastHit:0,B:scaled};
+    World.boss={x,y,r:64+this.endlessTier*4,hp:scaled.hp,maxhp:scaled.hp,hit:0,t:0,phase:0,dead:false,atkCd:80,eye:0,lastHit:0,B:scaled};
     World.bossActive=true;
     const boss=World.boss;
     this.applyCheck(boss, ENDLESS_CHECKS[this.endlessTier]);
@@ -1541,7 +2040,8 @@ const Boss = {
     }
     if(boss.adapt && boss.t%240===0){ boss.resistElem=Boss.topElem(); } // re-reads your favorite element
     const a=Math.atan2(p.y-boss.y,p.x-boss.x);
-    boss.x+=Math.cos(a)*(1.0+boss.phase*0.5)*B.speedMul; boss.y+=Math.sin(a)*(1.0+boss.phase*0.5)*B.speedMul;
+    let fmul=1; if(boss._frozenUntil && World.time<boss._frozenUntil) fmul=0.4;
+    boss.x+=Math.cos(a)*(1.0+boss.phase*0.5)*B.speedMul*fmul; boss.y+=Math.sin(a)*(1.0+boss.phase*0.5)*B.speedMul*fmul;
     if(World.mode==='endless'){ boss.x=clamp(boss.x,boss.r,CONFIG.world.size-boss.r); boss.y=clamp(boss.y,boss.r,CONFIG.world.size-boss.r); }
     else { boss.x=clamp(boss.x,boss.r,CONFIG.world.width-boss.r); boss.y=clamp(boss.y,boss.r,CONFIG.world.height-boss.r); }
     if(dist(boss.x,boss.y,p.x,p.y)<boss.r+p.r) Combat.hurtPlayer(Math.round(24*B.dmgMul));
@@ -1604,7 +2104,8 @@ function updateProjectiles(){
         if(b.pierce>0)b.pierce--; else if(!b.boomerang) consumed=true; break; }
     }
     if(!consumed && World.boss&&!World.boss.dead&&!b.hit.has(World.boss)&&dist(World.boss.x,World.boss.y,b.x,b.y)<World.boss.r+b.r){
-      Combat.hurtBoss(b.dmg,true); Combat.explode(b.x,b.y,w); b.hit.add(World.boss); didHit=true;
+      const boss=World.boss;
+      Combat.hurtBoss(b.dmg,true); Combat.explode(b.x,b.y,w); b.hit.add(boss); didHit=true;
       if(b.pierce>0)b.pierce--; else if(!b.boomerang) consumed=true;
     }
     // RICOCHET: instead of dying, redirect toward nearest un-hit enemy
@@ -1679,7 +2180,7 @@ const Shop = {
 const GAME_MODES = [
   {id:'journey', name:'Journey', c:'#5fd0ff',
    tag:'A vertical climb through 6 staged biomes',
-   d:'Fight upward from the Sunlit Plains to the Stormscar. One Warden gates the top of every stage — clear all six and the realm is yours.'},
+   d:'Fight upward from the Sunlit Plains to the Stormscar, crossing rivers and threading tree-lined ground along the way. One Warden gates the top of every stage — clear all six and the realm is yours.'},
   {id:'endless', name:'Endless', c:'#ff9a2e',
    tag:'The original radial gauntlet — now with no end',
    d:'Push outward from a safe center through eight biomes toward the Corrupted Core. The Warden gauntlet loops forever, waves climb past 99, and the storm only ever gets worse. There is no winning here — only surviving.'},
@@ -1722,7 +2223,7 @@ const ORIGINS = [
 // =====================================================================
 const MUTATIONS = [
   {id:'splitfork', name:'Split Shot', c:'#5bc0ff', max:3, risk:false,
-   d:'Your spell forks — more projectiles fan out with every stack.', stat:'+2 PROJECTILES',
+   d:'Your spell forks. More projectiles fan out with every stack.', stat:'+2 PROJECTILES',
    apply(p){ p.mods.multi=(p.mods.multi||0)+2; p.mods.spread=Math.max(p.mods.spread||0,0.42); }},
   {id:'chainignite', name:'Chain Ignition', c:'#bfe0ff', max:1, risk:false,
    d:'Impacts arc lightning to nearby foes, chaining through the swarm.', stat:'LIGHTNING CHAINS',
@@ -1737,7 +2238,7 @@ const MUTATIONS = [
    d:'Your projectiles bend through the air to hunt the nearest foe.', stat:'HOMING',
    apply(p){ p.mods.homing=Math.max(p.mods.homing||0,0.11); }},
   {id:'ricochet', name:'Ricochet', c:'#9be3ff', max:1, risk:false,
-   d:'Instead of dying, bolts bounce to a fresh target — up to four times.', stat:'BOUNCING BOLTS',
+   d:'Instead of dying, bolts bounce to a fresh target, up to four times.', stat:'BOUNCING BOLTS',
    apply(p){ p.mods.bounce=(p.mods.bounce||0)+4; }},
   {id:'cluster', name:'Fragmentation', c:'#ff7a18', max:1, risk:false,
    d:'Bolts burst into a ring of fiery shards when they land.', stat:'SHARD BURST',
@@ -1751,12 +2252,13 @@ const MUTATIONS = [
   {id:'focus', name:'Unstable Focus', c:'#fff0a8', max:2, risk:false,
    d:'Wild arcane energy sharpens into savage critical strikes.', stat:'+12% CRIT',
    apply(p){ p.mods.crit=(p.mods.crit||0)+0.12; }},
-  // ---- RISK mutations: strong, with a real downside (doc: "late-game tension") ----
+  // RISK mutations: strong, with a real downside. The card UI already shows
+  // a separate Risk badge, so the description itself just states the effect.
   {id:'bloodprice', name:'Blood Price', c:'#ff4d6d', max:1, risk:true,
-   d:'RISK — +35% damage, but every cast spends a sliver of your own life.', stat:'+35% DMG / costs HP',
+   d:'Adds 35% damage, but every cast spends a sliver of your own life.', stat:'+35% DMG / costs HP',
    apply(p){ p.mDmg*=1.35; p.mods.bloodPct=0.006; }},
   {id:'glasscore', name:'Volatile Core', c:'#c06aff', max:1, risk:true,
-   d:'RISK — the closer you are to death, the more your spells devastate.', stat:'DMG scales w/ missing HP',
+   d:'The closer you are to death, the more your spells devastate.', stat:'DMG scales w/ missing HP',
    apply(p){ p.mods.glass=true; }},
 ];
 
@@ -1827,19 +2329,19 @@ const Upgrades = {
     {id:'dmg',  name:'Arcane Might', c:'#ff7a18', d:'Raw destructive power coursing through every bolt.', stat:'+15% DAMAGE',
       icon:'<svg viewBox="0 0 60 60"><defs><radialGradient id="g_dmg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#ffd24a"/><stop offset="1" stop-color="#ff7a18"/></radialGradient></defs><path d="M30 6 L37 24 L56 24 L41 36 L47 54 L30 42 L13 54 L19 36 L4 24 L23 24 Z" fill="url(#g_dmg)" stroke="#ffb347" stroke-width="1.5"/></svg>',
       apply:p=>p.mDmg*=1.15},
-    {id:'rate', name:'Quickcast', c:'#ffd24a', d:'Channel spells faster — let the storm never cease.', stat:'+12% FIRE RATE',
+    {id:'rate', name:'Quickcast', c:'#ffd24a', d:'Channel spells faster, so the storm never ceases.', stat:'+12% FIRE RATE',
       icon:'<svg viewBox="0 0 60 60"><g fill="none" stroke="#ffd24a" stroke-width="3" stroke-linecap="round"><path d="M30 30 L30 12"/><path d="M30 30 L42 38"/></g><circle cx="30" cy="30" r="20" fill="none" stroke="#ffe07a" stroke-width="2.5"/><circle cx="30" cy="30" r="3.5" fill="#fff"/><path d="M22 6 L30 12 L38 6" fill="none" stroke="#ffd24a" stroke-width="2.5" stroke-linecap="round"/></svg>',
       apply:p=>p.mFireRate*=1.12},
     {id:'spd',  name:'Fleet Step', c:'#8be36b', d:'Swift feet carry you clear of every swarm.', stat:'+8% MOVE SPEED',
       icon:'<svg viewBox="0 0 60 60"><g stroke="#8be36b" stroke-width="3" stroke-linecap="round" fill="none"><path d="M14 38 L30 22"/><path d="M30 22 L46 38"/><path d="M22 30 L22 46"/><path d="M38 30 L38 46"/></g><g stroke="#bdf0a0" stroke-width="2.5" stroke-linecap="round"><path d="M8 20 L18 20"/><path d="M6 28 L14 28"/></g></svg>',
       apply:p=>{p.mSpeed*=1.08;p.recalc();}},
-    {id:'multi',name:'Split Bolt', c:'#5bc0ff', d:'Your spell forks — one more projectile, always.', stat:'+1 PROJECTILE',
+    {id:'multi',name:'Split Bolt', c:'#5bc0ff', d:'Your spell forks. One more projectile, always.', stat:'+1 PROJECTILE',
       icon:'<svg viewBox="0 0 60 60"><g stroke="#5bc0ff" stroke-width="3" stroke-linecap="round" fill="none"><path d="M10 30 L26 30"/><path d="M26 30 L50 16"/><path d="M26 30 L50 30"/><path d="M26 30 L50 44"/></g><circle cx="50" cy="16" r="4" fill="#9be3ff"/><circle cx="50" cy="30" r="4" fill="#9be3ff"/><circle cx="50" cy="44" r="4" fill="#9be3ff"/></svg>',
       apply:p=>p.mMulti+=1},
-    {id:'crit', name:'Keen Eye', c:'#fff0a8', d:'Strike the weak point — devastating critical hits.', stat:'+8% CRIT CHANCE',
+    {id:'crit', name:'Keen Eye', c:'#fff0a8', d:'Strike the weak point for devastating critical hits.', stat:'+8% CRIT CHANCE',
       icon:'<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="20" fill="none" stroke="#fff0a8" stroke-width="2.5"/><circle cx="30" cy="30" r="11" fill="none" stroke="#ffd24a" stroke-width="2"/><circle cx="30" cy="30" r="4" fill="#ff5a5a"/><g stroke="#fff0a8" stroke-width="2.5" stroke-linecap="round"><path d="M30 4 L30 12"/><path d="M30 48 L30 56"/><path d="M4 30 L12 30"/><path d="M48 30 L56 30"/></g></svg>',
       apply:p=>p.mCrit+=0.08},
-    {id:'hp',   name:'Vitality', c:'#ff6a9a', d:'Bolster your life-force and mend your wounds.', stat:'+30 MAX HP',
+    {id:'hp',   name:'Vitality', c:'#ff6a9a', d:'Bolster your life force and mend your wounds.', stat:'+30 MAX HP',
       icon:'<svg viewBox="0 0 60 60"><defs><linearGradient id="g_hp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8aa8"/><stop offset="1" stop-color="#c01848"/></linearGradient></defs><path d="M30 50 C10 36 8 22 18 16 C25 12 30 18 30 22 C30 18 35 12 42 16 C52 22 50 36 30 50 Z" fill="url(#g_hp)" stroke="#ffb0c4" stroke-width="1.5"/><path d="M22 28 L28 28 L28 22 L32 22 L32 28 L38 28 L38 32 L32 32 L32 38 L28 38 L28 32 L22 32 Z" fill="#fff"/></svg>',
       apply:p=>{p.mMaxHp+=30;p.recalc();p.hp=Math.min(p.maxhp,p.hp+30);}},
     {id:'regen',name:'Regeneration', c:'#9be36b', d:'Life slowly returns, drop by emerald drop.', stat:'+0.15 HP / TICK',
@@ -1853,6 +2355,42 @@ const Upgrades = {
       apply:p=>p.pickup+=60},
   ],
   maybeOpen(){ if(this.queue>0 && !this.open && !World.shopOpen) this.present(); },
+  spellIcon(S){
+    const c=ELEMENTS[S.elem].color;
+    return '<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" fill="'+c+'" opacity=".18"/>'+
+      '<circle cx="30" cy="30" r="22" fill="none" stroke="'+c+'" stroke-width="2.5"/>'+
+      '<text x="30" y="39" font-size="26" text-anchor="middle">'+S.icon+'</text></svg>';
+  },
+  // spell unlocks (Q/E) and, once a slot is filled, its upgrade-tree nodes —
+  // fed into the same random level-up pool as stat boons and mutations.
+  // More spells exist than slots, so which two you end up with varies by run.
+  spellCandidates(p){
+    const out=[];
+    const slots=[{key:'Q', st:p.spellQ},{key:'E', st:p.spellE}];
+    const taken=new Set([p.spellQ.id,p.spellE.id].filter(Boolean));
+    for(const {key,st} of slots){
+      if(!st.id){
+        for(const sid of SPELL_LIST){
+          if(taken.has(sid)) continue;
+          const S=SPELLS[sid];
+          out.push({type:'spellUnlock', slot:key, name:'Unlock '+S.name+' ('+key+')', c:ELEMENTS[S.elem].color,
+            d:S.unlockDesc, stat:key+' SPELL', icon:this.spellIcon(S),
+            apply(pl){ const slotState=key==='Q'?pl.spellQ:pl.spellE; slotState.id=sid; slotState.unlocked=true; }});
+        }
+      } else {
+        const S=SPELLS[st.id];
+        for(const node of S.tree){
+          const have=(st.upg&&st.upg[node.id])||0;
+          if(have>=(node.max||1)) continue;
+          out.push({type:'spellUpgrade', slot:key, name:S.name+' · '+node.name, c:ELEMENTS[S.elem].color,
+            d:node.d, stat:node.stat, icon:this.spellIcon(S),
+            apply(pl){ const slotState=key==='Q'?pl.spellQ:pl.spellE;
+              node.apply(pl,slotState); slotState.upg[node.id]=((slotState.upg&&slotState.upg[node.id])||0)+1; }});
+        }
+      }
+    }
+    return out;
+  },
   mutIcon(c,risk){
     return '<svg viewBox="0 0 60 60"><defs><radialGradient id="mg'+Math.floor(Math.random()*1e6)+'" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="'+c+'"/><stop offset="1" stop-color="rgba(0,0,0,.2)"/></radialGradient></defs>'+
       '<circle cx="30" cy="30" r="15" fill="'+c+'" opacity=".18"/>'+
@@ -1874,9 +2412,11 @@ const Upgrades = {
         icon:this.mutIcon(mm.c,mm.risk),
         apply(pl){ Mutations.grant(pl,mm.id,true); Corruption.add(mm.risk?14:9); }});
     }
+    // Q / E spells — unlocks first, then upgrade-tree nodes once unlocked
+    cands.push(...this.spellCandidates(p));
     const picks=[]; const pool=cands.slice();
-    const muts=pool.filter(c=>c.type==='mut');
-    if(muts.length && Math.random()<0.78){ const mm=muts[randi(0,muts.length-1)];
+    const special=pool.filter(c=>c.type==='mut'||c.type==='spellUnlock'||c.type==='spellUpgrade');
+    if(special.length && Math.random()<0.78){ const mm=special[randi(0,special.length-1)];
       picks.push(mm); pool.splice(pool.indexOf(mm),1); }
     while(picks.length<3 && pool.length){ picks.push(pool.splice(randi(0,pool.length-1),1)[0]); }
     this.current=picks;
@@ -1884,7 +2424,9 @@ const Upgrades = {
     document.getElementById('upLevel').textContent='Level '+World.player.level+' — Choose your boon';
     picks.forEach((u,idx)=>{
       const card=document.createElement('div'); card.className='upCard'; card.style.setProperty('--cc',u.c);
-      const kind = u.type==='mut' ? (u.risk?'<div class="upKind risk">◆ Risk Mutation</div>':'<div class="upKind">◆ Mutation</div>') : '';
+      const kind = u.type==='mut' ? (u.risk?'<div class="upKind risk">◆ Risk Mutation</div>':'<div class="upKind">◆ Mutation</div>')
+        : u.type==='spellUnlock' ? '<div class="upKind">✦ New Spell</div>'
+        : u.type==='spellUpgrade' ? '<div class="upKind">✦ Spell Upgrade</div>' : '';
       card.innerHTML=
         '<div class="upGlow"></div>'+
         kind+
@@ -1901,7 +2443,11 @@ const Upgrades = {
   },
   choose(idx){
     const u=this.current[idx]; u.apply(World.player);
-    UI.toast((u.type==='mut'?'Mutation · '+u.name:u.name+' acquired!'),u.c);
+    const label = u.type==='mut' ? 'Mutation · '+u.name
+      : u.type==='spellUnlock' ? 'New Spell · '+u.name
+      : u.type==='spellUpgrade' ? u.name
+      : u.name+' acquired!';
+    UI.toast(label,u.c);
     document.getElementById('levelup').classList.remove('show');
     this.open=false; this.queue--; World.paused=false;
     UI.sync();
@@ -1990,9 +2536,71 @@ const Render = {
         }
       }
     }
+    if(Terrain.active()){
+      this.drawRivers();
+      this.treeCache=Terrain.treesNear(World.player.x,World.player.y,Math.max(Camera.vw(),Camera.vh())*0.75+200);
+      for(const tr of this.treeCache) if(tr.y<=World.player.y) this.tree(tr);
+    } else { this.treeCache=null; }
     // mood darkness by biome at player
     const mood=World.biomeAt(World.player.x,World.player.y).mood;
     if(mood>0){ ctx.fillStyle='rgba(0,0,8,'+(mood*0.4)+')'; ctx.fillRect(0,0,Camera.vw(),Camera.vh()); }
+  },
+  // trees whose feet are below the player draw after the wizard, for a cheap
+  // but effective sense of depth without a full scene-wide y-sort
+  terrainFront(){
+    if(!this.treeCache) return;
+    for(const tr of this.treeCache) if(tr.y>World.player.y) this.tree(tr);
+  },
+  tree(t){
+    const ctx=this.ctx, x=Camera.sx(t.x), y=Camera.sy(t.y);
+    if(x<-40||x>Camera.vw()+40||y<-70||y>Camera.vh()+40) return;
+    ctx.fillStyle='rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(x,y+t.r*0.3,t.r*1.3,t.r*0.5,0,0,6.28); ctx.fill();
+    ctx.fillStyle='#4a3420'; ctx.fillRect(x-2.5,y-4,5,t.r*0.9);
+    const cg=ctx.createRadialGradient(x-4,y-t.r*1.3,2,x,y-t.r*1.1,t.r*1.6);
+    cg.addColorStop(0,'#3f8a44'); cg.addColorStop(1,'#1c4a24');
+    ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(x,y-t.r*1.1,t.r*1.5,0,6.28); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.08)'; ctx.beginPath(); ctx.arc(x-t.r*0.4,y-t.r*1.5,t.r*0.6,0,6.28); ctx.fill();
+  },
+  drawRivers(){
+    const ctx=this.ctx;
+    for(const band of Terrain.riverBandsNear(World.player.y, Math.max(Camera.vh(),500))){
+      const topY=band.centerY-band.thickness/2-24, botY=band.centerY+band.thickness/2+24;
+      if(botY<Camera.y||topY>Camera.y+Camera.vh()) continue;
+      ctx.save();
+      ctx.beginPath();
+      for(let x=0;x<=CONFIG.world.width;x+=40){ const wy=Terrain.waveY(band,x)-band.thickness/2;
+        const sx=Camera.sx(x), sy=Camera.sy(wy); if(x===0) ctx.moveTo(sx,sy); else ctx.lineTo(sx,sy); }
+      for(let x=CONFIG.world.width;x>=0;x-=40){ const wy=Terrain.waveY(band,x)+band.thickness/2;
+        ctx.lineTo(Camera.sx(x),Camera.sy(wy)); }
+      ctx.closePath();
+      const wgrad=ctx.createLinearGradient(0,Camera.sy(band.centerY-band.thickness/2),0,Camera.sy(band.centerY+band.thickness/2));
+      wgrad.addColorStop(0,'#2a6a8a'); wgrad.addColorStop(.5,'#1c4f6e'); wgrad.addColorStop(1,'#173f58');
+      ctx.fillStyle=wgrad; ctx.fill();
+      ctx.clip();
+      ctx.strokeStyle='rgba(200,235,255,.28)'; ctx.lineWidth=2;
+      for(let i=0;i<6;i++){ const yy=band.centerY-band.thickness/2+((World.time*0.6+i*30)%Math.max(1,band.thickness));
+        ctx.beginPath(); ctx.moveTo(Camera.sx(0),Camera.sy(yy)); ctx.lineTo(Camera.sx(CONFIG.world.width),Camera.sy(yy+6)); ctx.stroke(); }
+      ctx.restore();
+      ctx.strokeStyle='rgba(90,70,40,.55)'; ctx.lineWidth=3;
+      ctx.beginPath();
+      for(let x=0;x<=CONFIG.world.width;x+=60){ const wy=Terrain.waveY(band,x)-band.thickness/2;
+        const sx=Camera.sx(x),sy=Camera.sy(wy); x===0?ctx.moveTo(sx,sy):ctx.lineTo(sx,sy); }
+      ctx.stroke();
+      ctx.beginPath();
+      for(let x=0;x<=CONFIG.world.width;x+=60){ const wy=Terrain.waveY(band,x)+band.thickness/2;
+        const sx=Camera.sx(x),sy=Camera.sy(wy); x===0?ctx.moveTo(sx,sy):ctx.lineTo(sx,sy); }
+      ctx.stroke();
+      for(const bx of band.bridges){
+        const y0=Camera.sy(band.centerY-band.thickness/2-14), y1=Camera.sy(band.centerY+band.thickness/2+14);
+        const x0=Camera.sx(bx-Terrain.bridgeWidth/2), x1=Camera.sx(bx+Terrain.bridgeWidth/2);
+        if(x1<0||x0>Camera.vw()) continue;
+        ctx.fillStyle='#8a6a3c'; ctx.fillRect(x0,y0,x1-x0,y1-y0);
+        ctx.strokeStyle='#5c4020'; ctx.lineWidth=2;
+        for(let py=y0+6; py<y1; py+=10){ ctx.beginPath(); ctx.moveTo(x0+3,py); ctx.lineTo(x1-3,py); ctx.stroke(); }
+        ctx.strokeStyle='#3d2b14'; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y1); ctx.moveTo(x1,y0); ctx.lineTo(x1,y1); ctx.stroke();
+      }
+    }
   },
   gateWall(){
     if(World.mode==='endless' || World.frontierStage>=STAGES.length-1) return; // no gate to show
@@ -2046,7 +2654,10 @@ const Render = {
     if(x<-60||x>Camera.vw()+60||y<-60||y>Camera.vh()+60) return;
     const f=en.hit>0, d=en.def;
     ctx.save(); ctx.translate(x,y);
-    if(en.elite){ ctx.shadowColor='#ffcf3a'; ctx.shadowBlur=18;
+    if(en.miniBoss){ const pulse=0.5+0.5*Math.sin(World.time*0.15);
+      ctx.shadowColor='#ff4d1a'; ctx.shadowBlur=24+pulse*10;
+      ctx.strokeStyle='#ff5a1a'; ctx.lineWidth=3.5; ctx.beginPath(); ctx.arc(0,0,en.r+9,0,6.28); ctx.stroke(); ctx.shadowBlur=0; }
+    else if(en.elite){ ctx.shadowColor='#ffcf3a'; ctx.shadowBlur=18;
       ctx.strokeStyle='#ffcf3a'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(0,0,en.r+4,0,6.28); ctx.stroke(); ctx.shadowBlur=0; }
     ctx.fillStyle='rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(0,en.r-1,en.r,en.r*0.4,0,0,6.28); ctx.fill();
     if(d.winged){ const flap=Math.sin(en.t*0.25)*6; ctx.fillStyle=f?'#fff':'#3a4254';
@@ -2057,7 +2668,12 @@ const Render = {
     if(!f){ ctx.fillStyle=d.shoot?'#ff5a30':'#1a1a1a';
       ctx.beginPath(); ctx.arc(-3,-en.r*0.5,1.8,0,6.28); ctx.arc(3,-en.r*0.5,1.8,0,6.28); ctx.fill(); }
     ctx.restore();
-    if(en.hp<en.maxhp){ ctx.fillStyle='#000a'; ctx.fillRect(x-14,y-en.r-12,28,4);
+    if(en.miniBoss){
+      ctx.fillStyle='#000b'; ctx.fillRect(x-32,y-en.r-26,64,6);
+      ctx.fillStyle='#ff5a1a'; ctx.fillRect(x-32,y-en.r-26,64*(en.hp/en.maxhp),6);
+      ctx.font='700 9px Cinzel, serif'; ctx.textAlign='center'; ctx.fillStyle='#ffb37a';
+      ctx.fillText('MINIBOSS', x, y-en.r-30);
+    } else if(en.hp<en.maxhp){ ctx.fillStyle='#000a'; ctx.fillRect(x-14,y-en.r-12,28,4);
       ctx.fillStyle='#ff5a5a'; ctx.fillRect(x-14,y-en.r-12,28*(en.hp/en.maxhp),4); }
   },
   boss(){
@@ -2174,6 +2790,37 @@ const Render = {
       ctx.beginPath(); for(let s=0;s<8;s++){ const ang=s/8*6.283, rr=s%2?6:12;
         ctx.lineTo(Math.cos(ang)*rr,Math.sin(ang)*rr); } ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.fillStyle='#3a5a78'; ctx.beginPath(); ctx.arc(0,0,3,0,6.28); ctx.fill(); ctx.restore(); } }
+    // Blade Cyclone — spinning ring of spectral blades with a pulsing aura
+    // and motion-blur trails, active for the spell's duration
+    if(p.cyclone&&p.cyclone.active&&p._cycloneBlades){
+      const cx=Camera.sx(p.x), cy=Camera.sy(p.y), R=p.cyclone.radius;
+      const pulse=0.5+0.5*Math.sin(World.time*0.2);
+      const ag=ctx.createRadialGradient(cx,cy,0,cx,cy,R+30);
+      ag.addColorStop(0,'rgba(150,200,255,'+(0.12+0.06*pulse)+')');
+      ag.addColorStop(.7,'rgba(150,200,255,'+(0.05+0.03*pulse)+')');
+      ag.addColorStop(1,'rgba(150,200,255,0)');
+      ctx.fillStyle=ag; ctx.beginPath(); ctx.arc(cx,cy,R+30,0,6.28); ctx.fill();
+      ctx.strokeStyle='rgba(191,224,255,'+(0.25+0.2*pulse)+')'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(cx,cy,R,0,6.28); ctx.stroke();
+      for(const b of p._cycloneBlades){
+        for(let t=1;t<=3;t++){
+          const ta=b.a-t*0.14;
+          const tx=Camera.sx(p.x+Math.cos(ta)*R), ty=Camera.sy(p.y+Math.sin(ta)*R);
+          ctx.globalAlpha=0.30-(t*0.09);
+          ctx.fillStyle='#bfe0ff';
+          ctx.beginPath(); ctx.arc(tx,ty,7,0,6.28); ctx.fill();
+        }
+        ctx.globalAlpha=1;
+        const bx=Camera.sx(b.x), by=Camera.sy(b.y);
+        ctx.save(); ctx.translate(bx,by); ctx.rotate(b.a+Math.PI/2);
+        ctx.shadowColor='#9fd0ff'; ctx.shadowBlur=16;
+        const bg=ctx.createLinearGradient(0,-16,0,16);
+        bg.addColorStop(0,'#ffffff'); bg.addColorStop(.5,'#bfe0ff'); bg.addColorStop(1,'#4a7ec0');
+        ctx.fillStyle=bg;
+        ctx.beginPath(); ctx.moveTo(0,-18); ctx.lineTo(5,0); ctx.lineTo(0,18); ctx.lineTo(-5,0); ctx.closePath(); ctx.fill();
+        ctx.shadowBlur=0; ctx.restore();
+      }
+    }
     for(const p2 of World.particles){ ctx.globalAlpha=Math.max(0,p2.life/26); ctx.fillStyle=p2.color;
       if(p2.shard){ ctx.save(); ctx.translate(Camera.sx(p2.x),Camera.sy(p2.y)); ctx.rotate(Math.atan2(p2.vy,p2.vx));
         ctx.fillRect(-p2.sz,-1,p2.sz*2,2); ctx.restore(); }
@@ -2188,9 +2835,25 @@ const Render = {
     ctx.globalAlpha=1;
   },
   crosshair(){ const ctx=this.ctx, x=Input.mouse.sx,y=Input.mouse.sy;
-    ctx.save(); ctx.strokeStyle='rgba(255,210,74,.85)'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x,y,9,0,6.28); ctx.stroke();
+    const p=World.player, w=WANDS[p.wandTier], E=ELEMENTS[w.elem]||ELEMENTS.arcane;
+    const ready = p.cool<=0;
+    ctx.save();
+    // slow-rotating outer rune ring, tinted by the equipped wand's element
+    ctx.save(); ctx.translate(x,y); ctx.rotate(World.time*0.015);
+    ctx.strokeStyle=E.color+'99'; ctx.lineWidth=1.4;
+    ctx.setLineDash([3,5]);
+    ctx.beginPath(); ctx.arc(0,0,15,0,6.28); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+    // inner ring pulses brighter the instant the wand is ready to fire again
+    ctx.strokeStyle= ready ? '#ffffff' : 'rgba(255,210,74,.85)';
+    ctx.lineWidth=2; ctx.shadowColor=E.glow; ctx.shadowBlur=ready?10:0;
+    ctx.beginPath(); ctx.arc(x,y,9,0,6.28); ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.strokeStyle=E.color;
     ctx.beginPath(); ctx.moveTo(x-14,y);ctx.lineTo(x-4,y);ctx.moveTo(x+4,y);ctx.lineTo(x+14,y);
-    ctx.moveTo(x,y-14);ctx.lineTo(x,y-4);ctx.moveTo(x,y+4);ctx.lineTo(x,y+14); ctx.stroke(); ctx.restore(); },
+    ctx.moveTo(x,y-14);ctx.lineTo(x,y-4);ctx.moveTo(x,y+4);ctx.lineTo(x,y+14); ctx.stroke();
+    ctx.restore(); },
   minimap(){
     const c=this.mmctx, S=160;
     c.clearRect(0,0,S,S);
@@ -2291,6 +2954,7 @@ const Render = {
     this.boss();
     this.effects();
     this.wizard(World.player);
+    this.terrainFront();
     ctx.restore();
     // creeping crimson dread as you near the peak
     if(Endgame.intensity>0.02){ const k=Endgame.intensity;
@@ -2300,6 +2964,7 @@ const Render = {
       // faint pulsing tint over the whole field
       ctx.fillStyle='rgba(120,0,20,'+(k*0.07*(0.6+0.4*Math.sin(World.time*0.06)))+')';
       ctx.fillRect(0,0,Camera.w,Camera.h); }
+    BloodMoon.draw(ctx,Camera.w,Camera.h);
     this.crosshair();
     if(World.flash>0){ const a=World.flash/6*0.12;
       const g=ctx.createRadialGradient(Camera.w/2,Camera.h/2,Camera.h*0.3,Camera.w/2,Camera.h/2,Camera.h*0.75);
@@ -2324,6 +2989,48 @@ const Save = {
     try{ if(typeof localStorage!=='undefined') localStorage.setItem(this.KEY,JSON.stringify(this.mem)); }catch(e){}
   },
   read(){ try{ if(typeof localStorage!=='undefined'){const s=localStorage.getItem(this.KEY); if(s) return JSON.parse(s);} }catch(e){} return this.mem; }
+};
+
+// =====================================================================
+// LOCAL HIGH SCORES — best result per game mode, kept on this device only.
+// Gives every run something to chase even after you close the tab.
+// =====================================================================
+const Highscores = {
+  KEY:'spellstorm_highscores_v1', mem:null,
+  readAll(){
+    try{ if(typeof localStorage!=='undefined'){ const s=localStorage.getItem(this.KEY); if(s) return JSON.parse(s); } }catch(e){}
+    return this.mem||{};
+  },
+  writeAll(all){
+    this.mem=all;
+    try{ if(typeof localStorage!=='undefined') localStorage.setItem(this.KEY,JSON.stringify(all)); }catch(e){}
+  },
+  get(mode){ return this.readAll()[mode] || null; },
+  // records a finished run if it beats the saved best in any tracked stat.
+  // "cleared" is sticky, once you have won a mode it stays marked as won.
+  submit(mode, stats){
+    const all=this.readAll();
+    const cur=all[mode] || {level:0, kills:0, gold:0, wave:0, stage:0, cleared:false};
+    let improved=false;
+    if(stats.level>cur.level){ cur.level=stats.level; improved=true; }
+    if(stats.kills>cur.kills){ cur.kills=stats.kills; improved=true; }
+    if(stats.gold>cur.gold){ cur.gold=stats.gold; improved=true; }
+    if(stats.wave>cur.wave){ cur.wave=stats.wave; improved=true; }
+    if(stats.stage>cur.stage){ cur.stage=stats.stage; improved=true; }
+    if(stats.cleared && !cur.cleared){ cur.cleared=true; improved=true; }
+    all[mode]=cur;
+    this.writeAll(all);
+    return improved;
+  },
+  // short display line for the mode select cards
+  summary(mode){
+    const b=this.get(mode);
+    if(!b) return 'No runs yet on this device.';
+    if(mode==='journey'){
+      return (b.cleared?'Cleared. ':'')+'Best, stage '+b.stage+' of '+STAGES.length+', level '+b.level+'.';
+    }
+    return 'Best, wave '+b.wave+', level '+b.level+'.';
+  }
 };
 
 // =====================================================================
@@ -2546,11 +3253,11 @@ const Game = {
     // populate element legend cards
     const eg=document.getElementById('elemGrid');
     if(eg){ const blurbs={
-        fire:'Fast bolts, punchy blast. Melts Nature; weak to Frost.',
-        ice:'Slow, heavy bolts with a wide blast. Shatters Storm; weak to Fire.',
-        storm:'Very fast, small impact but chains. Overloads Frost; weak to Nature.',
-        nature:'Steady bolts, lingering blast. Grounds Storm; weak to Fire.',
-        arcane:'Balanced, pierces all. Mild bonus vs everything, no weakness.'};
+        fire:'Fast bolts with a punchy blast. Strong against Nature. Weak against Frost.',
+        ice:'Slow, heavy bolts with a wide blast. Strong against Storm. Weak against Fire.',
+        storm:'Very fast bolts that chain between foes. Strong against Frost. Weak against Nature.',
+        nature:'Steady bolts with a lingering blast. Strong against Storm. Weak against Fire.',
+        arcane:'Balanced bolts that pierce everything. A mild bonus against every element, and no weakness.'};
       for(const k of Object.keys(ELEMENTS)){ const E=ELEMENTS[k];
         const d=document.createElement('div'); d.className='elemCard';
         d.style.borderColor=E.color;
@@ -2568,6 +3275,20 @@ const Game = {
               '<span class="wnCost">'+(w.cost?w.cost+' gold':'starting wand')+'</span></div>'+
             '<div class="wnDesc">'+w.desc+'</div></div>';
         wc.appendChild(node); }); }
+    // populate Q/E spell-tree overview
+    const spg=document.getElementById('spellOverviewGrid');
+    if(spg){ Object.values(SPELLS).forEach(S=>{
+        const E=ELEMENTS[S.elem];
+        const head=document.createElement('div'); head.style.cssText='grid-column:1/-1;font-family:Cinzel,serif;font-weight:700;font-size:12px;letter-spacing:.08em;color:'+E.color+';margin-top:2px;';
+        head.textContent=S.icon+' '+S.name; spg.appendChild(head);
+        S.tree.forEach(n=>{
+          const card=document.createElement('div'); card.className='miniCard'; card.style.borderColor=E.color;
+          card.innerHTML='<div class="mn" style="color:'+E.color+'">'+n.name+'</div>'+
+            '<div class="mstat" style="color:'+E.color+'">'+n.stat+(n.max>1?' · up to '+n.max+'×':'')+'</div>'+
+            '<div class="md">'+n.d+'</div>';
+          spg.appendChild(card);
+        });
+      }); }
     // populate spell mutation overview
     const mg2=document.getElementById('mutOverviewGrid');
     if(mg2){ MUTATIONS.forEach(m=>{
@@ -2590,17 +3311,26 @@ const Game = {
     const mgd=document.getElementById('modeGrid');
     if(mgd){ GAME_MODES.forEach(md=>{
         const card=document.createElement('div'); card.className='modeCard'; card.style.setProperty('--oc',md.c);
-        card.innerHTML='<div class="mn2">'+md.name+'</div><div class="mtag">'+md.tag+'</div><div class="md2">'+md.d+'</div>';
+        card.innerHTML='<div class="mn2">'+md.name+'</div><div class="mtag">'+md.tag+'</div><div class="md2">'+md.d+'</div>'+
+          '<div class="mbest" id="mbest-'+md.id+'"></div>';
         card.onclick=()=>{ SFX.click(); Game.chooseMode(md.id); };
         mgd.appendChild(card); }); }
+    this.refreshModeBests();
     // start the swirling title animation
     TitleFX.init(); TitleFX.start();
+  },
+  refreshModeBests(){
+    GAME_MODES.forEach(md=>{
+      const el=document.getElementById('mbest-'+md.id);
+      if(el) el.textContent=Highscores.summary(md.id);
+    });
   },
   openModes(){
     SFX.init(); SFX.click();
     const ov=document.getElementById('overlay');
     ov.classList.remove('state-controls','state-info','state-upgrades','state-origin','state-end');
     ov.classList.add('show','state-mode');
+    this.refreshModeBests();
     TitleFX.start();
   },
   chooseMode(id){
@@ -2655,6 +3385,7 @@ const Game = {
     }
     let sp=p.speed;
     if(p.dashFrames>0){ p.dashFrames--; dx=p.dashDX; dy=p.dashDY; sp=CONFIG.player.dashPower; FX.spark(p.x,p.y,0,'#bfe0ff',1); }
+    else { sp*=Terrain.speedFactorAt(p.x,p.y); } // wading a river slows you; dashing ignores it
     if(World.mode==='endless'){
       p.x=clamp(p.x+dx*sp,p.r,CONFIG.world.size-p.r);
       p.y=clamp(p.y+dy*sp,p.r,CONFIG.world.size-p.r);
@@ -2663,6 +3394,7 @@ const Game = {
       p.y=clamp(p.y+dy*sp,p.r,CONFIG.world.height-p.r);
       p.y=Math.max(p.y, World.ceilingY()); // walled out of the next stage until its Warden falls
     }
+    Terrain.collide(p);
     p.mp=Math.min(p.maxmp,p.mp+CONFIG.player.mpRegen);
     if(p.regen>0) p.hp=Math.min(p.maxhp,p.hp+p.regen);
     if(p.hurt>0)p.hurt--;
@@ -2678,13 +3410,21 @@ const Game = {
     if(p.aimWobble) p.armAngle+=Math.sin(World.time*0.28)*p.aimWobble + rand(-p.aimWobble,p.aimWobble);
     if(p.cool>0)p.cool--;
     if((Input.mouse.down||p.autoCast)&&p.cool<=0) Combat.fire();
+    // Q / E active spells
+    if(p.spellQ.cd>0) p.spellQ.cd--;
+    if(p.spellE.cd>0) p.spellE.cd--;
+    if(Input.keys['q']&&p.spellQ.unlocked&&p.spellQ.cd<=0&&p.mp>=Combat.spellCost('Q')) Combat.castSpell('Q');
+    if(Input.keys['e']&&p.spellE.unlocked&&p.spellE.cd<=0&&p.mp>=Combat.spellCost('E')) Combat.castSpell('E');
+    World.runTimers();
     // systems
     Boss.maybeTrigger();
     Endgame.update();
+    BloodMoon.update();
     Corruption.update();
     Spawner.update();
     Boss.update();
     Orbit.update();
+    Combat.updateCyclone();
     updateProjectiles();
     FX.update();
     Camera.follow(p);
@@ -2706,6 +3446,10 @@ const Game = {
       '</b> in <b style="color:#c06aff">'+World.biomeAt(World.player.x,World.player.y).name+'</b>, slew <b style="color:#5fd0ff">'+World.kills+
       '</b> foes, and hoarded <b style="color:#ffcf3a">'+World.gold+'</b> gold'+
       (endless?' — surviving to wave <b style="color:#ff9a2e">'+Math.min(World.wave,99)+(World.wave>99?'+':'')+'</b>.':'.');
+    const improved=Highscores.submit(World.mode, {level:World.player.level, kills:World.kills, gold:World.gold,
+      wave:World.wave, stage:World.frontierStage+1, cleared:false});
+    const badge=document.getElementById('bestBadge');
+    badge.classList.toggle('show', improved); badge.textContent='✦ New Personal Best ✦';
     const btn=document.getElementById('startBtn');
     btn.textContent='Home'; btn.onclick=()=>Game.goHome();
     const ov=document.getElementById('overlay'); ov.classList.add('show','state-end');
@@ -2726,6 +3470,10 @@ const Game = {
     document.getElementById('sub').innerHTML='The Hollow King has fallen and the climb is complete. Level <b style="color:#5fd0ff">'+World.player.level+
       '</b> · <b style="color:#5fd0ff">'+World.kills+'</b> kills · <b style="color:#ffcf3a">'+World.gold+
       '</b> gold · wand <b style="color:'+RARITY[WANDS[World.player.wandTier].rarity].color+'">'+WANDS[World.player.wandTier].name+'</b>.';
+    const improved=Highscores.submit(World.mode, {level:World.player.level, kills:World.kills, gold:World.gold,
+      wave:World.wave, stage:STAGES.length, cleared:true});
+    const badge=document.getElementById('bestBadge');
+    badge.classList.toggle('show', improved); badge.textContent='✦ New Personal Best ✦';
     const btn=document.getElementById('startBtn'); btn.textContent='Home'; btn.onclick=()=>Game.goHome();
     const ov=document.getElementById('overlay'); ov.classList.add('show','state-end');
   }
