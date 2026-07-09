@@ -29,14 +29,16 @@
   #framefx::before{top:8px;left:8px;border-right:none;border-bottom:none;border-top-left-radius:8px;}
   #framefx::after{bottom:8px;right:8px;border-left:none;border-top:none;border-bottom-right-radius:8px;}
 
+  /* tiny build footer, sits just above the brand title */
+  #disclaimer{position:fixed;top:2px;left:0;right:0;z-index:20;pointer-events:none;text-align:center;
+    font-family:'Cinzel',serif;font-size:7px;letter-spacing:.14em;color:#ffffff;opacity:.5;text-shadow:0 1px 2px #000;}
+
   /* ornamental top title */
-  #brand{position:fixed;top:9px;left:50%;transform:translateX(-50%);z-index:20;pointer-events:none;
+  #brand{position:fixed;top:13px;left:50%;transform:translateX(-50%);z-index:20;pointer-events:none;
     font-family:'Cinzel',serif;font-weight:900;font-size:15px;letter-spacing:.42em;
     color:#3fc6ff;text-shadow:0 0 16px rgba(63,198,255,.7),0 2px 4px #000;
     opacity:.92;padding-left:.42em;}
   #brand::before,#brand::after{content:'✦';font-size:10px;opacity:.8;margin:0 .9em;vertical-align:middle;color:#7ed8ff;}
-  #disclaimer{position:fixed;bottom:3px;left:0;right:0;z-index:70;pointer-events:none;text-align:center;
-    font-family:'Cinzel',serif;font-size:9px;letter-spacing:.16em;color:#ffffff;opacity:.6;text-shadow:0 1px 2px #000;}
 
   /* top HUD */
   #hud{position:fixed;top:34px;left:0;right:0;pointer-events:none;display:flex;
@@ -948,6 +950,13 @@ const BIOMES = {
   corrupt:  {key:'corrupt', name:'Corrupted Core',ground:'#241826',alt:'#2c1f30',blade:'rgba(12,8,14,.4)',diff:5.5,mood:.9,
              enemies:['gargoyle','firedemon','scorpion','stormwisp'], rule:'Corrupted Core — arcane corruption floods you far faster here.', corruptRate:2.6},
 };
+// mood overlay color per biome key ("r,g,b" — alpha applied separately by mood
+// strength). Snow uses a bright icy glare instead of darkness; everything
+// else darkens with its own colored haze rather than flat black.
+const MOOD_TINT = {
+  stone:'34,32,46', ruins:'40,24,58', snow:'190,220,255', forest:'6,22,4',
+  desert:'70,36,6', volcano:'60,10,4', chaos:'46,6,54', corrupt:'50,4,46', swamp:'14,28,10',
+};
 
 // ENEMY ARCHETYPES — movement + attack + loot bias
 const ENEMIES = {
@@ -1081,7 +1090,7 @@ const GEAR_PREFIX=['Worn','Sturdy','Fine','Glowing','Runed','Ancient','Astral'];
 const World = {
   seed:0, frontierStage:0, mode:'journey', noiseA:null, noiseB:null,
   player:null, enemies:[], bolts:[], eBolts:[], coins:[], drops:[], particles:[], timers:[],
-  shockwaves:[], lightnings:[], fields:[], beamFx:null, floaters:[], flash:0, muzzle:null, boss:null, bossActive:false,
+  shockwaves:[], lightnings:[], fields:[], beamFx:null, floaters:[], flash:0, muzzle:null, boss:null, bossActive:false, ambient:[],
   kills:0, gold:0, wave:1, spawnCd:0, toSpawn:0, time:0,
   running:false, won:false, shopOpen:false, paused:false,
   after(frames,fn){ this.timers.push({t:this.time+frames, fn}); },
@@ -1091,6 +1100,7 @@ const World = {
     this.seed=seed>>>0; this.noiseA=makeNoise(this.seed); this.noiseB=makeNoise(this.seed^0x9e3779b9);
     this.enemies=[];this.bolts=[];this.eBolts=[];this.coins=[];this.drops=[];this.particles=[];this.timers=[];
     this.shockwaves=[];this.lightnings=[];this.fields=[];this.beamFx=null;this.floaters=[];this.flash=0;this.muzzle=null;this.boss=null;this.bossActive=false;
+    this.ambient=[];
     this.kills=0;this.gold=0;this.wave=1;this.spawnCd=0;this.toSpawn=Spawner.forWave(1);this.time=0;
     this.running=true;this.won=false;this.shopOpen=false;this.paused=false;
     Upgrades.queue=0; Upgrades.open=false;
@@ -1299,21 +1309,24 @@ const FX = {
       pts.push({x:x1+(x2-x1)*t+(Math.random()-0.5)*22,y:y1+(y2-y1)*t+(Math.random()-0.5)*22});}
     pts.push({x:x2,y:y2}); World.lightnings.push({pts,life:10});
   },
-  // floating combat number — colored by element, scaled up on crit / "super effective"
+  // floating combat number — colored by element, scaled up on crit / "super effective",
+  // and flagged to flash bright + pop hard on the two most exciting hit types
   dmgNumber(x,y,dmg,crit,eff,E){
-    let color=E?E.glow:'#ffd24a', scale=1, txt=''+dmg;
-    if(crit){ color='#fff0a8'; scale=1.6; txt=dmg+'!'; }
-    else if(eff>1.2){ color='#ff5a5a'; scale=1.25; }   // super effective
+    let color=E?E.glow:'#ffd24a', scale=1, txt=''+dmg, flash=false;
+    if(crit){ color='#fff0a8'; scale=2.1; txt=dmg+'!'; flash=true; }
+    else if(eff>1.2){ color='#ff5a5a'; scale=1.6; flash=true; }   // super effective / best possible damage type
     else if(eff<0.85){ color='#9aa6c0'; scale=0.85; }   // resisted
-    World.floaters.push({x:x+rand(-6,6),y,vy:-0.9,life:38,txt,color,scale,crit});
+    World.floaters.push({x:x+rand(-6,6),y,vy:-0.9,life:42,maxlife:42,txt,color,scale,crit,flash,
+      icon:E?E.icon:null, iconGlow:E?E.glow:'#fff0a8'});
   },
   // element-flavored impact splash on hit
-  impact(x,y,elem,crit){
+  impact(x,y,elem,crit,eff){
     const E=ELEMENTS[elem]||ELEMENTS.arcane;
     const n=crit?22:11, sz=crit?3.6:2.4;
     this.spark(x,y,Math.random()*6.28,E.glow,Math.ceil(n/2),sz);
     this.spark(x,y,Math.random()*6.28,E.trail,Math.ceil(n/2),sz);
     if(crit){ this.ring(x,y,52,18,E.glow); this.ring(x,y,26,10,'#ffffff'); World.flash=Math.max(World.flash,8); }
+    else if(eff>1.2){ this.ring(x,y,38,14,E.glow); World.flash=Math.max(World.flash,4); }
     if(E.impact==='shatter'){ for(let k=0;k<5;k++){const a=k/5*6.28+rand(-.3,.3);
       World.particles.push({x,y,vx:Math.cos(a)*4.5,vy:Math.sin(a)*4.5,life:18,color:E.color,sz:3.4,shard:true});} }
     else if(E.impact==='spark'){ for(let k=0;k<2;k++) this.lightning(x,y,x+rand(-30,30),y+rand(-30,30)); }
@@ -1363,6 +1376,78 @@ const FX = {
 // =====================================================================
 // SFX — tiny synthesized Web Audio (punchy, chilled, no files)
 // =====================================================================
+// =====================================================================
+// AMBIENT — lightweight, biome-flavored atmosphere: fireflies drifting
+// through Whisperwood, embers rising off Emberdeep, snow falling over
+// Frostreach, sand hazing across Sunscar Waste, arcane dust sifting
+// through the ruins, glitching motes in the Corrupted Core. Purely
+// decorative, recycled from a small fixed pool so it stays cheap.
+// =====================================================================
+const Ambient = {
+  MAX:46,
+  ensure(){ while(World.ambient.length<this.MAX) World.ambient.push(this.spawn()); },
+  spawn(){
+    const vw=Camera.vw(), vh=Camera.vh();
+    return this.configure(Camera.x+rand(-40,vw+40), Camera.y+rand(-40,vh+40));
+  },
+  configure(x,y){
+    const b=World.biomeAt(x,y), key=b.key;
+    const o={x,y,key,age:0,life:rand(220,520)};
+    if(key==='forest'){ o.type='firefly'; o.vx=rand(-0.15,0.15); o.vy=rand(-0.35,-0.1); o.sz=rand(1.3,2.3); o.color='#c8ff7a'; o.blink=rand(0,6.28); }
+    else if(key==='swamp'){ o.type='bubble'; o.vx=rand(-0.08,0.08); o.vy=rand(-0.25,-0.08); o.sz=rand(1.6,2.8); o.color='#9adf7a'; }
+    else if(key==='desert'){ o.type='sand'; o.vx=rand(0.4,0.9); o.vy=rand(-0.05,0.05); o.sz=rand(1,2); o.color='rgba(230,205,150,.55)'; }
+    else if(key==='snow'){ o.type='snow'; o.vx=rand(-0.15,0.15); o.vy=rand(0.4,0.85); o.sz=rand(1.4,2.6); o.color='#ffffff'; }
+    else if(key==='volcano'){ o.type='ember'; o.vx=rand(-0.12,0.12); o.vy=rand(-0.65,-0.3); o.sz=rand(1.4,2.6); o.color='#ff9a4a'; }
+    else if(key==='stone'||key==='ruins'){ o.type='dust'; o.vx=rand(-0.08,0.08); o.vy=rand(-0.15,0.15); o.sz=rand(1,2); o.color='#c6a0ff'; }
+    else if(key==='corrupt'||key==='chaos'){ o.type='glitch'; o.vx=rand(-0.12,0.12); o.vy=rand(-0.22,0.22); o.sz=rand(1,2.4); o.color='#ff5ad0'; }
+    else { o.type='pollen'; o.vx=rand(-0.1,0.1); o.vy=rand(-0.16,-0.03); o.sz=rand(0.9,1.6); o.color='#eaffb0'; }
+    return o;
+  },
+  update(){
+    if(World.paused||World.shopOpen) return;
+    this.ensure();
+    const vw=Camera.vw(), vh=Camera.vh();
+    for(let i=World.ambient.length-1;i>=0;i--){
+      const o=World.ambient[i];
+      o.x+=o.vx; o.y+=o.vy; o.age++;
+      if(o.type==='firefly') o.blink+=0.08;
+      const sx=Camera.sx(o.x), sy=Camera.sy(o.y);
+      if(o.age>o.life || sx<-70||sx>vw+70||sy<-70||sy>vh+70){
+        World.ambient[i]=this.spawn();
+      }
+    }
+  },
+  draw(ctx){
+    for(const o of World.ambient){
+      const x=Camera.sx(o.x), y=Camera.sy(o.y);
+      if(x<-70||x>Camera.vw()+70||y<-70||y>Camera.vh()+70) continue;
+      const fade=Math.min(1,(o.life-o.age)/40,o.age/20);
+      if(o.type==='firefly'){
+        const b=0.35+0.65*Math.max(0,Math.sin(o.blink));
+        ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=b*fade;
+        ctx.fillStyle=o.color; ctx.shadowColor=o.color; ctx.shadowBlur=7;
+        ctx.beginPath(); ctx.arc(x,y,o.sz,0,6.28); ctx.fill(); ctx.restore();
+      } else if(o.type==='snow'){
+        ctx.globalAlpha=0.85*fade; ctx.fillStyle=o.color;
+        ctx.beginPath(); ctx.arc(x,y,o.sz,0,6.28); ctx.fill(); ctx.globalAlpha=1;
+      } else if(o.type==='ember'){
+        ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=fade;
+        ctx.fillStyle=o.color; ctx.shadowColor=o.color; ctx.shadowBlur=6;
+        ctx.beginPath(); ctx.arc(x,y,o.sz,0,6.28); ctx.fill(); ctx.restore();
+      } else if(o.type==='sand'){
+        ctx.globalAlpha=0.4*fade; ctx.fillStyle=o.color;
+        ctx.fillRect(x-3,y,6,1); ctx.globalAlpha=1;
+      } else if(o.type==='bubble'){
+        ctx.globalAlpha=0.5*fade; ctx.strokeStyle=o.color; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.arc(x,y,o.sz,0,6.28); ctx.stroke(); ctx.globalAlpha=1;
+      } else {
+        ctx.globalAlpha=0.55*fade; ctx.fillStyle=o.color;
+        ctx.beginPath(); ctx.arc(x,y,o.sz,0,6.28); ctx.fill(); ctx.globalAlpha=1;
+      }
+    }
+  }
+};
+
 const SFX = {
   ac:null, master:null, on:true, last:0,
   init(){
@@ -1626,6 +1711,40 @@ const Loot = {
         World.drops.push({x:en.x,y:en.y,wand:target,bob:rand(0,6)});
       }
     }
+    // RARE TREASURE CHEST — a bright, glowing, slightly-open chest. Walking
+    // over it unleashes one of three huge elemental bursts on every enemy
+    // nearby. Deliberately rare so it feels like a jackpot when it happens.
+    if(Math.random()<(0.0035+diff*0.0012)*(en.elite?3:1)){
+      World.drops.push({x:en.x,y:en.y,chest:true,bob:rand(0,6)});
+    }
+  },
+  // opens a dropped treasure chest: picks one of three big elemental bursts
+  // and slams every enemy caught in its radius — pure jackpot payoff
+  openChest(x,y){
+    const KINDS=[
+      {id:'ice',   name:'Glacial Burst', elem:'ice',   color:'#bfe6ff', glow:'#eaf8ff', dmg:85, rad:190, freeze:true},
+      {id:'fire',  name:'Inferno Burst', elem:'fire',  color:'#ff7a18', glow:'#ffd24a', dmg:95, rad:190, burn:true},
+      {id:'storm', name:'Tempest Burst', elem:'storm', color:'#bfe0ff', glow:'#ffffff', dmg:80, rad:205, knock:true},
+    ];
+    const k=pick(KINDS);
+    const diff=World.biomeAt(x,y).diff;
+    const dmg=Math.round(k.dmg*(1+diff*0.12));
+    UI.toast('✦ '+k.name+'! ✦', k.color);
+    FX.ring(x,y,k.rad,26,k.glow); FX.ring(x,y,k.rad*0.6,20,k.color); FX.ring(x,y,k.rad*0.32,14,'#ffffff');
+    FX.spark(x,y,Math.random()*6.28,k.glow,40,4);
+    World.flash=Math.max(World.flash,18); Endgame.shake=Math.max(Endgame.shake,16);
+    if(k.id==='ice'){ SFX.blip(200,0.22,'triangle',0.24,0.5); SFX.noise(0.16,0.2,900); }
+    else if(k.id==='fire'){ SFX.blip(120,0.3,'sawtooth',0.26,0.6); SFX.noise(0.24,0.24,200); }
+    else { SFX.blip(220,0.32,'sawtooth',0.24,1.3); SFX.blip(330,0.32,'triangle',0.2,1.1); }
+    SFX.rare();
+    for(const en of World.enemies){ if(en.dead||en.submerged) continue;
+      const d=dist(en.x,en.y,x,y); if(d<k.rad+en.r){
+        Combat.hurt(en,dmg,true,k.elem);
+        if(k.freeze) en._frozenUntil=World.time+90;
+        if(k.knock){ const a=Math.atan2(en.y-y,en.x-x); en.x+=Math.cos(a)*44; en.y+=Math.sin(a)*44; }
+      } }
+    if(World.boss&&!World.boss.dead&&dist(World.boss.x,World.boss.y,x,y)<k.rad+World.boss.r) Combat.hurtBoss(dmg,true,k.elem);
+    if(k.burn) World.fields.push({x,y,r:k.rad,life:200,maxlife:200,kind:'burn',dmg:Math.max(3,Math.round(dmg*0.06))});
   },
   pickupGear(item){
     const p=World.player;
@@ -1863,7 +1982,7 @@ const Combat = {
       World.player.elemUse[elem]=(World.player.elemUse[elem]||0)+1;
       const ls=(w.lifesteal||0)+(World.player.mLifesteal||0); if(ls>0) this.heal(dmg*ls);
       FX.dmgNumber(en.x,en.y-en.r, dmg, crit, eff, ELEMENTS[elem]);
-      FX.impact(en.x,en.y,elem,crit);
+      FX.impact(en.x,en.y,elem,crit,eff);
       if(eff<0.85) SFX.resist(); else SFX.hit(crit);
     }
     en.hp-=dmg; en.hit=8;
@@ -1892,7 +2011,7 @@ const Combat = {
         FX.dmgNumber(boss.x+rand(-30,30),boss.y-boss.r,'RESIST',false,0.5,ELEMENTS[elem]); }
       const ls=(w.lifesteal||0)+(World.player.mLifesteal||0); if(ls>0) this.heal(dmg*ls);
       FX.dmgNumber(boss.x+rand(-30,30),boss.y-boss.r, dmg, crit, eff, ELEMENTS[elem]);
-      FX.impact(boss.x+rand(-40,40),boss.y+rand(-40,40),elem,crit);
+      FX.impact(boss.x+rand(-40,40),boss.y+rand(-40,40),elem,crit,eff);
     }
     boss.hp-=dmg; boss.hit=8; boss.lastHit=boss.t; // DPS-check timer
     if(boss.hp<=0 && !boss.dead){
@@ -2421,11 +2540,12 @@ function updateProjectiles(){
     if(d<90+(p.pickup||0)){const a=Math.atan2(p.y-c.y,p.x-c.x);c.x+=Math.cos(a)*4.5;c.y+=Math.sin(a)*4.5;}
     if(d<p.r+10){ World.gold+=c.value; FX.spark(c.x,c.y,Math.random()*6.28,'#ffcf3a',8); (c.type==='bar'?SFX.bar():SFX.gold()); World.coins.splice(i,1); Shop.check(); }
   }
-  // gear/wand drops on ground
+  // gear/wand/chest drops on ground
   for(let i=World.drops.length-1;i>=0;i--){
     const dr=World.drops[i]; dr.bob+=0.1;
     if(dist(dr.x,dr.y,p.x,p.y)<p.r+14){
-      if(dr.wand!=null){ Loot.pickupWand(dr.wand); SFX.rare(); }
+      if(dr.chest){ Loot.openChest(dr.x,dr.y); }
+      else if(dr.wand!=null){ Loot.pickupWand(dr.wand); SFX.rare(); }
       else if(dr.potion!=null){ Combat.heal(dr.potion); SFX.heal(); UI.toast('+'+dr.potion+' HP','#ff6a9a'); }
       else { Loot.pickupGear(dr.item); SFX.rare(); }
       World.drops.splice(i,1);
@@ -3138,9 +3258,16 @@ const Render = {
       this.treeCache=Terrain.treesNear(World.player.x,World.player.y,Math.max(Camera.vw(),Camera.vh())*0.75+200);
       for(const tr of this.treeCache) if(tr.y<=World.player.y) this.tree(tr);
     } else { this.treeCache=null; }
-    // mood darkness by biome at player
-    const mood=World.biomeAt(World.player.x,World.player.y).mood;
-    if(mood>0){ ctx.fillStyle='rgba(0,0,8,'+(mood*0.4)+')'; ctx.fillRect(0,0,Camera.vw(),Camera.vh()); }
+    // mood tint by biome at player — colored atmosphere instead of flat black,
+    // so each biome reads with its own light: icy glare in the snow, warm
+    // haze in the desert, sickly green in the mire, magenta dread in the core
+    const curBiome=World.biomeAt(World.player.x,World.player.y), mood=curBiome.mood;
+    if(mood>0){
+      const tint=MOOD_TINT[curBiome.key]||'0,0,8';
+      ctx.fillStyle='rgba('+tint+','+(mood*0.4)+')'; ctx.fillRect(0,0,Camera.vw(),Camera.vh());
+    }
+    // ambient atmosphere particles — glow through the haze on top of the tint
+    Ambient.draw(ctx);
   },
   // trees whose feet are below the player draw after the wizard, for a cheap
   // but effective sense of depth without a full scene-wide y-sort
@@ -3440,6 +3567,33 @@ const Render = {
       } else { ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x,y+7,7,3,0,0,6.28); ctx.fill();
         ctx.fillStyle='#ffcf3a'; ctx.beginPath(); ctx.arc(x,y,7,0,6.28); ctx.fill(); ctx.fillStyle='#fff0a8'; ctx.beginPath(); ctx.arc(x,y,4,0,6.28); ctx.fill(); } }
     for(const dr of World.drops){ const x=Camera.sx(dr.x),y=Camera.sy(dr.y)+Math.sin(dr.bob)*3;
+      if(dr.chest){ // rare treasure chest — bright gold glow, slightly ajar lid
+        const pulse=0.6+0.4*Math.sin(dr.bob*1.5);
+        ctx.fillStyle='rgba(0,0,0,.32)'; ctx.beginPath(); ctx.ellipse(x,y+11,17,5,0,0,6.28); ctx.fill();
+        ctx.strokeStyle='rgba(255,210,74,'+(0.5+0.3*Math.sin(dr.bob*2))+')'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.arc(x,y+2,20,0,6.28); ctx.stroke();
+        ctx.save(); ctx.globalCompositeOperation='lighter';
+        const bg=ctx.createLinearGradient(x,y-6,x,y-52);
+        bg.addColorStop(0,'rgba(255,224,140,'+(0.55*pulse)+')'); bg.addColorStop(1,'rgba(255,224,140,0)');
+        ctx.fillStyle=bg; ctx.beginPath(); ctx.moveTo(x-10,y-6); ctx.lineTo(x+10,y-6); ctx.lineTo(x+3,y-52); ctx.lineTo(x-3,y-52); ctx.closePath(); ctx.fill();
+        const gg=ctx.createRadialGradient(x,y-4,0,x,y-4,28);
+        gg.addColorStop(0,'rgba(255,220,120,'+(0.5*pulse)+')'); gg.addColorStop(1,'rgba(255,220,120,0)');
+        ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(x,y-4,28,0,6.28); ctx.fill();
+        ctx.restore();
+        ctx.fillStyle='#6a4222'; ctx.fillRect(x-13,y-2,26,12);
+        ctx.fillStyle='#4a2c14'; ctx.fillRect(x-13,y-2,26,3); ctx.fillRect(x-13,y+7,26,3);
+        ctx.save(); ctx.translate(x,y-2); ctx.rotate(-0.35);
+        ctx.fillStyle='#7a4e28'; ctx.beginPath(); ctx.moveTo(-13,0); ctx.quadraticCurveTo(0,-11,13,0); ctx.lineTo(13,3); ctx.quadraticCurveTo(0,-8,-13,3); ctx.closePath(); ctx.fill();
+        ctx.fillStyle='#caa15a'; ctx.beginPath(); ctx.arc(0,-1,2.2,0,6.28); ctx.fill();
+        ctx.restore();
+        ctx.fillStyle='#fff6c8'; ctx.shadowColor='#ffd24a'; ctx.shadowBlur=16*pulse;
+        ctx.beginPath(); ctx.ellipse(x,y-2,7,4,0,0,6.28); ctx.fill(); ctx.shadowBlur=0;
+        for(let i=0;i<3;i++){ const sa=dr.bob*2+i*2.1, drift=(dr.bob*8+i*14)%40;
+          ctx.globalAlpha=Math.max(0,1-drift/40);
+          ctx.fillStyle='#ffe9a8'; ctx.beginPath(); ctx.arc(x+Math.sin(sa)*8,y-10-drift,1.6,0,6.28); ctx.fill(); }
+        ctx.globalAlpha=1;
+        continue;
+      }
       if(dr.potion!=null){ // red HP flask
         ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x,y+8,7,3,0,0,6.28); ctx.fill();
         ctx.fillStyle='#ff5a7a'; ctx.beginPath(); ctx.arc(x,y+2,6,0,6.28); ctx.fill();
@@ -3574,12 +3728,35 @@ const Render = {
         ctx.fillRect(-p2.sz,-1,p2.sz*2,2); ctx.restore(); }
       else { ctx.beginPath(); ctx.arc(Camera.sx(p2.x),Camera.sy(p2.y),p2.sz||2.2,0,6.28); ctx.fill(); } }
     ctx.globalAlpha=1; ctx.restore();
-    // floating damage numbers
+    // floating damage numbers — crit / super-effective hits get a fast bright
+    // flash-pop and a bigger number; every hit shows its element's icon
     ctx.textAlign='center'; ctx.textBaseline='middle';
     for(const f of World.floaters){ const x=Camera.sx(f.x),y=Camera.sy(f.y),a=Math.min(1,f.life/24);
-      ctx.globalAlpha=a; ctx.font='900 '+Math.round(13*f.scale)+'px Cinzel, serif';
+      const age=(f.maxlife||38)-f.life;
+      let pop=1, flashA=0;
+      if(f.flash){ const t=Math.min(1,age/9); pop=1+(1-t)*(1-t)*1.35; flashA=Math.max(0,1-age/9); }
+      ctx.globalAlpha=a;
+      if(f.flash && flashA>0){
+        ctx.save(); ctx.globalCompositeOperation='lighter';
+        const gg=ctx.createRadialGradient(x,y,0,x,y,30*pop*0.6);
+        gg.addColorStop(0,'rgba(255,255,255,'+(flashA*0.85*a)+')'); gg.addColorStop(1,'rgba(255,255,255,0)');
+        ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(x,y,30*pop*0.6,0,6.28); ctx.fill();
+        ctx.restore();
+      }
+      const fontPx=Math.round(13*f.scale*pop);
+      ctx.font='900 '+fontPx+'px Cinzel, serif';
       ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.7)'; ctx.strokeText(f.txt,x,y);
-      ctx.fillStyle=f.color; ctx.fillText(f.txt,x,y); }
+      ctx.fillStyle=f.color; ctx.fillText(f.txt,x,y);
+      if(f.icon){
+        const iconPx=f.flash?Math.round(15*pop):11;
+        const gap=ctx.measureText(f.txt).width/2+iconPx*0.75+2;
+        ctx.save();
+        if(f.flash && flashA>0){ ctx.shadowColor=f.iconGlow; ctx.shadowBlur=14*flashA; }
+        ctx.font=iconPx+'px sans-serif';
+        ctx.fillText(f.icon,x-gap,y);
+        ctx.restore();
+      }
+    }
     ctx.globalAlpha=1;
   },
   crosshair(){ const ctx=this.ctx, x=Input.mouse.sx,y=Input.mouse.sy;
@@ -3618,7 +3795,7 @@ const Render = {
         c.fillRect(en.x*scale-1,en.y*scale-1,2.5,2.5); }
       if(World.boss&&!World.boss.dead){ c.fillStyle='#ff2ad0';
         c.beginPath(); c.arc(World.boss.x*scale,World.boss.y*scale,4,0,6.28); c.fill(); }
-      for(const dr of World.drops){ c.fillStyle=dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
+      for(const dr of World.drops){ c.fillStyle=dr.chest?'#ffd24a':dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
         c.fillRect(dr.x*scale-1,dr.y*scale-1,2,2); }
       const p=World.player; c.fillStyle='#ffffff';
       c.beginPath(); c.arc(p.x*scale,p.y*scale,3,0,6.28); c.fill();
@@ -3651,7 +3828,7 @@ const Render = {
     if(World.boss&&!World.boss.dead){ c.fillStyle='#ff2ad0';
       c.beginPath(); c.arc(World.boss.x*scale,(World.boss.y-winTop)*scale,4,0,6.28); c.fill(); }
     // drops
-    for(const dr of World.drops){ c.fillStyle=dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
+    for(const dr of World.drops){ c.fillStyle=dr.chest?'#ffd24a':dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
       c.fillRect(dr.x*scale-1,(dr.y-winTop)*scale-1,2,2); }
     // player
     const p=World.player; c.fillStyle='#ffffff';
@@ -4181,6 +4358,7 @@ const Game = {
     Combat.updateCyclone();
     updateProjectiles();
     FX.update();
+    Ambient.update();
     Camera.follow(p);
     UI.sync();
     Upgrades.maybeOpen();
