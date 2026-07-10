@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spellstorm v1.50</title>
+<title>Spellstorm v1.61</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -322,7 +322,7 @@
   #home,#endState,.menuPanel{display:none;}
   /* default state: show home, hide others */
   #overlay.show #home{display:grid;place-items:center;position:relative;width:100%;height:100%;}
-  #overlay.state-controls #home,#overlay.state-info #home,#overlay.state-upgrades #home{display:none;}
+  #overlay.state-controls #home,#overlay.state-info #home,#overlay.state-upgrades #home,#overlay.state-character #home{display:none;}
   #overlay.state-controls #panelControls{display:flex;}
   #overlay.state-info #panelInfo{display:flex;}
   #overlay.state-upgrades #panelUpgrades{display:flex;}
@@ -336,10 +336,11 @@
     font-size:clamp(56px,11vw,128px);letter-spacing:.05em;line-height:.92;margin:0;
     color:#00F5FF;
     text-shadow:0 0 22px rgba(80,210,255,1),0 0 70px rgba(50,170,255,.85),
-      0 0 140px rgba(30,130,255,.7),0 6px 0 #0a3a6a,0 9px 3px rgba(0,0,0,.7);
+      0 0 140px rgba(30,130,255,.7),0 6px 0 #0a3a6a,0 13px 0 #041226,
+      0 22px 16px rgba(0,0,0,.88),0 36px 42px rgba(0,0,0,.7);
     animation:titleGlow 3.2s ease-in-out infinite;}
-  @keyframes titleGlow{0%,100%{text-shadow:0 0 22px rgba(80,210,255,1),0 0 70px rgba(50,170,255,.85),0 0 140px rgba(30,130,255,.6),0 6px 0 #0a3a6a,0 9px 3px rgba(0,0,0,.7);}
-    50%{text-shadow:0 0 34px rgba(150,235,255,1),0 0 110px rgba(80,190,255,1),0 0 190px rgba(40,150,255,.85),0 6px 0 #0a3a6a,0 9px 3px rgba(0,0,0,.7);}}
+  @keyframes titleGlow{0%,100%{text-shadow:0 0 22px rgba(80,210,255,1),0 0 70px rgba(50,170,255,.85),0 0 140px rgba(30,130,255,.6),0 6px 0 #0a3a6a,0 13px 0 #041226,0 22px 16px rgba(0,0,0,.88),0 36px 42px rgba(0,0,0,.7);}
+    50%{text-shadow:0 0 34px rgba(150,235,255,1),0 0 110px rgba(80,190,255,1),0 0 190px rgba(40,150,255,.85),0 6px 0 #0a3a6a,0 13px 0 #041226,0 22px 16px rgba(0,0,0,.88),0 36px 42px rgba(0,0,0,.7);}}
   #tagline{font-family:'Cinzel',serif;font-weight:700;font-size:clamp(11px,1.6vw,15px);letter-spacing:.34em;
     text-transform:uppercase;color:#aee6a0;opacity:.85;margin-top:20px;text-shadow:0 2px 8px #000;}
   #menu{margin-top:42px;display:flex;flex-direction:column;gap:14px;align-items:center;}
@@ -380,9 +381,12 @@
     background:linear-gradient(#7fe0ff,#3aa6e6);padding:8px 14px;border-radius:7px;text-align:center;white-space:nowrap;
     box-shadow:0 3px 0 #135a8a;}
   .ctrlGrid .cd{font-size:14.5px;opacity:.9;text-align:left;}
-  #charWrap{display:flex;gap:26px;align-items:center;width:100%;margin-bottom:22px;flex-wrap:wrap;justify-content:center;}
+  #charWrap{display:flex;gap:26px;align-items:center;width:100%;margin-bottom:22px;flex-wrap:wrap;justify-content:center;
+    overflow-y:auto;padding-right:4px;}
+  #charWrap::-webkit-scrollbar{width:8px;}
+  #charWrap::-webkit-scrollbar-thumb{background:rgba(95,208,255,.3);border-radius:4px;}
   #charCanvas{background:radial-gradient(circle at 50% 30%,#152418,#0a120a 75%);border:1px solid rgba(95,208,255,.3);
-    border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5),inset 0 0 30px rgba(0,0,0,.4);}
+    border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5),inset 0 0 30px rgba(0,0,0,.4);flex:none;}
   #charInfo{flex:1;min-width:200px;max-width:320px;}
   .charName{font-family:'Cinzel',serif;font-weight:900;font-size:19px;color:#7fe0ff;text-shadow:0 0 16px rgba(95,208,255,.5);margin-bottom:8px;}
   .charBlurb{font-size:13.5px;opacity:.85;line-height:1.55;}
@@ -601,7 +605,7 @@
 <div id="wrap"><canvas id="game"></canvas></div>
 <div id="framefx"></div>
 <div id="brand">SPELLSTORM</div>
-<div id="disclaimer">08/07/26 v1.50 - Stormcaller Update</div>
+<div id="disclaimer">08/07/26 v1.61 - Stormcaller Update</div>
 <div id="warnBanner"><div class="wbig" id="warnBig">⚠ THE CORRUPTED CORE ⚠</div><div class="wsub" id="warnSub">Point of no return — the Warden stirs</div></div>
 <div id="eventBanner"><span class="ebIcon">🧙</span><div class="ebName">Event</div></div>
 
@@ -762,14 +766,16 @@
     <button class="back" data-back>Back</button>
   </div>
 
-  <!-- CHARACTER PANEL — a simple look at your wizard for now, more to come -->
+  <!-- CHARACTER PANEL — your wizard, drawn exactly as he looks in-game, with -->
+  <!-- his three spectral summons arrayed around him -->
   <div id="panelCharacter" class="menuPanel">
     <h2>Your Wizard</h2>
     <div id="charWrap">
-      <canvas id="charCanvas" width="220" height="260"></canvas>
+      <canvas id="charCanvas" width="300" height="330"></canvas>
       <div id="charInfo">
         <div class="charName">Spellstorm Wizard</div>
         <div class="charBlurb">A wandering caster who channels whatever wand fate hands them. Rarer wands hum with visibly stronger auras — watch the tip of your wand in-run to see it change.</div>
+        <div class="charBlurb" style="margin-top:10px;opacity:.75;">Shown alongside all three spectral companions — Spectral Blade, Spirit Archer, and Bone Hound — though only one joins you on any given run.</div>
       </div>
     </div>
     <button class="back" data-back>Back</button>
@@ -5142,43 +5148,78 @@ const Game = {
       if(el) el.textContent=Highscores.summary(md.id);
     });
   },
-  // simple static illustration of the wizard for the Character menu screen —
-  // deliberately basic for now, a placeholder to be built out further later
+  // Character menu illustration — reuses the exact in-game/home-screen wizard
+  // render (TitleFX.drawHomeWizard) so he's never out of sync with how he
+  // actually looks, flanked by all three spectral summons for a cool full
+  // "roster" shot. Lightly animated (bob/pulse/orbiting motes) for as long
+  // as the Character panel stays open, then stops itself.
   drawCharacterPreview(){
     const cv=document.getElementById('charCanvas'); if(!cv) return;
     const ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
-    ctx.clearRect(0,0,W,H);
-    const cx=W/2, cy=H*0.62, t=performance.now()*0.001;
-    const bob=Math.sin(t*1.4)*3;
-    // ground shadow
-    ctx.fillStyle='rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(cx,cy+58,46,12,0,0,6.28); ctx.fill();
-    // robe
-    ctx.save(); ctx.translate(cx,cy+bob);
-    const robeGrad=ctx.createLinearGradient(0,-40,0,60);
-    robeGrad.addColorStop(0,'#3a63d0'); robeGrad.addColorStop(1,'#132a70');
-    ctx.fillStyle=robeGrad;
-    ctx.beginPath(); ctx.moveTo(-30,58); ctx.quadraticCurveTo(-38,0,-18,-30);
-    ctx.quadraticCurveTo(0,-42,18,-30); ctx.quadraticCurveTo(38,0,30,58); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle='#7fa0ff'; ctx.lineWidth=1.5; ctx.globalAlpha=.5; ctx.stroke(); ctx.globalAlpha=1;
-    // arm + wand (angled slightly outward, glowing tip)
-    ctx.strokeStyle='#3a63d0'; ctx.lineWidth=8; ctx.lineCap='round';
-    ctx.beginPath(); ctx.moveTo(20,-8); ctx.lineTo(46,10); ctx.stroke();
-    ctx.fillStyle='#e8cdaa'; ctx.beginPath(); ctx.arc(48,12,4,0,6.28); ctx.fill();
-    ctx.strokeStyle='#7a4a22'; ctx.lineWidth=4; ctx.lineCap='round';
-    ctx.beginPath(); ctx.moveTo(48,12); ctx.lineTo(66,22); ctx.stroke();
+    const cx=W/2, wizardY=H*0.636, scale=1.75;
+    cancelAnimationFrame(this._charRaf);
+    const step=()=>{
+      const ov=document.getElementById('overlay');
+      if(!ov.classList.contains('state-character')){ this._charRaf=null; return; }
+      this._charT=(this._charT||0)+1;
+      const t=this._charT;
+      ctx.clearRect(0,0,W,H);
+      this.drawSpectralSummon(ctx,'spectralblade', cx-86, wizardY-6,  t,     1.15);
+      this.drawSpectralSummon(ctx,'spiritarcher',  cx+86, wizardY-10, t+140, 1.15);
+      this.drawSpectralSummon(ctx,'bonehound',     cx,    wizardY+76, t+260, 1.25);
+      TitleFX.drawHomeWizard(ctx, t, cx, wizardY, scale);
+      this._charRaf=requestAnimationFrame(step);
+    };
+    step();
+  },
+  // one spectral summon (same art as the rotating one on the title screen —
+  // see TitleFX.draw's companion section) drawn at an arbitrary spot/scale,
+  // with its own halo, ground shadow, orbiting motes, and name label
+  drawSpectralSummon(ctx,type,x,y,t,s){
+    const S=SUMMONS[type], E=ELEMENTS[S.elem];
+    const bob=Math.sin(t*0.06)*2.4*s, y0=y+bob;
     ctx.save(); ctx.globalCompositeOperation='lighter';
-    const pulse=0.6+0.4*Math.sin(t*3);
-    const gg=ctx.createRadialGradient(66,22,0,66,22,14*pulse+6);
-    gg.addColorStop(0,'#fff'); gg.addColorStop(.4,'#c06aff'); gg.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(66,22,14*pulse+6,0,6.28); ctx.fill();
-    ctx.restore();
-    // head + hat
-    ctx.fillStyle='#e8cdaa'; ctx.beginPath(); ctx.arc(0,-46,13,0,6.28); ctx.fill();
-    ctx.fillStyle='#1a2a70'; ctx.beginPath();
-    ctx.moveTo(-16,-52); ctx.lineTo(16,-52); ctx.lineTo(4,-92); ctx.closePath(); ctx.fill();
-    ctx.fillStyle='#2a3ca0'; ctx.fillRect(-18,-54,36,6);
-    ctx.fillStyle='#ffd24a'; ctx.beginPath(); ctx.arc(4,-92,3,0,6.28); ctx.fill();
-    ctx.restore();
+    const haloR=(18+Math.sin(t*0.08)*3)*s;
+    const hg=ctx.createRadialGradient(x,y0-14*s,0,x,y0-14*s,haloR);
+    hg.addColorStop(0,E.glow); hg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.globalAlpha=0.55; ctx.fillStyle=hg; ctx.beginPath(); ctx.arc(x,y0-14*s,haloR,0,6.283); ctx.fill();
+    ctx.globalAlpha=1; ctx.restore();
+    ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x,y0+4*s,11*s,3*s,0,0,6.283); ctx.fill();
+    if(type==='spectralblade'){
+      ctx.save(); ctx.translate(x,y0-16*s); ctx.rotate(Math.sin(t*0.04)*0.25);
+      ctx.fillStyle=E.color; ctx.beginPath();
+      ctx.moveTo(0,-16*s); ctx.lineTo(6*s,0); ctx.lineTo(0,20*s); ctx.lineTo(-6*s,0); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.globalAlpha=.8; ctx.fillRect(-1.5*s,-12*s,3*s,24*s); ctx.globalAlpha=1;
+      ctx.restore();
+    } else if(type==='spiritarcher'){
+      ctx.globalAlpha=.85; ctx.fillStyle='#dfe8ff';
+      ctx.beginPath(); ctx.moveTo(x,y0-40*s); ctx.lineTo(x+10*s,y0); ctx.lineTo(x-10*s,y0); ctx.closePath(); ctx.fill();
+      ctx.globalAlpha=1;
+      ctx.fillStyle='#0a1830'; ctx.fillRect(x-4*s,y0-30*s,8*s,7*s);
+      ctx.strokeStyle=E.color; ctx.lineWidth=1.6*s;
+      ctx.beginPath(); ctx.arc(x+10*s,y0-14*s,10*s,-1.1,1.1); ctx.stroke();
+      ctx.strokeStyle='rgba(255,255,255,.7)'; ctx.lineWidth=1*s;
+      ctx.beginPath(); ctx.moveTo(x+10*s,y0-24*s); ctx.lineTo(x+2*s,y0-14*s); ctx.lineTo(x+10*s,y0-4*s); ctx.stroke();
+    } else {
+      ctx.globalAlpha=.88; ctx.fillStyle=E.color;
+      ctx.beginPath(); ctx.ellipse(x,y0-8*s,16*s,8*s,0,0,6.283); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(x+12*s,y0-14*s); ctx.lineTo(x+20*s,y0-18*s); ctx.lineTo(x+14*s,y0-6*s); ctx.closePath(); ctx.fill();
+      ctx.globalAlpha=1;
+      ctx.fillStyle='#0a1808';
+      ctx.fillRect(x-10*s,y0,3*s,8*s); ctx.fillRect(x+4*s,y0,3*s,8*s);
+      ctx.fillStyle=E.glow; ctx.beginPath(); ctx.arc(x+18*s,y0-16*s,1.6*s,0,6.283); ctx.fill();
+    }
+    for(let i=0;i<3;i++){
+      const ang=t*0.02*(i%2?1:-1)+i*2.094, rad=(20+Math.sin(t*0.05+i)*3)*s;
+      const mx=x+Math.cos(ang)*rad, my=y0-14*s+Math.sin(ang)*rad*0.5;
+      const og=ctx.createRadialGradient(mx,my,0,mx,my,3.4*s);
+      og.addColorStop(0,'#fff'); og.addColorStop(.5,E.glow); og.addColorStop(1,E.color);
+      ctx.fillStyle=og; ctx.beginPath(); ctx.arc(mx,my,2.2*s,0,6.283); ctx.fill();
+    }
+    ctx.font='700 '+Math.round(9*s)+'px Cinzel, serif'; ctx.textAlign='center'; ctx.fillStyle=E.color;
+    ctx.shadowColor='#000'; ctx.shadowBlur=3;
+    ctx.fillText(S.name.toUpperCase(), x, y0+18*s);
+    ctx.shadowBlur=0;
   },
   openModes(){
     SFX.init(); SFX.click();
