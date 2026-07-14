@@ -835,6 +835,15 @@
       <h3>Boss & Miniboss Rewards</h3>
       <p>Downing a miniboss or a Warden triggers a payoff: a chest pops up, the camera punches in for a hero shot, gold explodes outward in every direction, and a guaranteed item reveals itself with a rarity-scaled flourish — the rarer it is, the longer and louder the celebration.</p>
 
+      <h3>Treasure Caches</h3>
+      <p>Any enemy can drop a treasure cache — <b style="color:#c98d4a">Wooden</b>, <b style="color:#ffd24a">Golden</b>, or the rainbow-burning <b style="color:#ff4d6d">Mythic</b>. Walking over one kicks off a slot-machine reveal: a fountain of gold, then 1, 3, or with real luck <b>5</b> prize pulls, drawn one at a time from wands, gear, power-ups, healing, raw gold, and huge elemental bursts. Higher tiers roll more pulls and guarantee rarer wands. A five-pull ends in a full-screen <b style="color:#ffd24a">JACKPOT</b>.</p>
+
+      <h3>Power-Ups</h3>
+      <p>Short, loud, temporary buffs that drop off ordinary kills and pour out of caches: 🔥 Frenzy (fire rate), ⚔ Might (damage), 👟 Haste (speed), 🧲 Magnet (loot flies to you), 🛡 Aegis (blocks the next 3 hits), and 💰 Midas Touch (double gold). Grab them mid-fight and go berserk while they last.</p>
+
+      <h3>Kill Streaks</h3>
+      <p>Chain kills without a 3-second gap and a streak counter heats up on screen. Milestones pay out: <b style="color:#8be36b">Killing Spree</b> showers gold at 10, <b style="color:#ffd24a">Rampage</b> grants free Frenzy at 25, <b style="color:#ff7a18">Unstoppable</b> drops a power-up at 50, and a 100-kill <b style="color:#ff4d6d">Godlike</b> streak summons a Mythic Cache at your feet. Hot streaks also sweeten every gold drop, and one-shotting an enemy with a massive blow scores an <b style="color:#ff4d6d">Overkill</b> bonus.</p>
+
       <h3>Local Best Runs</h3>
       <p>Your best result for each mode is saved on this device. Check the mode select screen to see your personal best before you start a run, and look for the New Best badge when a run beats it.</p>
 
@@ -930,8 +939,10 @@ function swingCurve(t){
   if(t<0.48){ const k=(t-0.22)/0.26; return -0.55*(1-k)+1.15*k; }
   const k=(t-0.48)/0.52; return 1.15*(1-k*k);
 }
-function hexLerp(a,b,t){const pa=[1,3,5].map(i=>parseInt(a.substr(i,2),16));
-  const pb=[1,3,5].map(i=>parseInt(b.substr(i,2),16));
+function hexLerp(a,b,t){
+  const parse=c=>c[0]==='#' ? [1,3,5].map(i=>parseInt(c.substr(i,2),16))
+                            : c.match(/\d+/g).map(Number); // accepts our own 'rgb(r,g,b)' output
+  const pa=parse(a), pb=parse(b);
   return 'rgb('+pa.map((v,i)=>Math.round(v+(pb[i]-v)*t)).join(',')+')';}
 
 // ---------- value-noise (deterministic, seedable) for Endless-mode biomes ----------
@@ -1127,6 +1138,30 @@ for(const k of RARITY_ORDER) WAND_BUCKETS[k]=[];
 WANDS.forEach((w,i)=>{ WAND_BUCKETS[w.rarity].push(i); });
 // gold value when a picked-up wand isn't an upgrade and gets scrapped instead
 const WAND_SCRAP_GOLD={common:8,uncommon:16,rare:30,epic:55,legendary:95,mythic:160};
+
+// CHEST TIERS — Gungeon-style tiered treasure caches. Higher tiers drop
+// less often, look flashier on the ground, roll more jackpot pulls, and
+// floor the rarity of any wand they contain. 'p5'/'p3' are the odds of a
+// Vampire-Survivors-style 5-pull / 3-pull jackpot when opened.
+const CHEST_TIERS = {
+  wooden:{name:'Wooden Cache', color:'#c98d4a', glow:'#ffd24a', body:'#6a4222', lid:'#7a4e28', scale:1.0, rays:0, weight:66, p5:0.05, p3:0.22, wandFloor:null,   coinN:10},
+  golden:{name:'Golden Cache', color:'#ffd24a', glow:'#fff0a8', body:'#c9920f', lid:'#eab328', scale:1.18, rays:5, weight:28, p5:0.10, p3:0.34, wandFloor:'rare', coinN:18},
+  mythic:{name:'Mythic Cache', color:'#ff4d6d', glow:'#ffd6ff', body:'#3a1030', lid:'#6a1a5a', scale:1.34, rays:8, weight:6,  p5:0.22, p3:0.48, wandFloor:'epic', coinN:30},
+};
+const CHEST_TIER_ORDER=['wooden','golden','mythic'];
+
+// POWER-UPS — short, loud, Risk-of-Rain-style temporary buffs. They drop
+// rarely off normal enemies and pour out of treasure caches, giving the
+// moment-to-moment grind little spikes of "I am a god right now".
+const POWERUPS = {
+  frenzy:{icon:'🔥', name:'Frenzy',     color:'#ff7a18', dur:600, desc:'+60% fire rate'},
+  might: {icon:'⚔', name:'Might',      color:'#ff4d6d', dur:600, desc:'+50% damage'},
+  haste: {icon:'👟', name:'Haste',      color:'#8be36b', dur:480, desc:'+40% move speed'},
+  magnet:{icon:'🧲', name:'Magnet',     color:'#5bc0ff', dur:240, desc:'loot flies to you'},
+  aegis: {icon:'🛡', name:'Aegis',      color:'#d6f0ff', dur:0,   desc:'blocks the next 3 hits'},
+  midas: {icon:'💰', name:'Midas Touch',color:'#ffd24a', dur:720, desc:'kills pay double gold'},
+};
+const POWERUP_LIST=Object.keys(POWERUPS);
 // the wand template a player is currently swinging — their rolled drop, or
 // the innate, unbreakable Wood Wand fallback if they don't have one
 function activeWandDef(p){ return p.wand||WANDS[0]; }
@@ -1394,6 +1429,7 @@ const World = {
   player:null, enemies:[], bolts:[], eBolts:[], coins:[], drops:[], particles:[], timers:[],
   shockwaves:[], lightnings:[], fields:[], beamFx:null, floaters:[], flash:0, muzzle:null, boss:null, bossActive:false, ambient:[], telegraphs:[],
   kills:0, gold:0, wave:1, spawnCd:0, toSpawn:0, time:0,
+  hitstop:0, chestCount:0,
   running:false, won:false, shopOpen:false, paused:false,
   after(frames,fn){ this.timers.push({t:this.time+frames, fn}); },
   runTimers(){ for(let i=this.timers.length-1;i>=0;i--){ if(this.time>=this.timers[i].t){
@@ -1404,6 +1440,8 @@ const World = {
     this.shockwaves=[];this.lightnings=[];this.fields=[];this.beamFx=null;this.floaters=[];this.flash=0;this.muzzle=null;this.boss=null;this.bossActive=false;
     this.ambient=[]; this.telegraphs=[];
     this.kills=0;this.gold=0;this.wave=1;this.spawnCd=0;this.toSpawn=Spawner.forWave(1);this.time=0;
+    this.hitstop=0; this.chestCount=0;
+    Buffs.reset(); Combo.reset();
     this.running=true;this.won=false;this.shopOpen=false;this.paused=false;
     Upgrades.queue=0; Upgrades.open=false;
     this.castMod=1; this.enemySpeedMod=1; this.goldMod=1; this.critMod=0;
@@ -1831,6 +1869,17 @@ const SFX = {
     setTimeout(()=>this.noise(0.3,0.16,1800),260); },
   // a magical whoosh-chime used to announce a random world event
   event(){ this.blip(220,0.3,'sine',0.18,1.8); setTimeout(()=>this.blip(660,0.18,'triangle',0.2,1.4),140); },
+  // grabbing a power-up: a fat, satisfying rising zap
+  powerup(){ this.blip(330,0.16,'sawtooth',0.22,2.2); this.blip(660,0.14,'triangle',0.18,1.6); setTimeout(()=>this.blip(1046,0.12,'sine',0.16,1.2),90); },
+  // kill-streak milestone sting — pitch climbs with the tier
+  combo(tier){ const base=440+tier*110; [0,4,7].forEach((s,i)=>setTimeout(()=>this.blip(base*Math.pow(2,s/12),0.1,'square',0.18,1.2),i*45)); },
+  // 5-pull chest finale: a full slot-machine payout cascade
+  jackpot(){ [523,659,784,1047,1319,1568].forEach((f,i)=>setTimeout(()=>this.blip(f,0.14,'triangle',0.2,1.15),i*60));
+    setTimeout(()=>{ this.noise(0.25,0.16,2000); this.blip(2093,0.3,'sine',0.14,0.9); },380); },
+  // a wand hitting the ground — brightness scales with its rarity
+  wandDrop(rIdx){ this.blip(500+rIdx*90,0.12,'triangle',0.16,1.5); if(rIdx>=2) setTimeout(()=>this.blip(800+rIdx*120,0.14,'sine',0.14,1.3),80); },
+  // Aegis eating a hit — a solid crystalline "tonk"
+  block(){ this.blip(880,0.08,'triangle',0.22,0.7); this.noise(0.05,0.14,3000); },
 };
 
 // =====================================================================
@@ -2028,9 +2077,22 @@ const Loot = {
       spd:+(((base.spd||0)*mult).toFixed(2))};
     return item;
   },
+  // weighted roll for which tier of treasure cache drops — deeper biomes
+  // and elite kills push the odds toward Golden and Mythic
+  rollChestTier(diff,elite){
+    const entries=CHEST_TIER_ORDER.map((k,i)=>{
+      let w=CHEST_TIERS[k].weight;
+      w*=(1+i*0.22*diff)*(elite&&i>0?1.8:1);
+      return [k,w];
+    });
+    let tot=entries.reduce((s,e)=>s+e[1],0), r=Math.random()*tot;
+    for(const [k,w] of entries){ if((r-=w)<=0) return k; }
+    return 'wooden';
+  },
   onKill(en){
     const b=World.biomeAt(en.x,en.y), diff=b.diff, p=World.player;
     World.kills++;
+    Combo.onKill(en);
     p.gainXP(en.def.xp*diff*(en.elite?3:1));
     // TREASURE GOBLIN — a random-event mob; killing it in time is a small
     // jackpot: a radial coin burst plus a guaranteed rare-or-better wand
@@ -2039,12 +2101,17 @@ const Loot = {
         World.coins.push({x:en.x,y:en.y,type:'bar',value:18,vy:Math.sin(ang)*spd,vx:Math.cos(ang)*spd,bob:rand(0,6)}); }
       let rarity=this.rollRarity(4.5); if(rarity==='common'||rarity==='uncommon') rarity='rare';
       const bucket=WAND_BUCKETS[rarity].length?WAND_BUCKETS[rarity]:WAND_BUCKETS.rare;
-      World.drops.push({x:en.x,y:en.y,wand:pick(bucket),bob:rand(0,6)});
+      World.drops.push({x:en.x,y:en.y,wand:pick(bucket),bob:rand(0,6),spawnT:16});
+      // goblins also cough up a golden-or-better cache — chasing them should pay
+      World.drops.push({x:en.x+rand(-24,24),y:en.y+rand(-24,24),chest:true,
+        tier:Math.random()<0.25?'mythic':'golden',bob:rand(0,6),spawnT:16});
+      SFX.wandDrop(RARITY_ORDER.indexOf(rarity));
       UI.toast('💰 Treasure Goblin felled — jackpot!','#ffd24a'); SFX.rare();
       return;
     }
-    // gold (scaled by biome; elites and Golden Enemies pour out extra gold)
-    let gMult=Math.max(1,Math.round((1+Math.floor(diff))*(World.goldMod||1)));
+    // gold (scaled by biome; elites and Golden Enemies pour out extra gold;
+    // Midas Touch and a hot kill streak both sweeten every payout)
+    let gMult=Math.max(1,Math.round((1+Math.floor(diff))*(World.goldMod||1)*Buffs.goldMul()*Combo.goldMul()));
     if(en.golden) gMult*=5;
     if(en.elite||en.golden){
       for(let i=0;i<3;i++) World.coins.push({x:en.x+rand(-14,14),y:en.y+rand(-14,14),type:'bar',value:15*gMult,vy:-2,bob:rand(0,6)});
@@ -2055,7 +2122,11 @@ const Loot = {
     }
     // HP potion drops (rarer now; elites still guaranteed)
     if(en.elite || Math.random()<0.018){
-      World.drops.push({x:en.x+rand(-10,10),y:en.y+rand(-10,10),potion:Math.round(35+diff*8),bob:rand(0,6)});
+      World.drops.push({x:en.x+rand(-10,10),y:en.y+rand(-10,10),potion:Math.round(35+diff*8),bob:rand(0,6),spawnT:12});
+    }
+    // POWER-UP drops — rare little dopamine spikes off ordinary kills
+    if(Math.random()<(0.005+diff*0.0012)*(en.elite?3:1)){
+      World.drops.push({x:en.x+rand(-12,12),y:en.y+rand(-12,12),powerup:pick(POWERUP_LIST),bob:rand(0,6),spawnT:14});
     }
     // gear drop chance (less common overall so unlocks take longer; still better deeper, elites guaranteed)
     let gearChance=0.022+diff*0.009;
@@ -2063,7 +2134,7 @@ const Loot = {
     if(en.elite || Math.random()<gearChance){
       const slot=pick(['helmet','chest','legs']);
       const item=this.genGear(slot,diff*(en.elite?1.8:1));
-      World.drops.push({x:en.x+rand(-8,8),y:en.y+rand(-8,8),item,bob:rand(0,6)});
+      World.drops.push({x:en.x+rand(-8,8),y:en.y+rand(-8,8),item,bob:rand(0,6),spawnT:12});
     }
     // WAND DROP — every enemy has a shot at dropping a random wand of a
     // randomly-rolled rarity (rollRarity already skews rarer the deeper you
@@ -2071,18 +2142,110 @@ const Loot = {
     if(Math.random()<(0.010+diff*0.006)*(en.elite?4:1)){
       const rarity=this.rollRarity(diff);
       const bucket=WAND_BUCKETS[rarity].length?WAND_BUCKETS[rarity]:WAND_BUCKETS.common;
-      World.drops.push({x:en.x,y:en.y,wand:pick(bucket),bob:rand(0,6)});
+      World.drops.push({x:en.x,y:en.y,wand:pick(bucket),bob:rand(0,6),spawnT:18});
+      SFX.wandDrop(RARITY_ORDER.indexOf(rarity));
     }
-    // RARE TREASURE CHEST — a bright, glowing, slightly-open chest. Walking
-    // over it unleashes one of three huge elemental bursts on every enemy
-    // nearby. Deliberately rare so it feels like a jackpot when it happens.
-    if(Math.random()<(0.0035+diff*0.0012)*(en.elite?3:1)){
-      World.drops.push({x:en.x,y:en.y,chest:true,bob:rand(0,6)});
+    // TREASURE CACHE — a tiered, glowing loot chest. Much more common than
+    // before so runs are studded with slot-machine moments; elites carry
+    // them often, and deeper biomes drop shinier tiers.
+    if(Math.random()<(0.014+diff*0.004)*(en.elite?3.5:1)){
+      const tier=this.rollChestTier(diff,en.elite);
+      World.drops.push({x:en.x,y:en.y,chest:true,tier,bob:rand(0,6),spawnT:16});
+      if(tier!=='wooden') UI.toast('✦ A '+CHEST_TIERS[tier].name+' drops!',CHEST_TIERS[tier].color);
     }
   },
-  // opens a dropped treasure chest: picks one of three big elemental bursts
-  // and slams every enemy caught in its radius — pure jackpot payoff
-  openChest(x,y){
+  // ==================================================================
+  // TREASURE CACHE OPENING — the Vampire-Survivors slot machine moment.
+  // Walking over a cache kicks off a staggered ceremony: a light pillar
+  // and gold fountain, then 1 / 3 / 5 prize pulls revealed one at a time
+  // with a rising jingle. Five pulls ends on a full JACKPOT flourish.
+  // The first three caches of a run are seeded 3-1-5 so every player
+  // tastes the jackpot early.
+  // ==================================================================
+  openChest(x,y,tier){
+    const T=CHEST_TIERS[tier]||CHEST_TIERS.wooden;
+    const diff=World.biomeAt(x,y).diff;
+    World.chestCount++;
+    // how many prize pulls? (seeded generously at first, then true odds)
+    const seed=[3,1,5][World.chestCount-1];
+    let pulls;
+    if(seed) pulls=seed;
+    else { const r=Math.random(); pulls = r<T.p5?5 : r<T.p5+T.p3?3 : 1; }
+    if(tier==='mythic') pulls=Math.max(pulls,3);
+    // --- opening flourish: hinge creak, light pillar, gold fountain ---
+    SFX.chest();
+    UI.toast('✦ '+T.name+' — '+(pulls>1?pulls+' prizes!':'opening…'), T.color);
+    FX.ring(x,y,64,18,T.glow); FX.ring(x,y,36,12,'#ffffff');
+    FX.spark(x,y,Math.random()*6.28,T.glow,22,3.4);
+    World.flash=Math.max(World.flash,pulls>=3?10:6);
+    Endgame.shake=Math.max(Endgame.shake,pulls>=3?10:6);
+    if(pulls>=3||tier==='mythic') Camera.pulse(pulls>=5?1.24:1.14);
+    // guaranteed gold fountain, richer per tier and per pull count
+    const coinN=T.coinN+pulls*4;
+    for(let i=0;i<coinN;i++){ const ang=Math.random()*6.28, spd=rand(2.5,7.5);
+      World.coins.push({x,y,type:Math.random()<0.35?'bar':'coin',value:Math.max(2,Math.round((6+diff*3))),
+        vy:Math.sin(ang)*spd,vx:Math.cos(ang)*spd,bob:rand(0,6)}); }
+    // --- staggered prize pulls, each with its own reveal beat ---
+    for(let i=0;i<pulls;i++){
+      World.after(16+i*20,()=>{
+        this.chestPull(x,y,tier,diff,i);
+        SFX.blip(520+i*130,0.12,'triangle',0.18,1.3);
+        FX.ring(x,y,44+i*8,12,T.glow);
+      });
+    }
+    // --- jackpot finale on a 5-pull ---
+    if(pulls>=5){
+      World.after(16+pulls*20+8,()=>{
+        World.floaters.push({x,y:y-60,vy:-0.6,life:90,maxlife:90,txt:'JACKPOT!',color:'#ffd24a',scale:2.6,flash:true,icon:'💰',iconGlow:'#fff0a8'});
+        World.flash=Math.max(World.flash,16); Endgame.shake=Math.max(Endgame.shake,16);
+        FX.ring(x,y,140,26,'#ffd24a'); FX.ring(x,y,90,20,'#ffffff');
+        FX.spark(x,y,Math.random()*6.28,'#fff0a8',40,4);
+        SFX.jackpot();
+      });
+    }
+  },
+  // one prize pull from an opened cache. The prize table mixes instant
+  // payoffs (gold, heals, elemental nukes) with build-shaping loot (wands,
+  // gear, power-ups). Higher chest tiers floor the rarity of wand pulls.
+  chestPull(x,y,tier,diff,i){
+    const T=CHEST_TIERS[tier]||CHEST_TIERS.wooden;
+    const table=[ ['wand',30], ['gear',20], ['powerup',22], ['gold',12], ['potion',8], ['burst',8] ];
+    let tot=table.reduce((s,e)=>s+e[1],0), r=Math.random()*tot, kind='gold';
+    for(const [k,w] of table){ if((r-=w)<=0){ kind=k; break; } }
+    const arc=(icon,color)=>{ // prize icon arcs up out of the chest
+      World.floaters.push({x:x+rand(-14,14),y:y-14,vy:-1.6,life:56,maxlife:56,txt:icon,emojiOnly:true,scale:1.7+i*0.1});
+      FX.spark(x,y-6,Math.random()*6.28,color,8,2.6);
+    };
+    if(kind==='wand'){
+      let rarity=this.rollRarity(diff*1.6);
+      if(T.wandFloor && RARITY_ORDER.indexOf(rarity)<RARITY_ORDER.indexOf(T.wandFloor)) rarity=T.wandFloor;
+      const bucket=WAND_BUCKETS[rarity].length?WAND_BUCKETS[rarity]:WAND_BUCKETS.common;
+      const idx=pick(bucket);
+      arc(ELEMENTS[WANDS[idx].elem].icon,RARITY[rarity].color);
+      this.pickupWand(idx);
+    } else if(kind==='gear'){
+      const item=this.genGear(pick(['helmet','chest','legs']),diff*(tier==='mythic'?2:tier==='golden'?1.5:1.1));
+      arc('🛡',RARITY[item.rarity].color);
+      this.pickupGear(item);
+    } else if(kind==='powerup'){
+      arc('✨','#5bc0ff');
+      Buffs.grant(pick(POWERUP_LIST));
+    } else if(kind==='gold'){
+      arc('💰','#ffd24a');
+      for(let k=0;k<10;k++){ const ang=Math.random()*6.28, spd=rand(3,7);
+        World.coins.push({x,y,type:'bar',value:Math.round(10+diff*4),vy:Math.sin(ang)*spd,vx:Math.cos(ang)*spd,bob:rand(0,6)}); }
+      SFX.bar();
+    } else if(kind==='potion'){
+      arc('❤','#ff5a7a');
+      Combat.heal(Math.round(40+diff*10)); SFX.heal();
+      UI.toast('+'+Math.round(40+diff*10)+' HP','#ff6a9a');
+    } else { // burst — the classic elemental nuke, kept as a jackpot line
+      this.elementalBurst(x,y);
+    }
+  },
+  // one of three huge elemental bursts slamming every enemy nearby — the
+  // original chest payoff, now one possible pull among many
+  elementalBurst(x,y){
     const KINDS=[
       {id:'ice',   name:'Glacial Burst', elem:'ice',   color:'#bfe6ff', glow:'#eaf8ff', dmg:85, rad:190, freeze:true},
       {id:'fire',  name:'Inferno Burst', elem:'fire',  color:'#ff7a18', glow:'#ffd24a', dmg:95, rad:190, burn:true},
@@ -2136,6 +2299,98 @@ const Loot = {
       SFX.gold();
     }
   }
+};
+
+// =====================================================================
+// BUFFS — temporary power-up state. Timers tick down per frame; each
+// active buff hooks into exactly one system (fire rate, damage, speed,
+// gold, pickup, or the Aegis hit-shield) so they stay cheap and additive.
+// =====================================================================
+const Buffs = {
+  active:{}, shieldHits:0,
+  reset(){ this.active={}; this.shieldHits=0; },
+  has(id){ return id==='aegis' ? this.shieldHits>0 : (this.active[id]||0)>0; },
+  grant(id){
+    const P=POWERUPS[id]; if(!P) return;
+    if(id==='aegis'){ this.shieldHits=3; }
+    else this.active[id]=Math.max(this.active[id]||0, P.dur);
+    UI.toast(P.icon+' '+P.name+' — '+P.desc+'!', P.color);
+    const p=World.player;
+    FX.ring(p.x,p.y,64,16,P.color); FX.spark(p.x,p.y,Math.random()*6.28,P.color,16,3);
+    World.floaters.push({x:p.x+rand(-26,26),y:p.y-40+rand(-8,8),vy:-0.8,life:60,maxlife:60,txt:P.name.toUpperCase(),color:P.color,scale:1.5,flash:true,icon:P.icon,iconGlow:P.color});
+    SFX.powerup();
+  },
+  update(){
+    for(const k in this.active){ if(this.active[k]>0) this.active[k]--; }
+    // magnet: everything shiny on the field races toward the player
+    if(this.has('magnet')){ const p=World.player;
+      for(const c of World.coins){ const a=Math.atan2(p.y-c.y,p.x-c.x); c.x+=Math.cos(a)*13; c.y+=Math.sin(a)*13; }
+    }
+  },
+  fireRateMul(){ return this.has('frenzy')?1.6:1; },
+  dmgMul(){ return this.has('might')?1.5:1; },
+  speedMul(){ return this.has('haste')?1.4:1; },
+  goldMul(){ return this.has('midas')?2:1; },
+  // list of active buffs for HUD drawing above the player's head
+  list(){ const out=[];
+    for(const k of POWERUP_LIST){ if(this.has(k)) out.push(k); }
+    return out;
+  }
+};
+
+// =====================================================================
+// COMBO — Dead-Cells-style kill streak. Chained kills inside a short
+// window build a counter with escalating milestone payoffs: sprees pay
+// bonus gold, rampages grant Frenzy, and a 100-streak drops a Mythic
+// Cache at your feet. The counter itself is drawn hot on the HUD.
+// =====================================================================
+const Combo = {
+  count:0, timer:0, best:0, popT:0,
+  MILESTONES:[
+    {at:10,  txt:'KILLING SPREE', color:'#8be36b', tier:0},
+    {at:25,  txt:'RAMPAGE',       color:'#ffd24a', tier:1},
+    {at:50,  txt:'UNSTOPPABLE',   color:'#ff7a18', tier:2},
+    {at:100, txt:'GODLIKE',       color:'#ff4d6d', tier:3},
+  ],
+  reset(){ this.count=0; this.timer=0; this.best=0; this.popT=0; },
+  window(){ return 200; }, // ~3.3s at 60fps to keep the chain alive
+  onKill(en){
+    this.count++; this.timer=this.window(); this.popT=8;
+    if(this.count>this.best) this.best=this.count;
+    const m=this.MILESTONES.find(m=>m.at===this.count);
+    if(m) this.milestone(m,en);
+  },
+  milestone(m,en){
+    const p=World.player;
+    World.floaters.push({x:p.x,y:p.y-56,vy:-0.7,life:80,maxlife:80,txt:m.txt+'!',color:m.color,scale:2.2,flash:true,icon:'⚔',iconGlow:m.color});
+    UI.toast('⚔ '+m.txt+' — '+this.count+' kill streak!', m.color);
+    FX.ring(p.x,p.y,90,20,m.color); World.flash=Math.max(World.flash,8);
+    SFX.combo(m.tier);
+    if(m.tier===0){ // spree: a little shower of gold
+      for(let i=0;i<6;i++){ const a=Math.random()*6.28; World.coins.push({x:p.x+Math.cos(a)*30,y:p.y+Math.sin(a)*30,type:'coin',value:4,vy:-2,bob:rand(0,6)}); }
+    } else if(m.tier===1){ Buffs.grant('frenzy'); }
+    else if(m.tier===2){ // unstoppable: coins + a free power-up on the ground
+      for(let i=0;i<8;i++){ const a=Math.random()*6.28; World.coins.push({x:p.x+Math.cos(a)*36,y:p.y+Math.sin(a)*36,type:'bar',value:12,vy:-2,bob:rand(0,6)}); }
+      World.drops.push({x:en.x,y:en.y,powerup:pick(POWERUP_LIST),bob:rand(0,6),spawnT:16});
+    } else { // godlike: a Mythic Cache slams down at your feet
+      World.drops.push({x:p.x+rand(-30,30),y:p.y+rand(-30,30),chest:true,tier:'mythic',bob:rand(0,6),spawnT:16});
+      UI.toast('💎 A Mythic Cache falls from the heavens!','#ff4d6d');
+      Endgame.shake=Math.max(Endgame.shake,14);
+    }
+  },
+  update(){
+    if(this.popT>0) this.popT--;
+    if(this.timer>0){ this.timer--;
+      if(this.timer<=0){
+        if(this.count>=15) UI.toast('Streak ended — ×'+this.count,'#9aa6c0');
+        this.count=0;
+      }
+    }
+  },
+  // small gold sweetener that scales with streak heat, capped at +50%
+  goldMul(){ return 1+Math.min(0.5,this.count*0.01); },
+  // 0..1 "heat" used to color and shake the HUD counter
+  heat(){ return clamp(this.count/50,0,1); }
 };
 
 // =====================================================================
@@ -2290,8 +2545,8 @@ const Combat = {
   fire(){
     const p=World.player, w=this.wand(), a=p.armAngle;
     const tip=34, wx=p.x+Math.cos(a)*tip, wy=p.y+Math.sin(a)*tip-18;
-    // cooldown: fire-rate + biome cast modifier + Timebent fluctuation
-    let cd=w.cool/(p.mFireRate||1)*(World.castMod||1);
+    // cooldown: fire-rate + biome cast modifier + Frenzy buff + Timebent fluctuation
+    let cd=w.cool/((p.mFireRate||1)*Buffs.fireRateMul())*(World.castMod||1);
     if(p.timebent) cd*=rand(0.72,1.28);
     p.cool=Math.max(1,Math.round(cd));
     // punchy wand-arm swing, cosmetic only — length adapts to fire rate so
@@ -2378,6 +2633,7 @@ const Combat = {
     if(en.dead||en.submerged) return; // a diving Sand Wurm can't be touched
     let crit=false, eff=1;
     if(fromPlayer){ const r=this.rollDmg(dmg); dmg=r.dmg; crit=r.crit;
+      if(Buffs.has('might')) dmg=Math.round(dmg*Buffs.dmgMul());
       const w=this.wand(); const elem=elemOverride||w.elem;
       eff=elemMult(elem, en.def.elem); dmg=Math.round(dmg*eff);
       if(en.def.armor) dmg=Math.max(1,dmg-en.def.armor);
@@ -2389,7 +2645,20 @@ const Combat = {
     }
     en.hp-=dmg; en.hit=8;
     if(en.hp<=0){
-      en.dead=true; FX.spark(en.x,en.y,Math.random()*6.28,en.def.head,14); SFX.die(); Loot.onKill(en);
+      en.dead=true;
+      // ---- kill juice: micro hit-stop, streak-scaled gibs, overkill payoff ----
+      if(World.hitstop<=0) World.hitstop = en.miniBoss?6 : crit?4 : 2;
+      const gibN=14+Math.min(14,Combo.count);
+      FX.spark(en.x,en.y,Math.random()*6.28,en.def.head,gibN);
+      FX.ring(en.x,en.y,22+Math.min(14,Combo.count*0.5),9,en.def.head);
+      if(fromPlayer && dmg>=en.maxhp*2 && !en.splitChild){ // OVERKILL: obliterated in one blow
+        World.floaters.push({x:en.x,y:en.y-en.r-8,vy:-1.1,life:50,maxlife:50,txt:'OVERKILL',color:'#ff4d6d',scale:1.4,flash:true,icon:'💥',iconGlow:'#ffd24a'});
+        FX.spark(en.x,en.y,Math.random()*6.28,'#ffffff',16,3.6);
+        FX.ring(en.x,en.y,52,14,'#ff4d6d');
+        World.coins.push({x:en.x,y:en.y,type:'coin',value:3,vy:-2.5,bob:rand(0,6)});
+        World.hitstop=Math.max(World.hitstop,4);
+      }
+      SFX.die(); Loot.onKill(en);
       if(en.miniBoss) Rewards.trigger(en.x,en.y,'mini');
       // Ooze splits into two smaller, weaker gobs on death instead of just dying
       if(en.def.splitOnDeath && !en.splitChild && en.r>9){
@@ -2444,6 +2713,13 @@ const Combat = {
   },
   hurtPlayer(dmg){
     const p=World.player; if(p.hurt>0) return;
+    if(Buffs.shieldHits>0){ // Aegis eats the hit outright
+      Buffs.shieldHits--; p.hurt=20;
+      FX.ring(p.x,p.y,46,14,'#d6f0ff'); FX.spark(p.x,p.y,Math.random()*6.28,'#d6f0ff',10,2.6);
+      World.floaters.push({x:p.x,y:p.y-34,vy:-0.9,life:40,maxlife:40,txt:'BLOCKED',color:'#d6f0ff',scale:1.1,icon:'🛡',iconGlow:'#ffffff'});
+      SFX.block();
+      return;
+    }
     const real=Math.max(1,Math.round(dmg*(World.corruptEnemyDmg||1))-p.def);
     p.hp-=real; p.hurt=28; FX.spark(p.x,p.y,Math.random()*6.28,'#ff3030',8);
     if(p.hp<=0){ p.hp=0; Game.over(); }
@@ -3032,9 +3308,14 @@ function updateProjectiles(){
   // gear/wand/chest drops on ground
   for(let i=World.drops.length-1;i>=0;i--){
     const dr=World.drops[i]; dr.bob+=0.1;
+    if(dr.spawnT>0){ dr.spawnT--; if(dr.spawnT===0 && dr.wand!=null){ // landing burst for wands
+      const col=RARITY[WANDS[dr.wand].rarity].color;
+      FX.ring(dr.x,dr.y,34,12,col); FX.spark(dr.x,dr.y,Math.random()*6.28,col,10,2.6);
+    } continue; } // still falling in — not grabbable yet
     if(dist(dr.x,dr.y,p.x,p.y)<p.r+14){
-      if(dr.chest){ Loot.openChest(dr.x,dr.y); }
+      if(dr.chest){ Loot.openChest(dr.x,dr.y,dr.tier||'wooden'); }
       else if(dr.wand!=null){ Loot.pickupWand(dr.wand); }
+      else if(dr.powerup){ Buffs.grant(dr.powerup); }
       else if(dr.potion!=null){ Combat.heal(dr.potion); SFX.heal(); UI.toast('+'+dr.potion+' HP','#ff6a9a'); }
       else { Loot.pickupGear(dr.item); SFX.pickup(); }
       World.drops.splice(i,1);
@@ -4153,26 +4434,30 @@ const Render = {
     ctx.strokeStyle='#a56a30'; ctx.lineWidth=1.4;
     ctx.beginPath(); ctx.moveTo(24+extend*0.4,0); ctx.lineTo(38+extend,0); ctx.stroke();
 
-    // wand-tip crystal glow, brighter and punchier the instant it fires —
-    // tinted by element, but haloed by rarity so a Mythic wand visibly
-    // radiates more than a Common one even at a glance
+    // wand-tip crystal glow — deliberately compact at rest, punching up the
+    // instant it fires. Its tint slowly breathes between the element color,
+    // its glow tone, and the wand's rarity color for a living, shifting hue.
     const w=activeWandDef(p);
     const rarityIdx=RARITY_ORDER.indexOf(w.rarity), rarityColor=RARITY[w.rarity].color;
+    const E2=ELEMENTS[w.elem]||ELEMENTS.arcane;
+    const cycA=0.5+0.5*Math.sin(World.time*0.02);          // slow breath between color & glow
+    const cycB=0.5+0.5*Math.sin(World.time*0.011+2.1);     // slower drift toward rarity tint
+    const tint=hexLerp(hexLerp(w.color,E2.glow,cycA*0.65), rarityColor, cycB*0.4);
     const readyPulse=p.cool<=1?1:0;
-    const fireGlow=4+(p.cool>w.cool-3?3:0)+rarityIdx*0.6+punch*10+readyPulse*3;
+    const fireGlow=2.6+(p.cool>w.cool-3?3:0)+rarityIdx*0.45+punch*10+readyPulse*2;
     const tipX=42+extend;
     ctx.save(); ctx.globalCompositeOperation='lighter';
     if(rarityIdx>0){
-      const haloR=fireGlow*2.4+rarityIdx*3.5+Math.sin(World.time*0.1)*rarityIdx*0.8;
+      const haloR=fireGlow*1.8+rarityIdx*2.4+Math.sin(World.time*0.1)*rarityIdx*0.6;
       const hg=ctx.createRadialGradient(tipX,0,0,tipX,0,haloR);
-      hg.addColorStop(0,'rgba(0,0,0,0)'); hg.addColorStop(0.55,rarityColor); hg.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.globalAlpha=0.5; ctx.fillStyle=hg; ctx.beginPath(); ctx.arc(tipX,0,haloR,0,6.28); ctx.fill();
+      hg.addColorStop(0,'rgba(0,0,0,0)'); hg.addColorStop(0.55,hexLerp(rarityColor,tint,0.35)); hg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.globalAlpha=0.4; ctx.fillStyle=hg; ctx.beginPath(); ctx.arc(tipX,0,haloR,0,6.28); ctx.fill();
       ctx.globalAlpha=1;
     }
-    const gg=ctx.createRadialGradient(tipX,0,0,tipX,0,fireGlow*2.4);
-    gg.addColorStop(0,'#ffffff'); gg.addColorStop(.35,w.color); gg.addColorStop(.7,w.color); gg.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(tipX,0,fireGlow*2.4,0,6.28); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(tipX,0,2.2+punch*1.5,0,6.28); ctx.fill();
+    const gg=ctx.createRadialGradient(tipX,0,0,tipX,0,fireGlow*2.0);
+    gg.addColorStop(0,'#ffffff'); gg.addColorStop(.35,tint); gg.addColorStop(.7,tint); gg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(tipX,0,fireGlow*2.0,0,6.28); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(tipX,0,1.8+punch*1.5,0,6.28); ctx.fill();
     // legendary/mythic wands sparkle with drifting motes even at rest
     if(rarityIdx>=4){
       for(let k=0;k<2;k++){ const sa=World.time*0.05+k*3.14, sr=10+k*5;
@@ -4193,6 +4478,30 @@ const Render = {
       ctx.shadowBlur=0; ctx.restore();
     }
     ctx.restore();
+
+    // ---- active power-up telegraphs: colored aura rings + icons overhead ----
+    const buffList=Buffs.list();
+    if(buffList.length){
+      ctx.save();
+      buffList.forEach((id,i)=>{
+        const P=POWERUPS[id];
+        const ra=World.time*0.04+i*1.3, rr=24+i*4;
+        ctx.globalAlpha=0.35+0.2*Math.sin(World.time*0.12+i);
+        ctx.strokeStyle=P.color; ctx.lineWidth=2; ctx.setLineDash([7,9]); ctx.lineDashOffset=-World.time*(0.6+i*0.2);
+        ctx.beginPath(); ctx.arc(px,py-4,rr,0,6.28); ctx.stroke();
+      });
+      ctx.setLineDash([]); ctx.globalAlpha=1;
+      // small icon row hovering above the hat
+      ctx.font='12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      const bw=buffList.length*16;
+      buffList.forEach((id,i)=>{
+        const P=POWERUPS[id];
+        const bx=px-bw/2+8+i*16, by=py-86+Math.sin(World.time*0.1+i)*2;
+        ctx.globalAlpha=0.9;
+        ctx.fillText(P.icon,bx,by);
+      });
+      ctx.globalAlpha=1; ctx.restore();
+    }
   },
   enemy(en){
     const ctx=this.ctx, x=Camera.sx(en.x),y=Camera.sy(en.y);
@@ -4252,48 +4561,164 @@ const Render = {
         ctx.fillStyle='#ffcf3a'; ctx.fillRect(x-10,y-5,20,10); ctx.fillStyle='#fff0a8'; ctx.fillRect(x-10,y-5,20,3); ctx.fillStyle='#c79a18'; ctx.fillRect(x-10,y+2,20,3);
       } else { ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x,y+7,7,3,0,0,6.28); ctx.fill();
         ctx.fillStyle='#ffcf3a'; ctx.beginPath(); ctx.arc(x,y,7,0,6.28); ctx.fill(); ctx.fillStyle='#fff0a8'; ctx.beginPath(); ctx.arc(x,y,4,0,6.28); ctx.fill(); } }
-    for(const dr of World.drops){ const x=Camera.sx(dr.x),y=Camera.sy(dr.y)+Math.sin(dr.bob)*3;
-      if(dr.chest){ // rare treasure chest — bright gold glow, slightly ajar lid
-        const pulse=0.6+0.4*Math.sin(dr.bob*1.5);
-        ctx.fillStyle='rgba(0,0,0,.32)'; ctx.beginPath(); ctx.ellipse(x,y+11,17,5,0,0,6.28); ctx.fill();
-        ctx.strokeStyle='rgba(255,210,74,'+(0.5+0.3*Math.sin(dr.bob*2))+')'; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.arc(x,y+2,20,0,6.28); ctx.stroke();
+    for(const dr of World.drops){
+      // spawn animation — the drop plummets in from above and lands
+      const st=dr.spawnT>0?dr.spawnT/18:0, fallY=-(st*st)*52;
+      const x=Camera.sx(dr.x),y=Camera.sy(dr.y)+Math.sin(dr.bob)*3+fallY;
+      if(st>0) ctx.globalAlpha=1-st*0.35;
+      if(dr.chest){ // TREASURE CACHE — tiered: wooden / golden / mythic (hue-shifting)
+        const T=CHEST_TIERS[dr.tier||'wooden']||CHEST_TIERS.wooden;
+        const S=T.scale, pulse=0.6+0.4*Math.sin(dr.bob*1.5);
+        // mythic caches breathe through the rainbow
+        const hue=(World.time*1.2+dr.bob*40)%360;
+        const glowCol=dr.tier==='mythic'?('hsl('+hue+',95%,72%)'):T.glow;
+        const ringCol=dr.tier==='mythic'?('hsl('+((hue+40)%360)+',95%,66%)'):T.color;
+        ctx.fillStyle='rgba(0,0,0,.32)'; ctx.beginPath(); ctx.ellipse(x,y+11*S,17*S,5*S,0,0,6.28); ctx.fill();
+        ctx.strokeStyle=ringCol; ctx.globalAlpha*=0.5+0.3*Math.sin(dr.bob*2);
+        ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x,y+2,20*S,0,6.28); ctx.stroke();
+        ctx.globalAlpha=st>0?1-st*0.35:1;
         ctx.save(); ctx.globalCompositeOperation='lighter';
-        const bg=ctx.createLinearGradient(x,y-6,x,y-52);
-        bg.addColorStop(0,'rgba(255,224,140,'+(0.55*pulse)+')'); bg.addColorStop(1,'rgba(255,224,140,0)');
-        ctx.fillStyle=bg; ctx.beginPath(); ctx.moveTo(x-10,y-6); ctx.lineTo(x+10,y-6); ctx.lineTo(x+3,y-52); ctx.lineTo(x-3,y-52); ctx.closePath(); ctx.fill();
-        const gg=ctx.createRadialGradient(x,y-4,0,x,y-4,28);
-        gg.addColorStop(0,'rgba(255,220,120,'+(0.5*pulse)+')'); gg.addColorStop(1,'rgba(255,220,120,0)');
-        ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(x,y-4,28,0,6.28); ctx.fill();
+        // light pillar
+        const bg=ctx.createLinearGradient(x,y-6,x,y-58*S);
+        bg.addColorStop(0,glowCol); bg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.globalAlpha=0.5*pulse*(st>0?1-st:1);
+        ctx.fillStyle=bg; ctx.beginPath(); ctx.moveTo(x-11*S,y-6); ctx.lineTo(x+11*S,y-6); ctx.lineTo(x+3*S,y-58*S); ctx.lineTo(x-3*S,y-58*S); ctx.closePath(); ctx.fill();
+        // rotating light rays for golden/mythic tiers
+        if(T.rays>0){ ctx.globalAlpha=0.22*pulse;
+          for(let r=0;r<T.rays;r++){ const ra=World.time*0.02+r*(6.28/T.rays);
+            ctx.beginPath(); ctx.moveTo(x,y-2);
+            ctx.lineTo(x+Math.cos(ra)*46*S-Math.sin(ra)*5,y-2+Math.sin(ra)*46*S*0.5+Math.cos(ra)*5*0.5);
+            ctx.lineTo(x+Math.cos(ra)*46*S+Math.sin(ra)*5,y-2+Math.sin(ra)*46*S*0.5-Math.cos(ra)*5*0.5);
+            ctx.closePath(); ctx.fillStyle=glowCol; ctx.fill(); }
+        }
+        const gg=ctx.createRadialGradient(x,y-4,0,x,y-4,30*S);
+        gg.addColorStop(0,glowCol); gg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.globalAlpha=0.45*pulse; ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(x,y-4,30*S,0,6.28); ctx.fill();
         ctx.restore();
-        ctx.fillStyle='#6a4222'; ctx.fillRect(x-13,y-2,26,12);
-        ctx.fillStyle='#4a2c14'; ctx.fillRect(x-13,y-2,26,3); ctx.fillRect(x-13,y+7,26,3);
-        ctx.save(); ctx.translate(x,y-2); ctx.rotate(-0.35);
-        ctx.fillStyle='#7a4e28'; ctx.beginPath(); ctx.moveTo(-13,0); ctx.quadraticCurveTo(0,-11,13,0); ctx.lineTo(13,3); ctx.quadraticCurveTo(0,-8,-13,3); ctx.closePath(); ctx.fill();
-        ctx.fillStyle='#caa15a'; ctx.beginPath(); ctx.arc(0,-1,2.2,0,6.28); ctx.fill();
+        ctx.globalAlpha=st>0?1-st*0.35:1;
+        // body + open lid, tier-colored, treasure glowing inside the mouth
+        ctx.save(); ctx.translate(x,y); ctx.scale(S,S);
+        // main box with gold trim bands and a lock plate
+        ctx.fillStyle=T.body; ctx.fillRect(-13,-2,26,12);
+        ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fillRect(-13,7,26,3);
+        ctx.fillStyle='#caa15a'; ctx.fillRect(-13,-2,2,12); ctx.fillRect(11,-2,2,12); ctx.fillRect(-13,3,26,1.6);
+        ctx.fillStyle='#e8c87a'; ctx.fillRect(-2.6,-1,5.2,5); // lock plate
+        ctx.fillStyle='#5a3a10'; ctx.beginPath(); ctx.arc(0,1.2,1.1,0,6.28); ctx.fill();
+        // dark open mouth
+        ctx.fillStyle='#170c04'; ctx.fillRect(-11,-5,22,4);
+        // treasure glowing up out of the mouth
+        ctx.fillStyle='#fff6c8'; ctx.shadowColor=glowCol; ctx.shadowBlur=10*pulse;
+        ctx.beginPath(); ctx.ellipse(0,-4,8,2.6,0,0,6.28); ctx.fill(); ctx.shadowBlur=0;
+        ctx.fillStyle='#ffd24a';
+        ctx.beginPath(); ctx.arc(-4,-4.6,1.7,0,6.28); ctx.arc(1,-5.2,1.9,0,6.28); ctx.arc(5.5,-4.4,1.5,0,6.28); ctx.fill();
+        // lid tipped well back, hinged at the rear-left corner
+        ctx.save(); ctx.translate(-11,-5); ctx.rotate(-0.6);
+        ctx.fillStyle=T.lid; ctx.beginPath(); ctx.moveTo(0,0); ctx.quadraticCurveTo(11,-9,22,0); ctx.lineTo(22,3.5); ctx.quadraticCurveTo(11,-5.5,0,3.5); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle='#caa15a'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0.5,1.5); ctx.quadraticCurveTo(11,-7,21.5,1.5); ctx.stroke();
         ctx.restore();
-        ctx.fillStyle='#fff6c8'; ctx.shadowColor='#ffd24a'; ctx.shadowBlur=16*pulse;
-        ctx.beginPath(); ctx.ellipse(x,y-2,7,4,0,0,6.28); ctx.fill(); ctx.shadowBlur=0;
-        for(let i=0;i<3;i++){ const sa=dr.bob*2+i*2.1, drift=(dr.bob*8+i*14)%40;
-          ctx.globalAlpha=Math.max(0,1-drift/40);
-          ctx.fillStyle='#ffe9a8'; ctx.beginPath(); ctx.arc(x+Math.sin(sa)*8,y-10-drift,1.6,0,6.28); ctx.fill(); }
+        ctx.restore();
+        // drifting sparkle motes escaping the seam
+        for(let i=0;i<3+T.rays;i++){ const sa=dr.bob*2+i*2.1, drift=(dr.bob*8+i*14)%44;
+          ctx.globalAlpha=Math.max(0,1-drift/44);
+          ctx.fillStyle=glowCol; ctx.beginPath(); ctx.arc(x+Math.sin(sa)*(8+i*2),y-10-drift,1.6,0,6.28); ctx.fill(); }
         ctx.globalAlpha=1;
         continue;
+      }
+      if(dr.powerup){ // POWER-UP ORB — spinning, humming ball of light with its icon inside
+        const P=POWERUPS[dr.powerup]||POWERUPS.frenzy;
+        const pulse=0.6+0.4*Math.sin(dr.bob*2.2);
+        ctx.fillStyle='rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(x,y+10,9,3.5,0,0,6.28); ctx.fill();
+        ctx.save(); ctx.globalCompositeOperation='lighter';
+        const og=ctx.createRadialGradient(x,y,0,x,y,20);
+        og.addColorStop(0,P.color); og.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.globalAlpha=0.55*pulse; ctx.fillStyle=og; ctx.beginPath(); ctx.arc(x,y,20,0,6.28); ctx.fill();
+        ctx.restore(); ctx.globalAlpha=st>0?1-st*0.35:1;
+        // spinning diamond frame around a soft orb core
+        ctx.save(); ctx.translate(x,y); ctx.rotate(World.time*0.05);
+        ctx.fillStyle=P.color; ctx.globalAlpha*=0.25; ctx.beginPath(); ctx.arc(0,0,8,0,6.28); ctx.fill();
+        ctx.globalAlpha=st>0?1-st*0.35:1;
+        ctx.strokeStyle=P.color; ctx.lineWidth=1.8; ctx.shadowColor=P.color; ctx.shadowBlur=10;
+        ctx.strokeRect(-9,-9,18,18); ctx.shadowBlur=0; ctx.restore();
+        ctx.font='13px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(P.icon,x,y+1);
+        ctx.globalAlpha=1; continue;
       }
       if(dr.potion!=null){ // red HP flask
         ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x,y+8,7,3,0,0,6.28); ctx.fill();
         ctx.fillStyle='#ff5a7a'; ctx.beginPath(); ctx.arc(x,y+2,6,0,6.28); ctx.fill();
         ctx.fillStyle='#ffb0c0'; ctx.beginPath(); ctx.arc(x-2,y,2,0,6.28); ctx.fill();
         ctx.fillStyle='#caa15a'; ctx.fillRect(x-2,y-8,4,5);
-        ctx.strokeStyle='#ff8aa0'; ctx.globalAlpha=0.4+0.3*Math.sin(dr.bob*2); ctx.lineWidth=1.5;
+        ctx.strokeStyle='#ff8aa0'; ctx.globalAlpha*=0.4+0.3*Math.sin(dr.bob*2); ctx.lineWidth=1.5;
         ctx.beginPath(); ctx.arc(x,y,12,0,6.28); ctx.stroke(); ctx.globalAlpha=1; continue; }
-      const col=dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color;
+      if(dr.wand!=null){ // WAND DROP — an actual wand, angled, crowned with a glowing crystal
+        const wd=WANDS[dr.wand], rIdx=RARITY_ORDER.indexOf(wd.rarity);
+        const col=RARITY[wd.rarity].color, E=ELEMENTS[wd.elem]||ELEMENTS.arcane;
+        const big=1+rIdx*0.14;               // rarer wands are physically bigger on the floor
+        const pulse=0.6+0.4*Math.sin(dr.bob*1.8);
+        // ground shadow + double pulsing summon-circle
+        ctx.fillStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x,y+13,14*big,4.5,0,0,6.28); ctx.fill();
+        ctx.strokeStyle=col; ctx.lineWidth=1.6;
+        const ringT=(dr.bob*0.45)%1;
+        ctx.globalAlpha=(1-ringT)*0.7; ctx.beginPath(); ctx.arc(x,y+8,8+ringT*(16+rIdx*4),0,6.28); ctx.stroke();
+        ctx.globalAlpha=0.35+0.25*pulse; ctx.beginPath(); ctx.arc(x,y+8,17+rIdx*2,0,6.28); ctx.stroke();
+        ctx.globalAlpha=st>0?1-st*0.35:1;
+        // rarity-colored beacon pillar rising off it — visible across the arena
+        ctx.save(); ctx.globalCompositeOperation='lighter';
+        const ph=54+rIdx*16;
+        const pg=ctx.createLinearGradient(x,y,x,y-ph);
+        pg.addColorStop(0,col); pg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.globalAlpha=(0.3+rIdx*0.07)*pulse*(st>0?1-st:1);
+        ctx.fillStyle=pg; ctx.beginPath(); ctx.moveTo(x-7-rIdx,y+4); ctx.lineTo(x+7+rIdx,y+4); ctx.lineTo(x+2,y-ph); ctx.lineTo(x-2,y-ph); ctx.closePath(); ctx.fill();
+        // soft rarity halo
+        const hg=ctx.createRadialGradient(x,y,0,x,y,(22+rIdx*5)*big);
+        hg.addColorStop(0,col); hg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.globalAlpha=0.35*pulse; ctx.fillStyle=hg; ctx.beginPath(); ctx.arc(x,y,(22+rIdx*5)*big,0,6.28); ctx.fill();
+        ctx.restore(); ctx.globalAlpha=st>0?1-st*0.35:1;
+        // the wand itself: angled, gently rocking, wood-grained, crystal-tipped
+        ctx.save(); ctx.translate(x,y); ctx.rotate(-0.65+Math.sin(dr.bob*0.9)*0.1); ctx.scale(big,big);
+        ctx.strokeStyle='#5a3416'; ctx.lineWidth=5; ctx.lineCap='round';
+        ctx.beginPath(); ctx.moveTo(-13,9); ctx.lineTo(11,-8); ctx.stroke();
+        ctx.strokeStyle='#8a5a28'; ctx.lineWidth=2.4;
+        ctx.beginPath(); ctx.moveTo(-12,8); ctx.lineTo(10,-7); ctx.stroke();
+        ctx.strokeStyle='#c99a58'; ctx.lineWidth=0.9;                    // grain highlight
+        ctx.beginPath(); ctx.moveTo(-11,6.5); ctx.lineTo(8,-6.5); ctx.stroke();
+        // grip wrap
+        ctx.strokeStyle=col; ctx.lineWidth=1.4;
+        for(let g=0;g<3;g++){ ctx.beginPath(); ctx.moveTo(-11+g*2.4,9.5-g*1.7); ctx.lineTo(-9+g*2.4,6.5-g*1.7); ctx.stroke(); }
+        // crystal tip — faceted diamond in the wand's element color, white-hot core
+        ctx.save(); ctx.translate(13,-9.5); ctx.rotate(0.8);
+        ctx.shadowColor=col; ctx.shadowBlur=14+rIdx*4;
+        ctx.fillStyle=E.color;
+        ctx.beginPath(); ctx.moveTo(0,-7); ctx.lineTo(4.5,0); ctx.lineTo(0,7); ctx.lineTo(-4.5,0); ctx.closePath(); ctx.fill();
+        ctx.shadowBlur=0;
+        ctx.fillStyle='#ffffff'; ctx.globalAlpha=0.85;
+        ctx.beginPath(); ctx.moveTo(0,-4); ctx.lineTo(2.2,0); ctx.lineTo(0,4); ctx.lineTo(-2.2,0); ctx.closePath(); ctx.fill();
+        ctx.globalAlpha=1; ctx.restore();
+        ctx.restore();
+        // orbiting sparkle motes — more of them the rarer the wand
+        ctx.save(); ctx.globalCompositeOperation='lighter';
+        for(let k=0;k<2+rIdx;k++){ const sa=World.time*0.06+k*(6.28/(2+rIdx)), sr=(15+rIdx*3)*big;
+          ctx.globalAlpha=0.4+0.5*Math.sin(World.time*0.14+k*1.7);
+          ctx.fillStyle=k%2?col:E.glow;
+          ctx.beginPath(); ctx.arc(x+Math.cos(sa)*sr,y+Math.sin(sa)*sr*0.55,1.5+rIdx*0.2,0,6.28); ctx.fill(); }
+        ctx.restore(); ctx.globalAlpha=st>0?1-st*0.35:1;
+        // epic+ wands announce their rarity in floating text
+        if(rIdx>=3){
+          ctx.font='900 10px Cinzel, serif'; ctx.textAlign='center';
+          ctx.globalAlpha=0.65+0.35*Math.sin(dr.bob*1.6);
+          ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.7)';
+          ctx.strokeText(RARITY[wd.rarity].name.toUpperCase(),x,y-26-rIdx*3);
+          ctx.fillStyle=col; ctx.fillText(RARITY[wd.rarity].name.toUpperCase(),x,y-26-rIdx*3);
+          ctx.globalAlpha=1;
+        }
+        ctx.globalAlpha=1; continue;
+      }
+      // gear cube (unchanged, still humble next to the wands)
+      const col=RARITY[dr.item.rarity].color;
       ctx.save(); ctx.translate(x,y); ctx.shadowColor=col; ctx.shadowBlur=14;
-      ctx.fillStyle=col;
-      if(dr.wand!=null){ ctx.fillRect(-2,-12,4,24); ctx.beginPath(); ctx.arc(0,-12,5,0,6.28); ctx.fill(); }
-      else { ctx.fillRect(-7,-7,14,14); }
+      ctx.fillStyle=col; ctx.fillRect(-7,-7,14,14);
       ctx.shadowBlur=0; ctx.restore();
-      ctx.strokeStyle=col; ctx.globalAlpha=0.4+0.3*Math.sin(dr.bob*2); ctx.lineWidth=1.5;
+      ctx.strokeStyle=col; ctx.globalAlpha*=0.4+0.3*Math.sin(dr.bob*2); ctx.lineWidth=1.5;
       ctx.beginPath(); ctx.arc(x,y,12,0,6.28); ctx.stroke(); ctx.globalAlpha=1;
     }
   },
@@ -4496,7 +4921,7 @@ const Render = {
         c.fillRect(en.x*scale-1,en.y*scale-1,2.5,2.5); }
       if(World.boss&&!World.boss.dead){ c.fillStyle='#ff2ad0';
         c.beginPath(); c.arc(World.boss.x*scale,World.boss.y*scale,4,0,6.28); c.fill(); }
-      for(const dr of World.drops){ c.fillStyle=dr.chest?'#ffd24a':dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
+      for(const dr of World.drops){ c.fillStyle=dr.chest?(CHEST_TIERS[dr.tier||'wooden']||CHEST_TIERS.wooden).color:dr.powerup?(POWERUPS[dr.powerup]||POWERUPS.frenzy).color:dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
         c.fillRect(dr.x*scale-1,dr.y*scale-1,2,2); }
       const p=World.player; c.fillStyle='#ffffff';
       c.beginPath(); c.arc(p.x*scale,p.y*scale,3,0,6.28); c.fill();
@@ -4529,7 +4954,7 @@ const Render = {
     if(World.boss&&!World.boss.dead){ c.fillStyle='#ff2ad0';
       c.beginPath(); c.arc(World.boss.x*scale,(World.boss.y-winTop)*scale,4,0,6.28); c.fill(); }
     // drops
-    for(const dr of World.drops){ c.fillStyle=dr.chest?'#ffd24a':dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
+    for(const dr of World.drops){ c.fillStyle=dr.chest?(CHEST_TIERS[dr.tier||'wooden']||CHEST_TIERS.wooden).color:dr.powerup?(POWERUPS[dr.powerup]||POWERUPS.frenzy).color:dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
       c.fillRect(dr.x*scale-1,(dr.y-winTop)*scale-1,2,2); }
     // player
     const p=World.player; c.fillStyle='#ffffff';
@@ -4567,6 +4992,31 @@ const Render = {
     c.beginPath(); c.moveTo(W,py); c.lineTo(W-8,py-5); c.lineTo(W-8,py+5); c.closePath();
     c.fill(); c.stroke();
   },
+  // hot streak counter — top center, heating from white to gold to red as
+  // the chain climbs, popping on every kill, with a draining chain-timer bar
+  comboHud(){
+    if(Combo.count<5) return;
+    const ctx=this.ctx, heat=Combo.heat();
+    const pop=1+ (Combo.popT>0 ? (Combo.popT/8)*0.35 : 0);
+    const col=heat<0.4?hexLerp('#ffffff','#ffd24a',heat/0.4):hexLerp('#ffd24a','#ff4d6d',(heat-0.4)/0.6);
+    const jx=heat>0.6?rand(-heat*2.4,heat*2.4):0, jy=heat>0.6?rand(-heat*2.4,heat*2.4):0;
+    const cx=Camera.w/2+jx, cy=(World.bossActive?150:86)+jy; // clear the boss bar when it's up
+    ctx.save();
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='900 '+Math.round(30*pop*(1+heat*0.35))+'px Cinzel, serif';
+    ctx.shadowColor=col; ctx.shadowBlur=10+heat*18;
+    ctx.lineWidth=5; ctx.strokeStyle='rgba(0,0,0,.75)';
+    ctx.strokeText('×'+Combo.count,cx,cy);
+    ctx.fillStyle=col; ctx.fillText('×'+Combo.count,cx,cy);
+    ctx.shadowBlur=0;
+    ctx.font='700 10px Cinzel, serif';
+    ctx.fillStyle='rgba(255,255,255,.75)'; ctx.fillText('KILL STREAK',cx,cy+22);
+    // chain timer bar
+    const t=Combo.timer/Combo.window(), bw=90;
+    ctx.fillStyle='rgba(0,0,0,.5)'; ctx.fillRect(cx-bw/2,cy+30,bw,3);
+    ctx.fillStyle=col; ctx.fillRect(cx-bw/2,cy+30,bw*t,3);
+    ctx.restore();
+  },
   frame(){
     const ctx=this.ctx;
     // end-game screen shake
@@ -4594,6 +5044,7 @@ const Render = {
       ctx.fillRect(0,0,Camera.w,Camera.h); }
     BloodMoon.draw(ctx,Camera.w,Camera.h);
     this.crosshair();
+    this.comboHud();
     if(World.flash>0){ const a=World.flash/6*0.12;
       const g=ctx.createRadialGradient(Camera.w/2,Camera.h/2,Camera.h*0.3,Camera.w/2,Camera.h/2,Camera.h*0.75);
       g.addColorStop(0,'rgba(255,240,180,0)'); g.addColorStop(1,'rgba(255,220,120,'+a+')');
@@ -5267,6 +5718,9 @@ const Game = {
   },
   step(){
     if(World.shopOpen||World.paused||World.won||!World.running) return;
+    // micro hit-stop: the whole world freezes for a couple of frames on a
+    // kill or crit — a tiny bite of impact that makes every hit feel heavy
+    if(World.hitstop>0){ World.hitstop--; return; }
     World.time++;
     const p=World.player;
     // movement
@@ -5279,7 +5733,7 @@ const Game = {
       p.dashFrames=CONFIG.player.dashFrames; p.dashCd=CONFIG.player.dashCd; p.mp-=CONFIG.player.dashCost;
       p.dashDX=dx; p.dashDY=dy;
     }
-    let sp=p.speed;
+    let sp=p.speed*Buffs.speedMul();
     if(p.dashFrames>0){ p.dashFrames--; dx=p.dashDX; dy=p.dashDY; sp=CONFIG.player.dashPower; FX.spark(p.x,p.y,0,'#bfe0ff',1); }
     else { sp*=Terrain.speedFactorAt(p.x,p.y); } // wading a river slows you; dashing ignores it
     if(World.mode==='endless'){
@@ -5331,6 +5785,8 @@ const Game = {
     Merchant.update();
     Events.update();
     updateProjectiles();
+    Buffs.update();
+    Combo.update();
     FX.update();
     Ambient.update();
     Camera.follow(p);
