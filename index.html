@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spellstorm v1.61</title>
+<title>Spellstorm v1.70</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -44,23 +44,33 @@
   #hud{position:fixed;top:34px;left:0;right:0;pointer-events:none;display:flex;
     justify-content:center;gap:8px;flex-wrap:wrap;font-family:'Cinzel',serif;font-size:12px;font-weight:700;
     letter-spacing:.12em;text-transform:uppercase;text-shadow:0 2px 5px #000;z-index:20;}
-  #hud .pill{position:relative;background:linear-gradient(180deg,rgba(32,26,15,.92),rgba(9,7,4,.94));
-    padding:6px 14px 6px 12px;border-radius:3px;border:1px solid var(--bronze-dim);
-    box-shadow:0 3px 10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 0 1px rgba(0,0,0,.4);
-    color:#d9c9a3;display:flex;align-items:center;gap:6px;transition:border-color .2s,box-shadow .2s;}
-  #hud .pill::before{content:'';position:absolute;inset:0;border-radius:3px;pointer-events:none;
-    border:1px solid rgba(255,224,160,.10);box-shadow:inset 0 0 8px rgba(0,0,0,.5);}
+  /* heraldic hex plaques — hammered-bronze banner shapes with arcane studs
+     at each point, replacing the old flat gold rectangles */
+  #hud .pill{position:relative;isolation:isolate;color:#e6d6ae;display:flex;align-items:center;gap:6px;
+    padding:6px 19px 6px 17px;border:none;border-radius:0;
+    background:
+      radial-gradient(circle 2.5px at 7px 50%, #cfeaff 0 45%, #3a6a8a 72%, transparent 76%),
+      radial-gradient(circle 2.5px at calc(100% - 7px) 50%, #cfeaff 0 45%, #3a6a8a 72%, transparent 76%),
+      linear-gradient(155deg,#f0d9a0 0%,#8a7038 28%,#42351a 52%,#c8aa6e 78%,#f6e6b4 100%);
+    clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,10px 100%,0 50%);
+    filter:drop-shadow(0 3px 6px rgba(0,0,0,.6));
+    transition:filter .2s;}
+  #hud .pill::before{content:'';position:absolute;inset:1.5px;z-index:-1;pointer-events:none;
+    clip-path:polygon(9px 0,calc(100% - 9px) 0,100% 50%,calc(100% - 9px) 100%,9px 100%,0 50%);
+    background:linear-gradient(180deg,rgba(36,29,16,.97),rgba(9,7,4,.98));}
   #hud .pico{font-size:12px;opacity:.9;filter:drop-shadow(0 0 3px rgba(0,0,0,.8));}
   #hud b{color:var(--bright);font-weight:900;margin-left:.1em;}
   #hud .pill.pop{ animation:hudPop .38s cubic-bezier(.3,1.6,.5,1); }
   @keyframes hudPop{ 0%{transform:scale(1);} 35%{transform:scale(1.22);} 100%{transform:scale(1);} }
-  #lvlp{box-shadow:0 3px 10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 10px rgba(155,227,107,.22);}
-  #stagep{box-shadow:0 3px 10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 10px rgba(95,208,255,.22);}
-  #wavep{box-shadow:0 3px 10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 10px rgba(255,154,46,.22);}
-  #killsp{box-shadow:0 3px 10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 10px rgba(255,90,90,.22);}
-  #goldp{border-color:var(--bronze);box-shadow:0 3px 10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,235,180,.10),0 0 12px rgba(255,207,58,.18),inset 0 0 10px rgba(255,207,58,.14);}
+  #lvlp::before{box-shadow:inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 13px rgba(155,227,107,.30);}
+  #stagep::before{box-shadow:inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 13px rgba(95,208,255,.30);}
+  #wavep::before{box-shadow:inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 13px rgba(255,154,46,.30);}
+  #killsp::before{box-shadow:inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 13px rgba(255,90,90,.30);}
+  #goldp::before{box-shadow:inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 13px rgba(255,207,58,.34);}
+  #goldp{filter:drop-shadow(0 3px 6px rgba(0,0,0,.6)) drop-shadow(0 0 7px rgba(255,207,58,.30));}
   #goldp b{color:var(--gold);text-shadow:0 0 8px rgba(255,207,58,.5);}
-  #corrp{box-shadow:0 3px 10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 10px rgba(192,106,255,.22);}
+  #corrp::before{box-shadow:inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 13px rgba(192,106,255,.30);}
+  #turrp::before{box-shadow:inset 0 1px 0 rgba(255,235,180,.10),inset 0 0 13px rgba(126,216,255,.28);}
 
   /* health orb (bottom-left) + mana orb (bottom-right), Path-of-Exile style,
      with a thin experience track running the full width of the screen edge */
@@ -506,8 +516,20 @@
 
   /* boss/miniboss item-reveal cinematic — pops in after the gold explosion,
      scales its drama up with rarity (legendary/mythic get extra flourish) */
-  #lootReveal{position:fixed;inset:0;z-index:64;display:none;place-items:center;pointer-events:none;
-    background:radial-gradient(circle at center,rgba(0,0,0,.35),rgba(0,0,0,.7));}
+  /* BIOME TITLE CARD — a Souls-like area announcement: the biome's name
+     fades up big and slow with a hairline gold rule, its biome rule as a
+     subtitle, then dissolves. Pure atmosphere. */
+  #biomeTitle{position:fixed;top:16%;left:0;right:0;z-index:22;pointer-events:none;text-align:center;
+    opacity:0;transition:opacity 1.1s ease;}
+  #biomeTitle.show{opacity:1;}
+  #biomeTitle .btMain{font-family:'Cinzel',serif;font-weight:900;font-size:36px;letter-spacing:.34em;
+    padding-left:.34em;color:#f2e8cc;text-shadow:0 0 24px rgba(255,220,140,.4),0 3px 10px #000,0 0 2px #000;}
+  #biomeTitle .btLine{width:280px;height:1px;margin:10px auto 8px;
+    background:linear-gradient(90deg,transparent,var(--bronze-hi),transparent);
+    box-shadow:0 0 8px rgba(240,217,160,.6);}
+  #biomeTitle .btSub{font-family:'Spectral',serif;font-style:italic;font-size:14px;color:#cfe0ea;
+    opacity:.85;text-shadow:0 2px 6px #000;}
+  #lootReveal{position:fixed;inset:0;z-index:64;display:none;place-items:center;pointer-events:none;    background:radial-gradient(circle at center,rgba(0,0,0,.35),rgba(0,0,0,.7));}
   #lootReveal.show{display:grid;}
   #lrCard{position:relative;text-align:center;padding:34px 54px;border-radius:16px;
     background:linear-gradient(165deg,rgba(30,26,16,.92),rgba(10,8,4,.95));
@@ -599,13 +621,150 @@
   #bossIntro .bisub{font-family:'Cinzel',serif;font-weight:700;font-size:15px;letter-spacing:.3em;
     text-transform:uppercase;color:#ffcf3a;margin-top:10px;opacity:.9;}
   @keyframes bossfade{0%{opacity:0;transform:scale(1.15);}18%{opacity:1;transform:scale(1);}80%{opacity:1;}100%{opacity:0;}}
+
+  /* =====================================================================
+     ARCANE PLATE THEME — replaces the four repeated flat gold-rectangle
+     panels with beveled octagonal bronze plates: a forged gradient rim,
+     riveted corners, a small arcane gem set at the crown, and a soft
+     top-sheen, all cut with matching chamfered corners.
+     ===================================================================== */
+  #minimapWrap,#gearWrap,#buildTreeWrap,#wandTrackWrap{
+    border:none;border-radius:0;box-shadow:none;
+    background:
+      radial-gradient(circle 3px at 50% 6.5px,#bfe8ff 0 40%,#2a6a9a 68%,transparent 74%),
+      linear-gradient(160deg,#f0d9a0 0%,#8a7038 26%,#42351a 50%,#c8aa6e 76%,#f6e6b4 100%);
+    clip-path:polygon(13px 0,calc(100% - 13px) 0,100% 13px,100% calc(100% - 13px),
+      calc(100% - 13px) 100%,13px 100%,0 calc(100% - 13px),0 13px);
+    filter:drop-shadow(0 10px 22px rgba(0,0,0,.65));}
+  #minimapWrap::before,#gearWrap::before,#buildTreeWrap::before,#wandTrackWrap::before{
+    content:'';position:absolute;inset:2px;z-index:-1;pointer-events:none;border:none;border-radius:0;
+    clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),
+      calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px),0 12px);
+    box-shadow:none;
+    background:
+      radial-gradient(circle 2.2px at 13px 13px,#f0d9a0 0 42%,#55431e 74%,transparent 78%),
+      radial-gradient(circle 2.2px at calc(100% - 13px) 13px,#f0d9a0 0 42%,#55431e 74%,transparent 78%),
+      radial-gradient(circle 2.2px at 13px calc(100% - 13px),#f0d9a0 0 42%,#55431e 74%,transparent 78%),
+      radial-gradient(circle 2.2px at calc(100% - 13px) calc(100% - 13px),#f0d9a0 0 42%,#55431e 74%,transparent 78%),
+      linear-gradient(var(--poe-panel2),var(--poe-panel));}
+  #minimapWrap::after,#gearWrap::after,#buildTreeWrap::after,#wandTrackWrap::after{
+    content:'';position:absolute;top:2px;left:2px;right:2px;height:34%;z-index:-1;pointer-events:none;
+    clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%,0 12px);
+    background:linear-gradient(180deg,rgba(255,235,180,.075),transparent);}
+
+  /* gear sockets forged in the same style — chamfered bronze-rimmed cells */
+  .slot{border:none;border-radius:0;position:relative;isolation:isolate;
+    background:linear-gradient(155deg,#c8aa6e,#5a4826 40%,#2e2410 70%,#8a7038);
+    clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px);
+    box-shadow:none;}
+  .slot::before{content:'';position:absolute;inset:1px;z-index:-1;
+    clip-path:polygon(5.5px 0,100% 0,100% calc(100% - 5.5px),calc(100% - 5.5px) 100%,0 100%,0 5.5px);
+    background:radial-gradient(circle at 50% 30%,#211a0e,#0b0805);}
+  .slot.wand{border:none;
+    background:linear-gradient(155deg,#ffe9a8,#b08a30 45%,#5a4416 75%,#ffd24a);
+    filter:drop-shadow(0 0 5px rgba(255,210,74,.35));box-shadow:none;}
+
+  /* =====================================================================
+     LIVING ORBS — the health and mana pools reforged: luminous liquid
+     gradients, a glowing meniscus, rising bubbles, colored auras bleeding
+     off the rings, and a slow-turning rune halo around each orb.
+     ===================================================================== */
+  .orbWrap::before{content:'';position:absolute;inset:-8px;border-radius:50%;pointer-events:none;
+    border:1.5px dashed transparent;}
+  .orbWrap--hp::before{border-color:rgba(255,110,90,.42);animation:orbSpin 26s linear infinite;}
+  .orbWrap--mp::before{border-color:rgba(120,200,255,.42);animation:orbSpin 26s linear infinite reverse;}
+  @keyframes orbSpin{to{transform:rotate(360deg);}}
+  .orbWrap--hp .orbRing{border-color:#8a4636;
+    box-shadow:0 10px 26px rgba(0,0,0,.6),0 0 0 5px var(--poe-dark),0 0 28px rgba(255,60,45,.5),
+      inset 0 2px 5px rgba(255,235,180,.14),inset 0 -8px 18px rgba(0,0,0,.65),inset 0 0 24px rgba(255,60,40,.3);}
+  .orbWrap--mp .orbRing{border-color:#3a6a9a;
+    box-shadow:0 10px 26px rgba(0,0,0,.6),0 0 0 5px var(--poe-dark),0 0 28px rgba(60,150,255,.5),
+      inset 0 2px 5px rgba(255,235,180,.14),inset 0 -8px 18px rgba(0,0,0,.65),inset 0 0 24px rgba(60,140,255,.3);}
+  .orbWrap--hp .orbFill{background:linear-gradient(#ffb8a4 0%,#ff5642 38%,#cc1512 72%,#6e0606 100%);}
+  .orbWrap--mp .orbFill{background:linear-gradient(#cef2ff 0%,#4fb4ff 38%,#1a68d0 72%,#0a2e66 100%);}
+  .orbWrap .orbFill::before{height:7px;background:rgba(255,255,255,.55);filter:blur(1.4px);}
+  .orbWrap--hp .orbFill::before{box-shadow:0 0 16px 4px rgba(255,130,95,.85);}
+  .orbWrap--mp .orbFill::before{box-shadow:0 0 16px 4px rgba(130,205,255,.85);}
+  .orbWrap .orbFill::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.7;
+    background-image:
+      radial-gradient(circle 2.1px at 22% 84%,rgba(255,255,255,.85),transparent 62%),
+      radial-gradient(circle 1.5px at 66% 68%,rgba(255,255,255,.7),transparent 62%),
+      radial-gradient(circle 2.6px at 44% 94%,rgba(255,255,255,.65),transparent 62%),
+      radial-gradient(circle 1.4px at 82% 86%,rgba(255,255,255,.8),transparent 62%),
+      radial-gradient(circle 1.8px at 12% 60%,rgba(255,255,255,.6),transparent 62%);
+    background-size:100% 220%;background-repeat:repeat-y;
+    animation:orbBubbles 5.5s linear infinite;}
+  @keyframes orbBubbles{from{background-position:0 130%;}to{background-position:0 -130%;}}
+  .orbWrap .orbTxt{text-shadow:0 1px 3px #000,0 0 7px #000,0 0 12px rgba(255,255,255,.28);}
+
+  /* =====================================================================
+     PYLON SOCKET — the T-key turret slot alongside Q/E/R: dim and gray
+     when the pack is empty, blazing in the best stored pylon's rarity
+     color with a count badge and DEPLOY hint the moment one drops.
+     ===================================================================== */
+  #pylonSlot .spIcon{opacity:.22;filter:grayscale(1) drop-shadow(0 2px 4px rgba(0,0,0,.8));
+    transition:opacity .3s,filter .3s;}
+  #pylonSlot.stocked .spIcon{opacity:1;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.8)) drop-shadow(0 0 7px var(--ec,#5bc0ff));}
+  #pylonSlot.stocked{border-color:var(--ec,#5bc0ff);}
+  #pylonSlot.stocked .spRing{animation:spReadyPulse 1.5s ease-in-out infinite;}
+  #pylonSlot .spCount{position:absolute;top:-7px;right:-7px;z-index:6;min-width:21px;height:21px;padding:0 4px;
+    display:grid;place-items:center;border-radius:11px;font-family:'Cinzel',serif;font-weight:900;font-size:11px;
+    color:#08131c;background:linear-gradient(#ffffff,var(--ec,#8fd0ff));
+    box-shadow:0 2px 0 rgba(0,0,0,.45),0 2px 7px rgba(0,0,0,.5),0 0 9px var(--ec,#8fd0ff);
+    opacity:0;transform:scale(.4);transition:all .28s cubic-bezier(.3,1.7,.5,1);}
+  #pylonSlot.stocked .spCount{opacity:1;transform:scale(1);}
+  #pylonSlot .spHint{position:absolute;top:-17px;left:50%;transform:translateX(-50%);z-index:4;
+    font-family:'Cinzel',serif;font-weight:700;font-size:8px;letter-spacing:.2em;color:var(--ec,#9fdcff);
+    opacity:0;transition:opacity .3s;text-shadow:0 1px 3px #000;white-space:nowrap;}
+  #pylonSlot.stocked .spHint{opacity:.95;animation:pylonHintPulse 1.6s ease-in-out infinite;}
+  @keyframes pylonHintPulse{0%,100%{opacity:.55;}50%{opacity:1;}}
+
+  /* =====================================================================
+     RUN INTRO — a 2.75s cold-open: smash-cut from black, cinematic
+     letterbox bars, the mode's name slamming onto the screen over a
+     tightening summoning circle, then everything detonates and the bars
+     snap away as control releases.
+     ===================================================================== */
+  #cineFade{position:fixed;inset:0;z-index:41;background:#000;opacity:0;pointer-events:none;}
+  .cineBar{position:fixed;left:0;right:0;height:0;background:linear-gradient(#000,#050302);z-index:39;
+    pointer-events:none;transition:height .45s cubic-bezier(.7,0,.3,1);
+    box-shadow:0 0 18px rgba(0,0,0,.8);}
+  #cineTop{top:0;border-bottom:1px solid rgba(200,170,110,.35);}
+  #cineBot{bottom:0;border-top:1px solid rgba(200,170,110,.35);}
+  body.cine #cineTop,body.cine #cineBot{height:11%;}
+  #runIntro{position:fixed;inset:0;z-index:40;display:grid;place-items:center;pointer-events:none;
+    opacity:0;transition:opacity .45s ease;}
+  #runIntro.show{opacity:1;}
+  #runIntro .riInner{text-align:center;transform:translateY(-6%);}
+  #runIntro .riPre{font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:.5em;
+    padding-left:.5em;color:#9fdcff;opacity:0;text-shadow:0 2px 8px #000,0 0 14px rgba(90,190,255,.6);}
+  #runIntro.show .riPre{animation:riPre .7s ease .1s forwards;}
+  @keyframes riPre{from{opacity:0;transform:translateY(8px);}to{opacity:.9;transform:translateY(0);}}
+  #runIntro .riMode{font-family:'Cinzel',serif;font-weight:900;font-size:50px;letter-spacing:.34em;
+    padding-left:.34em;margin:6px 0 2px;color:#ffe9b8;
+    text-shadow:0 0 34px rgba(255,190,90,.6),0 0 8px rgba(255,220,150,.8),0 5px 16px #000;}
+  #runIntro.show .riMode{animation:riSlam .8s cubic-bezier(.15,.9,.25,1) forwards;}
+  @keyframes riSlam{
+    0%{transform:scale(1.6);letter-spacing:.6em;opacity:0;filter:blur(6px);}
+    45%{opacity:1;filter:blur(0);}
+    62%{transform:scale(.985);}
+    100%{transform:scale(1);letter-spacing:.34em;opacity:1;}}
+  #runIntro .riLine{width:0;height:1px;margin:12px auto 10px;
+    background:linear-gradient(90deg,transparent,var(--bronze-hi),transparent);
+    box-shadow:0 0 10px rgba(240,217,160,.7);}
+  #runIntro.show .riLine{animation:riLine .8s cubic-bezier(.2,.8,.3,1) .35s forwards;}
+  @keyframes riLine{to{width:340px;}}
+  #runIntro .riOrigin{font-family:'Spectral',serif;font-style:italic;font-size:16px;
+    color:var(--roc,#cfd6c4);opacity:0;text-shadow:0 2px 8px #000,0 0 12px var(--roc,#cfd6c4);}
+  #runIntro.show .riOrigin{animation:riPre .7s ease .55s forwards;}
 </style>
 </head>
 <body>
 <div id="wrap"><canvas id="game"></canvas></div>
 <div id="framefx"></div>
 <div id="brand">SPELLSTORM</div>
-<div id="disclaimer">08/07/26 v1.61 - Stormcaller Update</div>
+<div id="disclaimer">15/07/26 v1.70 - Open Realm Update</div>
 <div id="warnBanner"><div class="wbig" id="warnBig">⚠ THE CORRUPTED CORE ⚠</div><div class="wsub" id="warnSub">Point of no return — the Warden stirs</div></div>
 <div id="eventBanner"><span class="ebIcon">🧙</span><div class="ebName">Event</div></div>
 
@@ -616,6 +775,7 @@
   <div class="pill" id="wavep"><span class="pico">🌊</span>Wave <b id="wavev">1</b></div>
   <div class="pill" id="killsp"><span class="pico">☠</span>Kills <b id="killsv">0</b></div>
   <div class="pill" id="goldp"><span class="pico">🪙</span>Gold <b id="goldv">0</b></div>
+  <div class="pill" id="turrp"><span class="pico">💠</span>Pylons <b id="turrv">0</b></div>
   <div class="pill" id="corrp"><div class="cbar" id="corrBar"></div><span class="pico">⚛</span><span>Corruption</span> <b id="corrv">0%</b></div>
 </div>
 
@@ -625,6 +785,18 @@
 <div id="bossIntro"><div><div class="bititle" id="bossIntroName">THISTLEMAW</div><div class="bisub" id="bossIntroSub">Warden of the Plains</div></div></div>
 
 <div id="toasts"></div>
+
+<div id="biomeTitle"><div class="btMain">Sunlit Plains</div><div class="btLine"></div><div class="btSub"></div></div>
+
+<div id="cineFade"></div>
+<div class="cineBar" id="cineTop"></div>
+<div class="cineBar" id="cineBot"></div>
+<div id="runIntro"><div class="riInner">
+  <div class="riPre">THE STORM GATHERS</div>
+  <div class="riMode">THE OPEN REALM</div>
+  <div class="riLine"></div>
+  <div class="riOrigin">The Unchosen</div>
+</div></div>
 
 <div id="lowHpVignette"></div>
 
@@ -674,6 +846,15 @@
     <div class="spFlash" id="spellRFlash"></div>
     <div class="spLock" id="spellRLock">🔒</div>
     <div class="spKey">R</div>
+  </div>
+  <!-- Arcane Pylon socket — lights up whenever a turret is in the pack -->
+  <div class="spellSlot" id="pylonSlot">
+    <div class="spRing"></div>
+    <div class="spHint">DEPLOY</div>
+    <div class="spIcon">💠</div>
+    <div class="spFlash" id="pylonFlash"></div>
+    <div class="spCount" id="pylonCount">0</div>
+    <div class="spKey">T</div>
   </div>
 </div>
 
@@ -760,6 +941,7 @@
       <div class="key">Q</div><div class="cd">Cast your Q spell — once unlocked</div>
       <div class="key">E</div><div class="cd">Cast your E spell — once unlocked</div>
       <div class="key">R</div><div class="cd">Rally your spectral companion(s) — once unlocked</div>
+      <div class="key">T</div><div class="cd">Deploy an Arcane Pylon turret — drops from enemies, fights for 60 seconds</div>
       <div class="key">Space</div><div class="cd">Dash (costs mana)</div>
       <div class="key">1 – 8</div><div class="cd">Equip that inventory slot</div>
     </div>
@@ -972,7 +1154,7 @@ function makeNoise(seed){
 const CONFIG = {
   // Journey uses a tall vertical shaft: fixed width, height = one band per
   // biome stage. Endless restores the original square radial world (size).
-  world:{ width:2600, height:12000, bandHeight:2000, tile:80, size:6000 },
+  world:{ width:2600, height:12000, bandHeight:2000, tile:80, size:12000 },
   player:{ speed:3.7, hp:120, mp:100, mpRegen:0.25, dashCost:25, dashPower:11, dashFrames:9, dashCd:42 },
 };
 
@@ -1076,6 +1258,8 @@ const BIOMES = {
              enemies:['scorpion','wolf','gargoyle','wurm'], rule:'Sunscar Waste — heat quickens everything; more gold spills.', enemySpeedMod:1.12, goldMod:1.35},
   snow:     {key:'snow', name:'Frostreach', ground:'#cdd9e2',alt:'#d6e1ea',blade:'rgba(150,170,190,.4)',diff:3,mood:.25,
              enemies:['icegolem','wolf','gargoyle'], rule:'Frostreach — cold slows enemies, but your spells cool slower too.', enemySpeedMod:0.78, castMod:1.22},
+  crystal:  {key:'crystal', name:'The Glimmerveil', ground:'#3a4b6e',alt:'#41537a',blade:'rgba(140,190,255,.35)',diff:3.4,mood:.35,
+             enemies:['stormwisp','icegolem','gargoyle','bat'], rule:'The Glimmerveil — resonant crystals quicken your casting.', castMod:0.85, goldMod:1.25},
   volcano:  {key:'volcano', name:'Emberdeep',  ground:'#5a2a22',alt:'#653028',blade:'rgba(80,30,20,.5)',diff:3.6,mood:.5,
              enemies:['firedemon','scorpion','gargoyle','stoneguard'], rule:'Emberdeep — enemies rage faster, but drop far more gold.', enemySpeedMod:1.18, goldMod:1.6},
   ruins:    {key:'ruins', name:'Old Ruins',  ground:'#4a4a55',alt:'#53535f',blade:'rgba(20,20,26,.4)',diff:4.2,mood:.6,
@@ -1089,6 +1273,7 @@ const BIOMES = {
 const MOOD_TINT = {
   stone:'34,32,46', ruins:'40,24,58', snow:'190,220,255', forest:'6,22,4',
   desert:'70,36,6', volcano:'60,10,4', chaos:'46,6,54', corrupt:'50,4,46', swamp:'14,28,10',
+  crystal:'50,90,180',
 };
 
 // ENEMY ARCHETYPES — movement + attack + loot bias
@@ -1439,6 +1624,7 @@ const World = {
     this.enemies=[];this.bolts=[];this.eBolts=[];this.coins=[];this.drops=[];this.particles=[];this.timers=[];
     this.shockwaves=[];this.lightnings=[];this.fields=[];this.beamFx=null;this.floaters=[];this.flash=0;this.muzzle=null;this.boss=null;this.bossActive=false;
     this.ambient=[]; this.telegraphs=[];
+    this.turrets=[]; this.tBolts=[];
     this.kills=0;this.gold=0;this.wave=1;this.spawnCd=0;this.toSpawn=Spawner.forWave(1);this.time=0;
     this.hitstop=0; this.chestCount=0;
     Buffs.reset(); Combo.reset();
@@ -1455,6 +1641,8 @@ const World = {
     Companions.reset();
     Merchant.reset();
     Events.reset();
+    Turrets.reset();
+    Landmarks.init();
     document.getElementById('levelup').classList.remove('show');
   },
   // stage lookup from world Y — pure band lookup, bottom (easy) to top (hard). Journey only.
@@ -1465,15 +1653,20 @@ const World = {
   },
   biomeAt(x,y){
     if(this.mode==='endless'){
-      // original radial layout: safe Plains at the center, harder biomes outward
+      // THE OPEN REALM — a vast radial world. Ring borders are warped by
+      // noise so biomes interlock organically instead of forming perfect
+      // circles, and rare "glades" of the crystal biome punch through
+      // anywhere past the heartlands, giving explorers reasons to wander.
       const cx=CONFIG.world.size/2, cy=CONFIG.world.size/2;
       const distC=dist(x,y,cx,cy)/(CONFIG.world.size*0.5);
-      const n=this.noiseA(x/900,y/900);
-      const m=this.noiseB(x/1100+5,y/1100+5);
-      if(distC>0.82) return BIOMES.corrupt;
-      if(distC>0.66) return n>0.5?BIOMES.ruins:BIOMES.volcano;
-      if(distC>0.5)  return m>0.55?BIOMES.snow:(n>0.5?BIOMES.desert:BIOMES.swamp);
-      if(distC>0.3)  return n>0.5?BIOMES.forest:BIOMES.swamp;
+      const n=this.noiseA(x/1400,y/1400);
+      const m=this.noiseB(x/1750+5,y/1750+5);
+      const d=distC+(n-0.5)*0.17; // organic, wobbling ring borders
+      if(m>0.88 && d>0.24 && d<0.82) return BIOMES.crystal; // rare crystal glades
+      if(d>0.86) return BIOMES.corrupt;
+      if(d>0.68) return n>0.52?BIOMES.ruins:BIOMES.volcano;
+      if(d>0.52) return m>0.64?BIOMES.crystal:(m>0.42?BIOMES.snow:BIOMES.desert);
+      if(d>0.32) return n>0.55?BIOMES.swamp:(m>0.5?BIOMES.forest:BIOMES.desert);
       return n>0.45?BIOMES.plains:BIOMES.forest;
     }
     return STAGES[this.stageIndexAt(y)];
@@ -1746,7 +1939,7 @@ const FX = {
 // decorative, recycled from a small fixed pool so it stays cheap.
 // =====================================================================
 const Ambient = {
-  MAX:46,
+  MAX:64,
   ensure(){ while(World.ambient.length<this.MAX) World.ambient.push(this.spawn()); },
   spawn(){
     const vw=Camera.vw(), vh=Camera.vh();
@@ -1761,6 +1954,7 @@ const Ambient = {
     else if(key==='snow'){ o.type='snow'; o.vx=rand(-0.15,0.15); o.vy=rand(0.4,0.85); o.sz=rand(1.4,2.6); o.color='#ffffff'; }
     else if(key==='volcano'){ o.type='ember'; o.vx=rand(-0.12,0.12); o.vy=rand(-0.65,-0.3); o.sz=rand(1.4,2.6); o.color='#ff9a4a'; }
     else if(key==='stone'||key==='ruins'){ o.type='dust'; o.vx=rand(-0.08,0.08); o.vy=rand(-0.15,0.15); o.sz=rand(1,2); o.color='#c6a0ff'; }
+    else if(key==='crystal'){ o.type='ember'; o.vx=rand(-0.08,0.08); o.vy=rand(-0.5,-0.2); o.sz=rand(1.2,2.4); o.color='#8fd8ff'; }
     else if(key==='corrupt'||key==='chaos'){ o.type='glitch'; o.vx=rand(-0.12,0.12); o.vy=rand(-0.22,0.22); o.sz=rand(1,2.4); o.color='#ff5ad0'; }
     else { o.type='pollen'; o.vx=rand(-0.1,0.1); o.vy=rand(-0.16,-0.03); o.sz=rand(0.9,1.6); o.color='#eaffb0'; }
     return o;
@@ -1889,6 +2083,17 @@ const UI = {
   toast(text,color){ const t=document.getElementById('toasts');
     const d=document.createElement('div'); d.className='toast'; d.style.color=color||'#eef3e0'; d.textContent=text;
     t.appendChild(d); setTimeout(()=>d.remove(),2400); },
+  // Souls-style biome announcement — big serif name, hairline rule, biome
+  // rule as a whispered subtitle. A soft chime marks the crossing.
+  biomeTitle(name,rule,first){
+    const el=document.getElementById('biomeTitle'); if(!el) return;
+    el.querySelector('.btMain').textContent=name.toUpperCase();
+    el.querySelector('.btSub').textContent=rule||'';
+    el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+    clearTimeout(this._btT);
+    this._btT=setTimeout(()=>el.classList.remove('show'), first?3600:2800);
+    if(!first){ SFX.blip(392,0.4,'sine',0.10,1.5); SFX.blip(588,0.5,'sine',0.07,1.25); }
+  },
   // set an element's text and give its pill a satisfying little "pop" the
   // instant the value actually changes, instead of a flat, static HUD
   setText(id,val,pillId){
@@ -1911,6 +2116,17 @@ const UI = {
     this.setText('wavev', World.mode==='endless'?Math.min(World.wave,99):World.wave, 'wavep');
     this.setText('killsv', World.kills, 'killsp');
     this.setText('goldv', World.gold, 'goldp');
+    { const packBest=p.turrets&&p.turrets.length?Math.max(...p.turrets):-1;
+      this.setText('turrv', (p.turrets?p.turrets.length:0)+(World.turrets&&World.turrets.length?' · '+World.turrets.length+'⚡':''), 'turrp');
+      const pill=document.getElementById('turrp');
+      if(pill){ const col=packBest>=0?RARITY[TURRET_TIERS[packBest].rarity].color:'';
+        pill.style.filter=col?('drop-shadow(0 3px 6px rgba(0,0,0,.6)) drop-shadow(0 0 6px '+col+')'):''; }
+      // pylon socket in the hotbar — count badge + best-rarity glow + DEPLOY hint
+      const psock=document.getElementById('pylonSlot');
+      if(psock){ const n=p.turrets?p.turrets.length:0;
+        psock.classList.toggle('stocked', n>0);
+        const cnt=document.getElementById('pylonCount'); if(cnt) cnt.textContent=n;
+        if(packBest>=0) psock.style.setProperty('--ec', RARITY[TURRET_TIERS[packBest].rarity].color); } }
     { const c=Math.round(Corruption.v);
       const cb=document.getElementById('corrBar');
       this.setText('corrv', c+'%', 'corrp');
@@ -1933,13 +2149,14 @@ const UI = {
     if(vign) vign.classList.toggle('show', hpP<25);
     { const w=activeWandDef(p), E=ELEMENTS[w.elem]||ELEMENTS.arcane;
       const ws=document.getElementById('slot-wand'); ws.textContent=E.icon+' '+w.name; ws.style.color=RARITY[w.rarity].color;
-      ws.parentElement.style.borderColor=RARITY[w.rarity].color; ws.parentElement.style.boxShadow='inset 0 0 12px '+RARITY[w.rarity].color+'55, 0 0 10px '+RARITY[w.rarity].color+'33'; }
+      ws.parentElement.style.filter='drop-shadow(0 0 5px '+RARITY[w.rarity].color+'66)';
+      ws.parentElement.style.boxShadow='inset 0 0 12px '+RARITY[w.rarity].color+'55'; }
     document.getElementById('slot-helmet').textContent=p.gear.helmet?p.gear.helmet.name:'Helmet';
     document.getElementById('slot-chest').textContent=p.gear.chest?p.gear.chest.name:'Robe';
     document.getElementById('slot-legs').textContent=p.gear.legs?p.gear.legs.name:'Legs';
-    document.getElementById('slot-helmet').parentElement.style.borderColor=p.gear.helmet?RARITY[p.gear.helmet.rarity].color:'#2a3320';
-    document.getElementById('slot-chest').parentElement.style.borderColor=p.gear.chest?RARITY[p.gear.chest.rarity].color:'#2a3320';
-    document.getElementById('slot-legs').parentElement.style.borderColor=p.gear.legs?RARITY[p.gear.legs.rarity].color:'#2a3320';
+    // rarity halo on each forged socket (clip-path-safe: filter follows the shape)
+    for(const k of ['helmet','chest','legs']){ const el=document.getElementById('slot-'+k), it=p.gear[k];
+      if(el&&el.parentElement) el.parentElement.style.filter=it?('drop-shadow(0 0 4px '+RARITY[it.rarity].color+'88)'):''; }
     this.syncSpellSlot('Q',p.spellQ); this.syncSpellSlot('E',p.spellE); this.syncSpellSlot('R',p.spellR);
     this.syncWandTrack();
   },
@@ -2144,6 +2361,12 @@ const Loot = {
       const bucket=WAND_BUCKETS[rarity].length?WAND_BUCKETS[rarity]:WAND_BUCKETS.common;
       World.drops.push({x:en.x,y:en.y,wand:pick(bucket),bob:rand(0,6),spawnT:18});
       SFX.wandDrop(RARITY_ORDER.indexOf(rarity));
+    }
+    // ARCANE PYLON DROP — deployable magic turrets. Rare off fodder, but
+    // elites, minibosses, and the deep biomes cough them up far more often,
+    // and the harder the source the better the rarity roll skews.
+    if(Math.random()<Turrets.dropChance(en,diff)){
+      Turrets.dropFrom(en,diff);
     }
     // TREASURE CACHE — a tiered, glowing loot chest. Much more common than
     // before so runs are studded with slot-machine moments; elites carry
@@ -2471,6 +2694,7 @@ function makePlayer(){
     spellE:{id:null, unlocked:false, cd:0, upg:{}},
     spellR:{id:null, unlocked:false, cd:0, upg:{}},
     cyclone:null, // active Blade Cyclone state, if that spell is slotted and running
+    turrets:[], _tHeld:false, // Arcane Pylons in the pack, deployed with T
     origin:null, _eff:null, _effTier:-1, _effDirty:true,
     recalc(){ // apply gear stats + upgrade bonuses
       let hp=CONFIG.player.hp, mp=CONFIG.player.mp, def=0, spd=CONFIG.player.speed;
@@ -2872,6 +3096,11 @@ const Spawner = {
       y=clamp(p.y+Math.sin(ang)*d,40,CONFIG.world.height-40);
       y=Math.max(y, World.ceilingY()+30); // never spawn above the current frontier ceiling
     }
+    this.spawnAt(x,y,false);
+  },
+  // spawn one enemy at an exact spot (optionally forced elite) — used by
+  // normal wave spawning and by Cursed Shrine ambushes
+  spawnAt(x,y,forceElite){
     const b=World.biomeAt(x,y);
     const type=pick(b.enemies); const base=ENEMIES[type];
     const scale=1+(b.diff-1)*0.6;
@@ -2879,7 +3108,7 @@ const Spawner = {
     // Endless compounds exponentially forever so it truly never stops getting worse.
     const growth = World.mode==='endless' ? World.endlessPower() : (1+World.wave*0.08);
     let hp=Math.round(base.hp*scale*1.8*growth);
-    const elite=Math.random()<0.06+b.diff*0.015;
+    const elite=forceElite || Math.random()<0.06+b.diff*0.015;
     let r=base.r, dmg=Math.round(base.dmg*scale), spd=base.speed*(1+(b.diff-1)*0.04);
     if(elite){ hp=Math.round(hp*3.4); r=Math.round(r*1.5); dmg=Math.round(dmg*1.5); spd*=0.92; }
     // Golden Enemies event: a portion of fresh spawns glitter gold and pay out big
@@ -3259,6 +3488,7 @@ function updateProjectiles(){
         if(b.age>30) b.hit.clear(); } // re-hit on the way back
     }
     b.x+=b.vx; b.y+=b.vy; b.life--;
+    Landmarks.checkBolt(b); // smash any lit brazier the bolt passes through
     if(b.trail && b.age%5===0){ World.fields.push({x:b.x,y:b.y,r:30,life:34,maxlife:34,kind:'burn',
       dmg:Math.max(2,Math.round(b.dmg*0.16))}); }
     if(World.time%2===0) FX.spark(b.x,b.y,0,'#ff7a18',1);
@@ -3311,9 +3541,14 @@ function updateProjectiles(){
     if(dr.spawnT>0){ dr.spawnT--; if(dr.spawnT===0 && dr.wand!=null){ // landing burst for wands
       const col=RARITY[WANDS[dr.wand].rarity].color;
       FX.ring(dr.x,dr.y,34,12,col); FX.spark(dr.x,dr.y,Math.random()*6.28,col,10,2.6);
+    } else if(dr.spawnT===0 && dr.turret!=null){ // landing burst for pylons
+      const T=TURRET_TIERS[dr.turret], col=RARITY[T.rarity].color;
+      FX.ring(dr.x,dr.y,44,14,col); FX.ring(dr.x,dr.y,24,10,'#ffffff');
+      FX.spark(dr.x,dr.y,Math.random()*6.28,col,14,3);
     } continue; } // still falling in — not grabbable yet
     if(dist(dr.x,dr.y,p.x,p.y)<p.r+14){
       if(dr.chest){ Loot.openChest(dr.x,dr.y,dr.tier||'wooden'); }
+      else if(dr.turret!=null){ Turrets.pickup(dr.turret); }
       else if(dr.wand!=null){ Loot.pickupWand(dr.wand); }
       else if(dr.powerup){ Buffs.grant(dr.powerup); }
       else if(dr.potion!=null){ Combat.heal(dr.potion); SFX.heal(); UI.toast('+'+dr.potion+' HP','#ff6a9a'); }
@@ -3502,6 +3737,766 @@ const Events = {
 };
 
 // =====================================================================
+// SCENERY — purely decorative props scattered across the Open Realm so
+// the ground is never an empty tile-field: boulders and wildflowers on
+// the plains, cacti and sun-bleached bones in the waste, ice spires in
+// Frostreach, glowing crystal clusters in the Glimmerveil, lava vents in
+// Emberdeep, shattered pillars in the ruins. Deterministic per-cell
+// hashing (seeded by the run) so nothing is stored.
+// =====================================================================
+const Scenery = {
+  cell:260,
+  active(){ return World.mode==='endless'; },
+  at(ix,iy){
+    const h=Terrain.hash(ix+4441,iy+7771);
+    if(h>0.24) return null;
+    const cx=(ix+0.5)*this.cell+(Terrain.hash(ix+81,iy+13)-0.5)*this.cell*0.8;
+    const cy=(iy+0.5)*this.cell+(Terrain.hash(ix+13,iy+81)-0.5)*this.cell*0.8;
+    const S2=CONFIG.world.size;
+    if(dist(cx,cy,S2/2,S2/2)<300) return null; // spawn clearing stays open
+    const b=World.biomeAt(cx,cy);
+    return {x:cx,y:cy,key:b.key,v:Terrain.hash(ix+900,iy+900),s:0.8+Terrain.hash(ix+55,iy+66)*0.8};
+  },
+  draw(ctx){
+    if(!this.active()) return;
+    const x0=Math.floor((Camera.x-80)/this.cell), x1=Math.floor((Camera.x+Camera.vw()+80)/this.cell);
+    const y0=Math.floor((Camera.y-120)/this.cell), y1=Math.floor((Camera.y+Camera.vh()+80)/this.cell);
+    for(let iy=y0;iy<=y1;iy++) for(let ix=x0;ix<=x1;ix++){
+      const o=this.at(ix,iy); if(!o) continue;
+      const x=Camera.sx(o.x), y=Camera.sy(o.y), s=o.s;
+      ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x,y+3,11*s,4*s,0,0,6.28); ctx.fill();
+      if(o.key==='plains'){
+        if(o.v>0.5){ // wildflowers
+          for(let k=0;k<3;k++){ const fx=x+(k-1)*6*s, fy=y-2-((k*7)%5);
+            ctx.strokeStyle='rgba(40,90,28,.7)'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(fx,y+2); ctx.lineTo(fx,fy); ctx.stroke();
+            ctx.fillStyle=k===1?'#ffd24a':'#ff9ab0'; ctx.beginPath(); ctx.arc(fx,fy,2*s,0,6.28); ctx.fill(); }
+        } else { // boulder
+          ctx.fillStyle='#6a7458'; ctx.beginPath(); ctx.ellipse(x,y-3*s,9*s,6.5*s,0,0,6.28); ctx.fill();
+          ctx.fillStyle='rgba(255,255,255,.12)'; ctx.beginPath(); ctx.ellipse(x-3*s,y-6*s,4*s,2.5*s,0,0,6.28); ctx.fill(); }
+      } else if(o.key==='forest'){ // proper tree (visual only)
+        ctx.fillStyle='#4a3420'; ctx.fillRect(x-2.5*s,y-8*s,5*s,10*s);
+        const cg=ctx.createRadialGradient(x-4*s,y-18*s,2,x,y-15*s,16*s);
+        cg.addColorStop(0,'#3f8a44'); cg.addColorStop(1,'#1c4a24');
+        ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(x,y-15*s,13*s,0,6.28); ctx.fill();
+        ctx.fillStyle='rgba(255,255,255,.07)'; ctx.beginPath(); ctx.arc(x-4*s,y-19*s,5*s,0,6.28); ctx.fill();
+      } else if(o.key==='swamp'){ // gnarled dead tree
+        ctx.strokeStyle='#3a3524'; ctx.lineWidth=3.4*s; ctx.lineCap='round';
+        ctx.beginPath(); ctx.moveTo(x,y); ctx.quadraticCurveTo(x+3*s,y-12*s,x-2*s,y-20*s); ctx.stroke();
+        ctx.lineWidth=2*s;
+        ctx.beginPath(); ctx.moveTo(x+1*s,y-10*s); ctx.lineTo(x+9*s,y-15*s); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x-1*s,y-14*s); ctx.lineTo(x-8*s,y-19*s); ctx.stroke();
+      } else if(o.key==='desert'){
+        if(o.v>0.5){ // cactus
+          ctx.fillStyle='#4f7a3a'; ctx.fillRect(x-2.5*s,y-16*s,5*s,18*s);
+          ctx.fillRect(x-9*s,y-12*s,4*s,2.6*s); ctx.fillRect(x-9*s,y-12*s,2.6*s,7*s);
+          ctx.fillRect(x+5*s,y-9*s,4*s,2.6*s); ctx.fillRect(x+6.4*s,y-9*s,2.6*s,5.5*s);
+        } else { // bleached ribcage
+          ctx.strokeStyle='#e8dcc0'; ctx.lineWidth=1.8*s;
+          for(let k=0;k<4;k++){ ctx.beginPath(); ctx.arc(x-6*s+k*4.5*s,y-1,5*s,3.4,5.9); ctx.stroke(); } }
+      } else if(o.key==='snow'){ // ice spire
+        ctx.fillStyle='#bcd8ea'; ctx.beginPath();
+        ctx.moveTo(x-6*s,y); ctx.lineTo(x-1*s,y-18*s); ctx.lineTo(x+2*s,y); ctx.closePath(); ctx.fill();
+        ctx.fillStyle='#e8f4fc'; ctx.beginPath();
+        ctx.moveTo(x+1*s,y); ctx.lineTo(x+5*s,y-11*s); ctx.lineTo(x+8*s,y); ctx.closePath(); ctx.fill();
+      } else if(o.key==='crystal'){ // glowing crystal cluster
+        ctx.save(); ctx.shadowColor='#7ec8ff'; ctx.shadowBlur=10;
+        const pul=0.7+0.3*Math.sin(World.time*0.05+o.x*0.01);
+        ctx.fillStyle='rgba(110,190,255,'+(0.85*pul)+')';
+        ctx.beginPath(); ctx.moveTo(x-6*s,y); ctx.lineTo(x-2*s,y-15*s); ctx.lineTo(x+1*s,y); ctx.closePath(); ctx.fill();
+        ctx.fillStyle='rgba(170,220,255,'+(0.9*pul)+')';
+        ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+5*s,y-10*s); ctx.lineTo(x+8*s,y); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      } else if(o.key==='volcano'){ // lava vent
+        ctx.fillStyle='#2c1512'; ctx.beginPath(); ctx.ellipse(x,y-1,8*s,4*s,0,0,6.28); ctx.fill();
+        const pul=0.6+0.4*Math.sin(World.time*0.09+o.y*0.02);
+        ctx.save(); ctx.globalCompositeOperation='lighter';
+        ctx.fillStyle='rgba(255,110,30,'+(0.7*pul)+')';
+        ctx.beginPath(); ctx.ellipse(x,y-1,4.5*s,2.2*s,0,0,6.28); ctx.fill(); ctx.restore();
+      } else if(o.key==='ruins'||o.key==='stone'){ // shattered pillar
+        ctx.fillStyle='#6a6a76'; ctx.fillRect(x-4*s,y-14*s,8*s,15*s);
+        ctx.fillStyle='#82828e'; ctx.fillRect(x-5.5*s,y-16*s,11*s,3.5*s);
+        ctx.fillStyle='rgba(0,0,0,.25)';
+        ctx.beginPath(); ctx.moveTo(x-4*s,y-14*s); ctx.lineTo(x+4*s,y-11*s); ctx.lineTo(x+4*s,y-14*s); ctx.closePath(); ctx.fill();
+      } else if(o.key==='corrupt'||o.key==='chaos'){ // hovering void shard
+        const bob2=Math.sin(World.time*0.04+o.x*0.02)*3;
+        ctx.save(); ctx.translate(x,y-10*s+bob2); ctx.rotate(World.time*0.01+o.v*6);
+        ctx.shadowColor='#ff5ad0'; ctx.shadowBlur=8;
+        ctx.fillStyle='#3a1040';
+        ctx.beginPath(); ctx.moveTo(0,-8*s); ctx.lineTo(5*s,0); ctx.lineTo(0,8*s); ctx.lineTo(-5*s,0); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle='#ff5ad0'; ctx.lineWidth=1; ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+};
+
+// =====================================================================
+// LANDMARKS — the Open Realm's interactive map furniture, in the spirit
+// of Vampire Survivors' braziers and Halls of Torment's shrines:
+//   BRAZIERS  — shoot them to smash them open; they spill coins, and
+//               sometimes a potion or a power-up (VS torch rule).
+//   SHRINES   — one-use altars: Blood (big heal), Fortune (gold fountain),
+//               Storm (power-up surge), Cursed (an elite ambush that pays
+//               out a shiny treasure cache if you survive it).
+//   OBELISKS  — ancient leyline stones; stand in their glow and your
+//               mana surges back far faster. Little safe-harbor beacons.
+// All placed deterministically from the run seed; nothing is stored but
+// which ones you've already used or smashed.
+// =====================================================================
+const SHRINES = {
+  blood:  {name:'Blood Shrine',   icon:'❤', color:'#ff5a7a'},
+  fortune:{name:'Fortune Shrine', icon:'💰', color:'#ffd24a'},
+  storm:  {name:'Storm Shrine',   icon:'✨', color:'#5bc0ff'},
+  cursed: {name:'Cursed Shrine',  icon:'☠', color:'#c06aff'},
+};
+const Landmarks = {
+  cell:620, all:[],
+  init(){
+    this.all=[];
+    if(World.mode!=='endless') return;
+    const S=CONFIG.world.size, n=Math.floor(S/this.cell);
+    for(let iy=0;iy<n;iy++) for(let ix=0;ix<n;ix++){
+      const h=Terrain.hash(ix+7007,iy+3003);
+      const x=(ix+0.5)*this.cell+(Terrain.hash(ix+21,iy+5001)-0.5)*this.cell*0.7;
+      const y=(iy+0.5)*this.cell+(Terrain.hash(ix+5001,iy+21)-0.5)*this.cell*0.7;
+      if(dist(x,y,S/2,S/2)<560) continue; // spawn clearing
+      if(h<0.30) this.all.push({kind:'brazier',x,y,lit:true,bob:Terrain.hash(ix,iy+3)*6});
+      else if(h<0.375){
+        const kinds=['blood','fortune','storm','cursed'];
+        const sk=kinds[Math.floor(Terrain.hash(ix+9009,iy+9009)*kinds.length)];
+        this.all.push({kind:'shrine',shrine:sk,x,y,used:false,bob:Terrain.hash(ix,iy+7)*6});
+      }
+      else if(h<0.405) this.all.push({kind:'obelisk',x,y,bob:Terrain.hash(ix,iy+11)*6});
+    }
+  },
+  near(x,y,pad){
+    const out=[];
+    for(const L of this.all){ if(Math.abs(L.x-x)<pad && Math.abs(L.y-y)<pad) out.push(L); }
+    return out;
+  },
+  update(){
+    if(World.mode!=='endless') return;
+    const p=World.player;
+    let aura=false;
+    for(const L of this.near(p.x,p.y,220)){
+      if(L.kind==='shrine' && !L.used && dist(L.x,L.y,p.x,p.y)<42) this.activate(L);
+      else if(L.kind==='obelisk' && dist(L.x,L.y,p.x,p.y)<150) aura=true;
+    }
+    if(aura){
+      p.mp=Math.min(p.maxmp,p.mp+0.6);
+      if(World.time%10===0) FX.spark(p.x+rand(-14,14),p.y+rand(-10,4),-1.57,'#b48aff',1,1.8);
+    }
+    World._obeliskAura=aura;
+  },
+  activate(L){
+    L.used=true;
+    const SH=SHRINES[L.shrine], p=World.player;
+    FX.ring(L.x,L.y,90,20,SH.color); FX.ring(L.x,L.y,50,14,'#ffffff');
+    FX.spark(L.x,L.y,Math.random()*6.28,SH.color,26,3.4);
+    World.flash=Math.max(World.flash,10); Endgame.shake=Math.max(Endgame.shake,8);
+    World.floaters.push({x:L.x,y:L.y-42,vy:-0.7,life:70,maxlife:70,txt:SH.name.toUpperCase(),color:SH.color,scale:1.5,flash:true,icon:SH.icon,iconGlow:SH.color});
+    if(L.shrine==='blood'){
+      Combat.heal(Math.round(p.maxhp*0.45)); SFX.heal(); SFX.rare();
+      UI.toast('❤ The Blood Shrine mends your wounds.','#ff5a7a');
+    } else if(L.shrine==='fortune'){
+      const diff=World.biomeAt(L.x,L.y).diff;
+      for(let i=0;i<24;i++){ const a=Math.random()*6.28, spd=rand(2.5,7.5);
+        World.coins.push({x:L.x,y:L.y,type:Math.random()<0.45?'bar':'coin',value:Math.round(8+diff*4),
+          vy:Math.sin(a)*spd,vx:Math.cos(a)*spd,bob:rand(0,6)}); }
+      SFX.jackpot();
+      UI.toast('💰 The Fortune Shrine overflows!','#ffd24a');
+    } else if(L.shrine==='storm'){
+      Buffs.grant(pick(POWERUP_LIST)); Buffs.grant(pick(POWERUP_LIST));
+      SFX.powerup();
+      UI.toast('✨ The Storm Shrine surges through you — two power-ups!','#5bc0ff');
+    } else { // cursed — an elite ambush, then a shiny reward for weathering it
+      UI.toast('☠ The Cursed Shrine hungers... survive its price!','#c06aff');
+      SFX.boss(); Endgame.shake=Math.max(Endgame.shake,16);
+      const count=5+Math.floor(World.biomeAt(L.x,L.y).diff);
+      for(let k=0;k<count;k++){ const a=k/count*6.283;
+        World.after(k*7,()=>{ Spawner.spawnAt(L.x+Math.cos(a)*230,L.y+Math.sin(a)*230,true);
+          FX.ring(L.x+Math.cos(a)*230,L.y+Math.sin(a)*230,30,12,'#c06aff'); }); }
+      World.after(60,()=>{ World.drops.push({x:L.x,y:L.y,chest:true,
+        tier:Math.random()<0.35?'mythic':'golden',bob:rand(0,6),spawnT:16});
+        UI.toast('✦ The shrine yields its treasure — if you can reach it.','#ffd24a'); });
+    }
+  },
+  // player bolts smash lit braziers on contact (they never consume the bolt)
+  checkBolt(b){
+    for(const L of this.near(b.x,b.y,44)){
+      if(L.kind==='brazier' && L.lit && dist(L.x,L.y-10,b.x,b.y)<22){ this.breakBrazier(L); return true; }
+    }
+    return false;
+  },
+  breakBrazier(L){
+    L.lit=false;
+    const diff=World.biomeAt(L.x,L.y).diff;
+    FX.ring(L.x,L.y-8,44,14,'#ffb347'); FX.spark(L.x,L.y-10,Math.random()*6.28,'#ff9a4a',16,3);
+    SFX.noise(0.1,0.2,900); SFX.blip(300,0.1,'square',0.16,0.6);
+    const roll=Math.random();
+    if(roll<0.14){ World.drops.push({x:L.x,y:L.y,powerup:pick(POWERUP_LIST),bob:rand(0,6),spawnT:10}); }
+    else if(roll<0.30){ World.drops.push({x:L.x,y:L.y,potion:Math.round(25+diff*7),bob:rand(0,6),spawnT:10}); }
+    else { const nC=3+Math.floor(diff);
+      for(let i=0;i<nC;i++){ const a=Math.random()*6.28, spd=rand(2,5);
+        World.coins.push({x:L.x,y:L.y-8,type:Math.random()<0.18?'bar':'coin',value:Math.round(3+diff*2),
+          vy:Math.sin(a)*spd,vx:Math.cos(a)*spd,bob:rand(0,6)}); } }
+  },
+  draw(){
+    if(World.mode!=='endless') return;
+    const ctx=Render.ctx;
+    for(const L of this.near(Camera.x+Camera.vw()/2, Camera.y+Camera.vh()/2, Math.max(Camera.vw(),Camera.vh())*0.62+120)){
+      const x=Camera.sx(L.x), y=Camera.sy(L.y);
+      if(x<-90||x>Camera.vw()+90||y<-120||y>Camera.vh()+90) continue;
+      if(L.kind==='brazier'){
+        ctx.fillStyle='rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(x,y+4,10,4,0,0,6.28); ctx.fill();
+        // iron stand + bowl
+        ctx.strokeStyle='#3a3230'; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.moveTo(x,y+3); ctx.lineTo(x,y-12); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x-5,y+4); ctx.lineTo(x,y-2); ctx.lineTo(x+5,y+4); ctx.stroke();
+        ctx.fillStyle=L.lit?'#4a3a30':'#332b28';
+        ctx.beginPath(); ctx.moveTo(x-8,y-12); ctx.lineTo(x+8,y-12); ctx.lineTo(x+5,y-6); ctx.lineTo(x-5,y-6); ctx.closePath(); ctx.fill();
+        if(L.lit){
+          const fl=Math.sin(World.time*0.24+L.bob*5);
+          ctx.save(); ctx.globalCompositeOperation='lighter';
+          const fg=ctx.createRadialGradient(x,y-18,0,x,y-18,20+fl*2);
+          fg.addColorStop(0,'rgba(255,190,90,.6)'); fg.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.fillStyle=fg; ctx.beginPath(); ctx.arc(x,y-18,20+fl*2,0,6.28); ctx.fill();
+          ctx.fillStyle='#ff9a2e';
+          ctx.beginPath(); ctx.moveTo(x-5,y-12); ctx.quadraticCurveTo(x-4+fl*1.5,y-22,x,y-26-fl*2);
+          ctx.quadraticCurveTo(x+4+fl*1.5,y-21,x+5,y-12); ctx.closePath(); ctx.fill();
+          ctx.fillStyle='#ffd24a';
+          ctx.beginPath(); ctx.moveTo(x-2.5,y-12); ctx.quadraticCurveTo(x-1.5+fl,y-17,x,y-20-fl);
+          ctx.quadraticCurveTo(x+2+fl,y-16,x+2.5,y-12); ctx.closePath(); ctx.fill();
+          ctx.restore();
+          if(World.time%7===0) FX.spark(L.x+rand(-3,3),L.y-22,-1.57,'#ff9a4a',1,1.6);
+        } else {
+          ctx.fillStyle='rgba(70,70,70,.7)';
+          ctx.beginPath(); ctx.arc(x,y-14,2.2,0,6.28); ctx.arc(x+3,y-16,1.6,0,6.28); ctx.fill();
+        }
+      } else if(L.kind==='shrine'){
+        const SH=SHRINES[L.shrine], used=L.used;
+        const pulse=used?0:0.5+0.5*Math.sin(World.time*0.06+L.bob);
+        ctx.fillStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x,y+7,20,7,0,0,6.28); ctx.fill();
+        // stone pedestal
+        ctx.fillStyle=used?'#4a4a4e':'#5c5c64'; 
+        ctx.beginPath(); ctx.moveTo(x-15,y+6); ctx.lineTo(x-10,y-8); ctx.lineTo(x+10,y-8); ctx.lineTo(x+15,y+6); ctx.closePath(); ctx.fill();
+        ctx.fillStyle=used?'#55555a':'#6e6e78'; ctx.fillRect(x-13,y-11,26,4);
+        ctx.fillStyle='rgba(0,0,0,.25)'; ctx.fillRect(x-13,y-7,26,1.6);
+        if(!used){
+          // active glow ring + floating sigil
+          ctx.save(); ctx.globalCompositeOperation='lighter';
+          const gg=ctx.createRadialGradient(x,y-22,0,x,y-22,30);
+          gg.addColorStop(0,SH.color); gg.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.globalAlpha=0.4*pulse+0.15; ctx.fillStyle=gg;
+          ctx.beginPath(); ctx.arc(x,y-22,30,0,6.28); ctx.fill();
+          ctx.globalAlpha=1; ctx.restore();
+          ctx.strokeStyle=SH.color; ctx.globalAlpha=0.35+0.35*pulse; ctx.lineWidth=1.8;
+          ctx.beginPath(); ctx.arc(x,y+2,24+pulse*3,0,6.28); ctx.stroke(); ctx.globalAlpha=1;
+          const fy=y-24+Math.sin(World.time*0.05+L.bob)*3;
+          ctx.font='15px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.shadowColor=SH.color; ctx.shadowBlur=12;
+          ctx.fillText(SH.icon,x,fy); ctx.shadowBlur=0;
+        } else {
+          ctx.fillStyle='rgba(120,120,130,.5)'; ctx.font='11px sans-serif';
+          ctx.textAlign='center'; ctx.fillText('✕',x,y-16);
+        }
+      } else { // obelisk
+        const pul=0.5+0.5*Math.sin(World.time*0.035+L.bob);
+        ctx.fillStyle='rgba(0,0,0,.32)'; ctx.beginPath(); ctx.ellipse(x,y+5,14,5,0,0,6.28); ctx.fill();
+        // leyline aura
+        ctx.save(); ctx.globalCompositeOperation='lighter';
+        const ag=ctx.createRadialGradient(x,y-10,0,x,y-10,150);
+        ag.addColorStop(0,'rgba(150,110,255,'+(0.10+0.05*pul)+')'); ag.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=ag; ctx.beginPath(); ctx.arc(x,y-10,150,0,6.28); ctx.fill();
+        ctx.restore();
+        // the monolith itself
+        ctx.fillStyle='#2c2438';
+        ctx.beginPath(); ctx.moveTo(x-9,y+5); ctx.lineTo(x-5,y-46); ctx.lineTo(x+5,y-46); ctx.lineTo(x+9,y+5); ctx.closePath(); ctx.fill();
+        ctx.fillStyle='#3c3050';
+        ctx.beginPath(); ctx.moveTo(x-9,y+5); ctx.lineTo(x-5,y-46); ctx.lineTo(x-1,y-46); ctx.lineTo(x-3,y+5); ctx.closePath(); ctx.fill();
+        // glowing runes
+        ctx.save(); ctx.globalCompositeOperation='lighter';
+        ctx.fillStyle='rgba(180,140,255,'+(0.5+0.4*pul)+')';
+        ctx.shadowColor='#b48aff'; ctx.shadowBlur=8;
+        for(let k=0;k<4;k++){ const ry=y-8-k*9;
+          ctx.fillRect(x-2.5,ry,5,2); if(k%2) ctx.fillRect(x-1,ry-4,2,2); }
+        ctx.restore();
+        // slow rising motes
+        for(let k=0;k<2;k++){ const drift=(World.time*0.5+k*40+L.bob*20)%70;
+          ctx.globalAlpha=Math.max(0,1-drift/70)*0.7;
+          ctx.fillStyle='#c8a8ff'; ctx.beginPath();
+          ctx.arc(x+Math.sin(World.time*0.03+k*3)*8,y-14-drift,1.6,0,6.28); ctx.fill(); }
+        ctx.globalAlpha=1;
+      }
+    }
+  },
+  // off-screen indicator arrows toward nearby unused shrines (and any
+  // fleeing treasure goblin) so the map's points of interest pull on you
+  arrows(){
+    if(World.mode!=='endless') return;
+    const ctx=Render.ctx, p=World.player, vw=Camera.vw(), vh=Camera.vh();
+    const targets=[];
+    for(const L of this.near(p.x,p.y,1600)){ if(L.kind==='shrine'&&!L.used) targets.push({x:L.x,y:L.y,color:SHRINES[L.shrine].color,icon:SHRINES[L.shrine].icon}); }
+    for(const en of World.enemies){ if(en.treasureGoblin&&!en.dead) targets.push({x:en.x,y:en.y,color:'#ffd24a',icon:'💰'}); }
+    for(const t of targets){
+      const sx=Camera.sx(t.x), sy=Camera.sy(t.y);
+      if(sx>-20&&sx<vw+20&&sy>-20&&sy<vh+20) continue; // on screen already
+      const a=Math.atan2(t.y-p.y,t.x-p.x);
+      const ex=clamp(Camera.sx(p.x)+Math.cos(a)*Math.min(vw,vh)*0.44, 26, vw-26);
+      const ey=clamp(Camera.sy(p.y)+Math.sin(a)*Math.min(vw,vh)*0.44, 40, vh-30);
+      const pul=0.6+0.4*Math.sin(World.time*0.12);
+      ctx.save(); ctx.translate(ex,ey);
+      ctx.globalAlpha=0.75*pul+0.15;
+      ctx.rotate(a);
+      ctx.fillStyle=t.color; ctx.shadowColor=t.color; ctx.shadowBlur=8;
+      ctx.beginPath(); ctx.moveTo(10,0); ctx.lineTo(-4,-6); ctx.lineTo(-1,0); ctx.lineTo(-4,6); ctx.closePath(); ctx.fill();
+      ctx.rotate(-a); ctx.shadowBlur=0;
+      ctx.font='11px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(t.icon,-Math.cos(a)*13,-Math.sin(a)*13);
+      ctx.restore();
+    }
+    ctx.globalAlpha=1;
+  }
+};
+
+// =====================================================================
+// ARCANE PYLONS — deployable magic turrets. They drop off slain enemies
+// (far more often from elites, minibosses, and the deep biomes), stack in
+// your pack, and deploy where you stand with T. Each pylon fights for one
+// minute, hurling element-flavored spells at whatever comes close. Four
+// rarities, each meaner and flashier than the last:
+//   Apprentice (rare)     — storm bolts
+//   Adept (epic)          — twin piercing arcane bolts
+//   Master (legendary)    — triple fire bolts that detonate on impact
+//   Divine (mythic)       — a prismatic frost storm that chains lightning
+// =====================================================================
+const TURRET_TIERS = [
+  {id:'apprentice', name:'Apprentice Pylon', rarity:'rare',      elem:'storm',  color:'#5bc0ff', dmg:15, cd:32, shots:1, range:380, spd:9,    size:1.0},
+  {id:'adept',      name:'Adept Pylon',      rarity:'epic',      elem:'arcane', color:'#c06aff', dmg:22, cd:24, shots:2, range:440, spd:9.5,  size:1.14, pierce:1},
+  {id:'master',     name:'Master Pylon',     rarity:'legendary', elem:'fire',   color:'#ff9a2e', dmg:30, cd:19, shots:3, range:500, spd:10,   size:1.28, aoe:72},
+  {id:'divine',     name:'Divine Pylon',     rarity:'mythic',    elem:'ice',    color:'#ff4d6d', dmg:42, cd:13, shots:4, range:580, spd:11,   size:1.45, pierce:1, chain:3, prism:true},
+];
+const Turrets = {
+  DURATION:3600, MAX:4, // one minute of fury, up to four pylons at once
+  reset(){ World.turrets=[]; World.tBolts=[]; },
+  // scale a pylon's punch with the realm's endless growth curve so a
+  // late-run drop still shreds
+  power(T){ return Math.round(T.dmg*(0.6+0.5*World.endlessPower())); },
+  dropChance(en,diff){
+    let c=(0.006+diff*0.0035);
+    if(en.elite) c*=4;
+    if(en.miniBoss) c*=6;
+    return Math.min(0.30,c);
+  },
+  rollTier(en,diff){
+    const boost=diff*0.13+(en.elite?0.55:0)+(en.miniBoss?1.1:0);
+    const w=[58, 26*(1+boost), 12*(1+boost*1.7), 4*(1+boost*2.4)];
+    let tot=w.reduce((s,v)=>s+v,0), r=Math.random()*tot;
+    for(let i=0;i<w.length;i++){ if((r-=w[i])<=0) return i; }
+    return 0;
+  },
+  // ---- THE DROP CEREMONY — a pylon hitting the ground is an event: the
+  // world freezes for a heartbeat, light erupts, and the rarity announces
+  // itself before you even reach it ----
+  dropFrom(en,diff){
+    const i=this.rollTier(en,diff), T=TURRET_TIERS[i];
+    const rc=RARITY[T.rarity].color;
+    World.drops.push({x:en.x+rand(-8,8),y:en.y+rand(-8,8),turret:i,bob:rand(0,6),spawnT:20});
+    World.hitstop=Math.max(World.hitstop, 4+i*2);
+    FX.ring(en.x,en.y,60+i*22,20,rc); FX.ring(en.x,en.y,32+i*10,14,'#ffffff');
+    FX.spark(en.x,en.y,Math.random()*6.28,rc,14+i*8,3.4);
+    World.flash=Math.max(World.flash, 6+i*3);
+    World.floaters.push({x:en.x,y:en.y-34,vy:-0.9,life:66,maxlife:66,txt:'ARCANE PYLON!',color:rc,scale:1.5+i*0.25,flash:true,icon:'💠',iconGlow:rc});
+    if(i>=2){ Camera.pulse(1.15+i*0.05); Endgame.shake=Math.max(Endgame.shake,8+i*4); SFX.legendarySting(); }
+    else SFX.wandDrop(i+2);
+    UI.toast('💠 '+T.name+' dropped! ('+RARITY[T.rarity].name+')', rc);
+  },
+  pickup(i){
+    const p=World.player, T=TURRET_TIERS[i];
+    p.turrets.push(i);
+    FX.ring(p.x,p.y,70,18,RARITY[T.rarity].color);
+    FX.spark(p.x,p.y,Math.random()*6.28,RARITY[T.rarity].color,18,3);
+    Rewards.showRevealPanel('💠', T.name, T.rarity);
+    const sock=document.getElementById('pylonSlot');
+    if(sock){ sock.classList.remove('casting'); void sock.offsetWidth; sock.classList.add('casting'); }
+    UI.toast('💠 '+T.name+' stowed — press T to deploy!', RARITY[T.rarity].color);
+  },
+  // deploy the best pylon in the pack where the player stands
+  place(){
+    const p=World.player;
+    if(!p.turrets || !p.turrets.length){ UI.toast('No pylons in your pack — elites drop them.','#8a8a8a'); SFX.resist(); return; }
+    if(World.turrets.length>=this.MAX){ UI.toast('The leylines can only sustain '+this.MAX+' pylons at once!','#ff9a4a'); SFX.resist(); return; }
+    p.turrets.sort((a,b)=>a-b);
+    const i=p.turrets.pop(), T=TURRET_TIERS[i];
+    const rc=RARITY[T.rarity].color;
+    World.turrets.push({x:p.x,y:p.y+6,tier:i,life:this.DURATION,cd:24,aim:p.armAngle||0,pulseT:0});
+    FX.ring(p.x,p.y,90,22,rc); FX.ring(p.x,p.y,46,14,'#ffffff');
+    FX.spark(p.x,p.y,Math.random()*6.28,rc,24,3.6);
+    World.flash=Math.max(World.flash,8); Endgame.shake=Math.max(Endgame.shake,6);
+    World.floaters.push({x:p.x,y:p.y-40,vy:-0.8,life:56,maxlife:56,txt:'PYLON DEPLOYED',color:rc,scale:1.3,flash:true,icon:'💠',iconGlow:rc});
+    const sock=document.getElementById('pylonSlot');
+    if(sock){ sock.classList.remove('casting'); void sock.offsetWidth; sock.classList.add('casting'); }
+    SFX.powerup();
+    UI.toast('💠 '+T.name+' deployed — 60 seconds of fury!', rc);
+  },
+  update(){
+    // ---- active pylons: acquire, aim, and unleash ----
+    for(let i=World.turrets.length-1;i>=0;i--){
+      const t=World.turrets[i], T=TURRET_TIERS[t.tier];
+      t.life--;
+      if(t.life<=0){
+        FX.ring(t.x,t.y,60,18,RARITY[T.rarity].color);
+        FX.spark(t.x,t.y,Math.random()*6.28,RARITY[T.rarity].color,16,3);
+        SFX.blip(220,0.2,'triangle',0.16,0.5);
+        World.turrets.splice(i,1); continue;
+      }
+      t.cd--;
+      // nearest live target in range (enemies + the boss)
+      let tx=null,ty=null,best=T.range;
+      for(const en of World.enemies){ if(en.dead||en.submerged||en.treasureGoblin) continue;
+        const d=dist(en.x,en.y,t.x,t.y); if(d<best){best=d;tx=en.x;ty=en.y;} }
+      if(World.boss&&!World.boss.dead){ const d=dist(World.boss.x,World.boss.y,t.x,t.y);
+        if(d<best){best=d;tx=World.boss.x;ty=World.boss.y;} }
+      if(tx!=null){
+        const want=Math.atan2(ty-t.y,tx-t.x);
+        let da=want-t.aim; while(da>Math.PI)da-=6.283; while(da<-Math.PI)da+=6.283;
+        t.aim+=clamp(da,-0.22,0.22);
+        if(t.cd<=0){
+          t.cd=T.cd; t.pulseT=8;
+          const E=ELEMENTS[T.elem];
+          for(let s=0;s<T.shots;s++){
+            const sa=t.aim+(s-(T.shots-1)/2)*0.16+rand(-0.03,0.03);
+            World.tBolts.push({x:t.x+Math.cos(sa)*16,y:t.y-22+Math.sin(sa)*16,
+              vx:Math.cos(sa)*T.spd,vy:Math.sin(sa)*T.spd,r:7,life:70,
+              tier:t.tier,pierce:T.pierce||0,hit:new Set()});
+          }
+          FX.spark(t.x,t.y-22,t.aim,E.glow,5,2.4);
+          SFX.blip(T.prism?740:520+t.tier*60,0.06,'triangle',0.10,1.3);
+        }
+      }
+      if(t.pulseT>0) t.pulseT--;
+    }
+    // ---- pylon bolts ----
+    for(let i=World.tBolts.length-1;i>=0;i--){
+      const b=World.tBolts[i], T=TURRET_TIERS[b.tier], E=ELEMENTS[T.elem];
+      b.x+=b.vx; b.y+=b.vy; b.life--;
+      if(World.time%3===0) FX.spark(b.x,b.y,0,E.trail,1,1.8);
+      let consumed=false;
+      for(const en of World.enemies){
+        if(en.dead||en.submerged||b.hit.has(en)) continue;
+        if(dist(en.x,en.y,b.x,b.y)<en.r+b.r){ this.hitEnemy(b,en,T,E); b.hit.add(en);
+          if(b.pierce>0) b.pierce--; else consumed=true; break; }
+      }
+      if(!consumed && World.boss && !World.boss.dead && !b.hit.has(World.boss)
+         && dist(World.boss.x,World.boss.y,b.x,b.y)<World.boss.r+b.r){
+        const dmg=this.power(T);
+        Combat.hurtBoss(dmg,false);
+        FX.dmgNumber(World.boss.x+rand(-24,24),World.boss.y-World.boss.r,dmg,false,1,E);
+        FX.impact(b.x,b.y,T.elem,false,1);
+        b.hit.add(World.boss);
+        if(b.pierce>0) b.pierce--; else consumed=true;
+      }
+      if(consumed||b.life<=0) World.tBolts.splice(i,1);
+    }
+  },
+  hitEnemy(b,en,T,E){
+    let dmg=this.power(T);
+    const eff=elemMult(T.elem,en.def.elem); dmg=Math.round(dmg*eff);
+    FX.dmgNumber(en.x,en.y-en.r,dmg,false,eff,E);
+    FX.impact(en.x,en.y,T.elem,false,eff);
+    Combat.hurt(en,dmg,false);
+    // legendary: bolts detonate, splashing nearby foes
+    if(T.aoe){
+      FX.ring(b.x,b.y,T.aoe,12,E.glow);
+      const splash=Math.round(dmg*0.45);
+      for(const e2 of World.enemies){ if(e2.dead||e2===en||e2.submerged) continue;
+        if(dist(e2.x,e2.y,b.x,b.y)<T.aoe) Combat.hurt(e2,splash,false); }
+    }
+    // mythic: lightning chains onward through the swarm
+    if(T.chain){
+      const near=World.enemies.filter(e2=>!e2.dead&&e2!==en&&!e2.submerged&&dist(e2.x,e2.y,en.x,en.y)<200)
+        .sort((a,c)=>dist(a.x,a.y,en.x,en.y)-dist(c.x,c.y,en.x,en.y)).slice(0,T.chain);
+      let px=en.x,py=en.y;
+      for(const e2 of near){ FX.lightning(px,py,e2.x,e2.y); Combat.hurt(e2,Math.round(dmg*0.55),false); px=e2.x;py=e2.y; }
+    }
+  },
+  draw(){
+    const ctx=Render.ctx;
+    // bolts — glowing element-colored spell shots
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    for(const b of World.tBolts){ const T=TURRET_TIERS[b.tier], E=ELEMENTS[T.elem];
+      const x=Camera.sx(b.x), y=Camera.sy(b.y);
+      const bg=ctx.createRadialGradient(x,y,0,x,y,10);
+      bg.addColorStop(0,'#ffffff'); bg.addColorStop(0.4,E.glow); bg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=bg; ctx.beginPath(); ctx.arc(x,y,10,0,6.28); ctx.fill(); }
+    ctx.restore();
+    // the pylons themselves
+    for(const t of World.turrets){
+      const T=TURRET_TIERS[t.tier], rIdx=RARITY_ORDER.indexOf(T.rarity);
+      const x=Camera.sx(t.x), y=Camera.sy(t.y), S=T.size;
+      if(x<-80||x>Camera.vw()+80||y<-110||y>Camera.vh()+80) continue;
+      const hue=(World.time*1.6+t.x)%360;
+      const col=T.prism?('hsl('+hue+',95%,70%)'):RARITY[T.rarity].color;
+      const E=ELEMENTS[T.elem];
+      const fading=t.life<240, blink=fading&&Math.floor(t.life/10)%2===0;
+      const bob=Math.sin(World.time*0.05+t.x*0.01)*2.5;
+      ctx.save();
+      if(blink) ctx.globalAlpha=0.45;
+      // ground shadow + range hint ring
+      ctx.fillStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x,y+4,14*S,5*S,0,0,6.28); ctx.fill();
+      ctx.strokeStyle=col; ctx.globalAlpha*=0.14; ctx.lineWidth=1.5; ctx.setLineDash([6,9]);
+      ctx.beginPath(); ctx.arc(x,y,T.range,0,6.28); ctx.stroke(); ctx.setLineDash([]);
+      ctx.globalAlpha=blink?0.45:1;
+      // remaining-time arc
+      ctx.strokeStyle=col; ctx.globalAlpha*=0.85; ctx.lineWidth=2.6;
+      ctx.beginPath(); ctx.arc(x,y+2,20*S,-1.57,-1.57+6.283*(t.life/this.DURATION)); ctx.stroke();
+      ctx.globalAlpha=blink?0.45:1;
+      // stone rune base
+      ctx.fillStyle='#3a3444';
+      ctx.beginPath(); ctx.moveTo(x-12*S,y+4); ctx.lineTo(x-7*S,y-7*S); ctx.lineTo(x+7*S,y-7*S); ctx.lineTo(x+12*S,y+4); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#4c4560'; ctx.fillRect(x-9*S,y-9*S,18*S,3.4*S);
+      // additive glow stack
+      ctx.save(); ctx.globalCompositeOperation='lighter';
+      const pul=0.6+0.4*Math.sin(World.time*0.08+t.x*0.02)+(t.pulseT>0?t.pulseT/8*0.8:0);
+      const gg=ctx.createRadialGradient(x,y-24*S,0,x,y-24*S,(26+rIdx*5)*S);
+      gg.addColorStop(0,col); gg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.globalAlpha=(blink?0.2:0.42)*pul; ctx.fillStyle=gg;
+      ctx.beginPath(); ctx.arc(x,y-24*S,(26+rIdx*5)*S,0,6.28); ctx.fill();
+      ctx.globalAlpha=blink?0.45:1;
+      ctx.restore();
+      // floating crystal core
+      ctx.save(); ctx.translate(x,y-24*S+bob); ctx.rotate(Math.sin(World.time*0.02+t.x)*0.15);
+      ctx.shadowColor=col; ctx.shadowBlur=14+t.pulseT*2;
+      ctx.fillStyle=E.color;
+      ctx.beginPath(); ctx.moveTo(0,-13*S); ctx.lineTo(7*S,0); ctx.lineTo(0,15*S); ctx.lineTo(-7*S,0); ctx.closePath(); ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.fillStyle='#ffffff'; ctx.globalAlpha*=0.85;
+      ctx.beginPath(); ctx.moveTo(0,-7*S); ctx.lineTo(3.4*S,0); ctx.lineTo(0,8*S); ctx.lineTo(-3.4*S,0); ctx.closePath(); ctx.fill();
+      ctx.globalAlpha=blink?0.45:1;
+      ctx.restore();
+      // rotating rune rings — one per rarity step above rare
+      ctx.save(); ctx.translate(x,y-24*S+bob);
+      for(let r2=0;r2<=rIdx-2;r2++){
+        ctx.save(); ctx.rotate(World.time*0.03*(r2%2?-1:1)+r2);
+        ctx.strokeStyle=col; ctx.globalAlpha*=0.7; ctx.lineWidth=1.6;
+        ctx.setLineDash([4,7]);
+        ctx.beginPath(); ctx.ellipse(0,0,(15+r2*6)*S,(6+r2*2.5)*S,0,0,6.28); ctx.stroke();
+        ctx.setLineDash([]); ctx.restore();
+        ctx.globalAlpha=blink?0.45:1;
+      }
+      ctx.restore();
+      // aim glint toward the current target
+      ctx.save(); ctx.globalCompositeOperation='lighter';
+      ctx.strokeStyle=E.glow; ctx.globalAlpha*=0.5; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(x+Math.cos(t.aim)*10*S,y-24*S+bob+Math.sin(t.aim)*10*S);
+      ctx.lineTo(x+Math.cos(t.aim)*18*S,y-24*S+bob+Math.sin(t.aim)*18*S); ctx.stroke();
+      ctx.restore();
+      ctx.restore();
+    }
+  }
+};
+
+// =====================================================================
+// RUN INTRO — a snappy 2.75-second cold-open on every run: smash-cut from
+// black into a tight close-up on the wizard, letterbox bars, a contracting
+// summoning circle drinking in streams of arcane motes, the mode's name
+// slamming across the screen — then the circle DETONATES, the bars snap
+// away, and the realm is yours. Input is held until the burst.
+// =====================================================================
+const Intro = {
+  active:false, T:0, DUR:165, BURST:140, startZoom:2.05,
+  start(){
+    this.active=true; this.T=0;
+    const p=World.player;
+    World.spawnCd=this.DUR+30;                      // hold the first wave until the smoke clears
+    World.lastBiome=World.biomeAt(p.x,p.y).name;    // intro card replaces the first biome card
+    // --- DOM: smash-cut from black, bars in, title card ---
+    const fade=document.getElementById('cineFade');
+    if(fade){ fade.style.transition='none'; fade.style.opacity=1; void fade.offsetWidth;
+      fade.style.transition='opacity .8s ease .15s'; fade.style.opacity=0; }
+    document.body.classList.add('cine');
+    const ri=document.getElementById('runIntro');
+    if(ri){
+      const md=GAME_MODES.find(m=>m.id===World.mode);
+      ri.querySelector('.riMode').textContent=(md?md.name:'SPELLSTORM').toUpperCase();
+      const O=ORIGINS.find(o=>o.id===p.origin)||ORIGINS[0];
+      const oe=ri.querySelector('.riOrigin');
+      oe.textContent=O.name; ri.style.setProperty('--roc',O.c);
+      ri.classList.remove('show'); void ri.offsetWidth;
+      setTimeout(()=>ri.classList.add('show'),80);
+    }
+    // --- deep opening boom ---
+    SFX.blip(45,1.0,'sawtooth',0.30,0.5); SFX.noise(0.5,0.20,80);
+    SFX.blip(28,1.4,'sine',0.22,0.7);
+  },
+  // eased camera pull: linger tight, then sweep out to fighting distance
+  zoomAt(t){
+    if(t<40) return this.startZoom-0.0022*t;        // slow creeping drift while power gathers
+    const k=clamp((t-40)/(this.DUR-40),0,1);
+    const e=k<0.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;   // easeInOutCubic
+    return lerp(this.startZoom-0.088,Camera.baseZoom,e);
+  },
+  update(){
+    this.T++; World.time++;
+    const p=World.player, t=this.T;
+    // --- arcane motes streaming inward to the circle ---
+    if(t<this.BURST-12 && t%2===0){
+      const a=Math.random()*6.28, r=210+Math.random()*150;
+      const mx=p.x+Math.cos(a)*r, my=p.y-8+Math.sin(a)*r*0.6;
+      World.particles.push({x:mx,y:my,vx:-(mx-p.x)/24,vy:-(my-(p.y-8))/24,
+        life:24,color:pick(['#8fd0ff','#c8a8ff','#ffd24a','#ffffff']),sz:2.3});
+    }
+    // --- rising power pulses ---
+    if(t===10||t===54||t===98){
+      const tier=t===10?0:t===54?1:2;
+      FX.ring(p.x,p.y,60-tier*10,16,['#8fd0ff','#c8a8ff','#ffd24a'][tier]);
+      SFX.blip(200+tier*130,0.16,'triangle',0.16,1.5);
+      Endgame.shake=Math.max(Endgame.shake,3+tier*2);
+    }
+    if(t===this.BURST-16){ // pre-detonation charge whine
+      SFX.blip(300,0.30,'sawtooth',0.14,3.2);
+      const ri=document.getElementById('runIntro'); if(ri) ri.classList.remove('show');
+    }
+    // --- THE BURST: circle detonates, bars snap away, control releases ---
+    if(t===this.BURST){
+      FX.ring(p.x,p.y,170,24,'#ffd24a'); FX.ring(p.x,p.y,110,18,'#8fd0ff'); FX.ring(p.x,p.y,60,12,'#ffffff');
+      FX.spark(p.x,p.y,Math.random()*6.28,'#fff0a8',34,4);
+      for(let k=0;k<6;k++){ const la=k/6*6.283;
+        FX.lightning(p.x,p.y-10,p.x+Math.cos(la)*rand(120,190),p.y-10+Math.sin(la)*rand(70,120)); }
+      World.flash=20; Endgame.shake=Math.max(Endgame.shake,16);
+      World.floaters.push({x:p.x,y:p.y-52,vy:-0.7,life:70,maxlife:70,txt:'SURVIVE',
+        color:'#ff9a4a',scale:2.1,flash:true,icon:'⚔',iconGlow:'#ffd24a'});
+      document.body.classList.remove('cine');
+      SFX.noise(0.35,0.26,140); SFX.blip(90,0.5,'sawtooth',0.28,0.5);
+      [523,659,784].forEach((f,i)=>setTimeout(()=>SFX.blip(f,0.18,'triangle',0.20,1.1),i*70));
+    }
+    if(t>=this.DUR) this.active=false;
+    // --- camera: tight on the wizard, easing out to fighting distance ---
+    Camera.zoom=this.zoomAt(t);
+    const ww=World.mode==='endless'?CONFIG.world.size:CONFIG.world.width;
+    const wh=World.mode==='endless'?CONFIG.world.size:CONFIG.world.height;
+    Camera.x=clamp(p.x-Camera.vw()/2,0,Math.max(0,ww-Camera.vw()));
+    Camera.y=clamp(p.y-Camera.vh()/2,0,Math.max(0,wh-Camera.vh()));
+    // keep the world breathing while input is held
+    FX.update(); Ambient.update(); UI.sync();
+    if(Endgame.shake>0) Endgame.shake--;
+  },
+  // the contracting summoning circle, drawn over the ground each frame
+  draw(){
+    if(!this.active) return;
+    const ctx=Render.ctx, p=World.player, t=this.T;
+    const x=Camera.sx(p.x), y=Camera.sy(p.y)+4;
+    let R, alpha;
+    if(t<this.BURST){ const k=1-Math.pow(1-clamp(t/this.BURST,0,1),2);
+      R=lerp(185,42,k); alpha=Math.min(1,t/18); }
+    else { const k=clamp((t-this.BURST)/16,0,1); R=42+k*220; alpha=1-k; }
+    if(alpha<=0) return;
+    ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=alpha;
+    // twin counter-rotating rune rings
+    for(let ring=0;ring<2;ring++){
+      const rr=R*(ring?0.68:1), dir=ring?-1:1;
+      ctx.save(); ctx.translate(x,y); ctx.rotate(World.time*0.03*dir);
+      ctx.strokeStyle=ring?'#c8a8ff':'#8fd0ff'; ctx.lineWidth=2;
+      ctx.shadowColor=ring?'#c8a8ff':'#8fd0ff'; ctx.shadowBlur=10;
+      ctx.setLineDash(ring?[5,9]:[14,10]);
+      ctx.beginPath(); ctx.ellipse(0,0,rr,rr*0.45,0,0,6.283); ctx.stroke();
+      ctx.setLineDash([]); ctx.restore();
+    }
+    // four orbiting rune-gems on the outer ring
+    for(let k2=0;k2<4;k2++){ const ga=World.time*0.03+k2*1.5708;
+      const gx=x+Math.cos(ga)*R, gy=y+Math.sin(ga)*R*0.45;
+      ctx.fillStyle='#ffd24a'; ctx.shadowColor='#ffd24a'; ctx.shadowBlur=8;
+      ctx.save(); ctx.translate(gx,gy); ctx.rotate(ga);
+      ctx.fillRect(-2.4,-2.4,4.8,4.8); ctx.restore(); ctx.shadowBlur=0;
+    }
+    // gathering light pillar, brightening as the circle tightens
+    if(t<this.BURST){
+      const charge=clamp(t/this.BURST,0,1);
+      const pg=ctx.createLinearGradient(x,y,x,y-160*charge);
+      pg.addColorStop(0,'rgba(160,215,255,'+(0.35*charge)+')'); pg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=pg;
+      ctx.beginPath(); ctx.moveTo(x-10,y); ctx.lineTo(x+10,y);
+      ctx.lineTo(x+3,y-160*charge); ctx.lineTo(x-3,y-160*charge); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  }
+};
+
+// =====================================================================
+// MUSIC — a tiny procedural score, no files: two detuned drones breathing
+// under a slow minor-pentatonic music-box, all through one quiet gain.
+// It listens to the world: darker biomes sink the root note, a boss adds
+// a low war-pulse, and everything swells slightly as the run deepens.
+// =====================================================================
+const Music = {
+  g:null, droneOsc:[], droneG:null, timer:null, step:0, on:true,
+  start(){
+    SFX.init(); const ac=SFX.ac; if(!ac||!this.on) return;
+    if(!this.g){ this.g=ac.createGain(); this.g.gain.value=0; this.g.connect(ac.destination); }
+    const t=ac.currentTime;
+    this.g.gain.cancelScheduledValues(t);
+    this.g.gain.setValueAtTime(Math.max(0.0001,this.g.gain.value),t);
+    this.g.gain.exponentialRampToValueAtTime(0.055,t+3);
+    if(!this.droneG){
+      this.droneG=ac.createGain(); this.droneG.gain.value=0.5;
+      const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=320;
+      this.droneG.connect(lp); lp.connect(this.g);
+      [55,55.6,110.4].forEach((f,i)=>{
+        const o=ac.createOscillator(); o.type=i===2?'triangle':'sine'; o.frequency.value=f;
+        const og=ac.createGain(); og.gain.value=i===2?0.14:0.32;
+        o.connect(og); og.connect(this.droneG); o.start();
+        this.droneOsc.push(o);
+      });
+      // very slow breathing on the drone
+      const lfo=ac.createOscillator(); lfo.frequency.value=0.05;
+      const lfoG=ac.createGain(); lfoG.gain.value=0.18;
+      lfo.connect(lfoG); lfoG.connect(this.droneG.gain); lfo.start();
+    }
+    clearInterval(this.timer);
+    this.timer=setInterval(()=>this.tick(),300);
+  },
+  stop(){
+    const ac=SFX.ac; if(!ac||!this.g) return;
+    const t=ac.currentTime;
+    this.g.gain.cancelScheduledValues(t);
+    this.g.gain.setValueAtTime(Math.max(0.0001,this.g.gain.value),t);
+    this.g.gain.exponentialRampToValueAtTime(0.0001,t+2);
+    clearInterval(this.timer); this.timer=null;
+  },
+  pluck(freq,vol,dur,type){
+    const ac=SFX.ac; if(!ac||!this.g) return;
+    const t=ac.currentTime, o=ac.createOscillator(), g2=ac.createGain();
+    o.type=type||'triangle'; o.frequency.value=freq;
+    g2.gain.setValueAtTime(0.0001,t);
+    g2.gain.exponentialRampToValueAtTime(vol,t+0.03);
+    g2.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g2); g2.connect(this.g); o.start(t); o.stop(t+dur+0.05);
+  },
+  tick(){
+    if(!World.running||World.paused||World.shopOpen||!World.player) return;
+    this.step++;
+    const bio=World.biomeAt(World.player.x,World.player.y);
+    const mood=bio.mood||0;
+    // darker biomes shift the whole scale down a step or two
+    const root=110*Math.pow(2,(mood>0.45?-3:mood>0.2?-1:0)/12);
+    const scale=[0,3,5,7,10,12,15,17];
+    const busy=0.32+Endgame.intensity*0.25+(World.bossActive?0.2:0);
+    if(Math.random()<busy && this.step%2===0){
+      const n=scale[Math.floor(Math.random()*scale.length)];
+      const oct=Math.random()<0.7?2:4;
+      this.pluck(root*oct*Math.pow(2,n/12), 0.16, 1.4+Math.random(), 'triangle');
+    }
+    // sparse high shimmer, rarer in calm biomes
+    if(Math.random()<0.08+mood*0.1){
+      const n=scale[Math.floor(Math.random()*scale.length)];
+      this.pluck(root*8*Math.pow(2,n/12), 0.05, 2.2, 'sine');
+    }
+    // boss war-pulse: a slow, low heartbeat under the fight
+    if(World.bossActive && this.step%4===0) this.pluck(root/2,0.3,0.45,'sawtooth');
+  }
+};
+
+// =====================================================================
 // GAME MODES — same spells, wands, mutations, and origins in both; only
 // the world shape, boss progression, and ending differ.
 // =====================================================================
@@ -3511,8 +4506,8 @@ const GAME_MODES = [
    d:'Climb to the top. Beat the boss at the end of each stage.',
    note:'Not available yet.'},
   {id:'endless', name:'The Open Realm', c:'#ff9a2e', badge:{text:'Recommended',color:'#8be36b'},
-   tag:'No ending',
-   d:'Fight outward from the center. Keeps getting harder.'},
+   tag:'No ending · a vast living realm',
+   d:'Fight outward from the center of a vast realm dotted with shrines, braziers, leyline obelisks, and stranger things. Keeps getting harder, forever.'},
 ];
 
 // =====================================================================
@@ -3837,6 +4832,11 @@ const FLOOR_TEX = {
   chaos(ctx,px,py,seed){ // drifting arcane flecks
     ctx.fillStyle='rgba(192,106,255,'+(0.3+seed*0.35)+')'; ctx.fillRect(px,py,1.6,1.6); },
   corrupt(ctx,px,py,seed){ FLOOR_TEX.chaos(ctx,px,py,seed); },
+  crystal(ctx,px,py,seed){ // glinting embedded crystal shards
+    ctx.save(); ctx.translate(px,py); ctx.rotate(seed*6.28);
+    ctx.fillStyle='rgba(140,200,255,'+(0.35+seed*0.35)+')';
+    ctx.beginPath(); ctx.moveTo(0,-3); ctx.lineTo(1.6,0); ctx.lineTo(0,3); ctx.lineTo(-1.6,0); ctx.closePath(); ctx.fill();
+    ctx.restore(); },
 };
 
 // =====================================================================
@@ -4177,13 +5177,14 @@ const Render = {
         }
       }
     }
-    // grass/detail blades
+    // grass/detail blades — leaning together in a slow rolling wind
     for(let gy=sY; gy<ey; gy+=20){
       for(let gx=sX; gx<ex; gx+=20){
         const b=World.biomeAt(gx,gy); const seed=((gx*31+gy*17)%97)/97;
         if(seed>0.74){ ctx.strokeStyle=b.blade; ctx.lineWidth=2;
+          const sway=Math.sin(World.time*0.045+gx*0.012+gy*0.007)*2.1;
           const px=Camera.sx(gx+seed*10),py=Camera.sy(gy+seed*8);
-          ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(px+2,py-6); ctx.stroke(); }
+          ctx.beginPath(); ctx.moveTo(px,py); ctx.quadraticCurveTo(px+1+sway*0.4,py-3,px+2+sway,py-6); ctx.stroke(); }
       }
     }
     // sparse biome-flavored floor texture (cracks, pebbles, ice-glints, embers...)
@@ -4201,7 +5202,7 @@ const Render = {
       this.drawRivers();
       this.treeCache=Terrain.treesNear(World.player.x,World.player.y,Math.max(Camera.vw(),Camera.vh())*0.75+200);
       for(const tr of this.treeCache) if(tr.y<=World.player.y) this.tree(tr);
-    } else { this.treeCache=null; }
+    } else { this.treeCache=null; Scenery.draw(ctx); }
     // mood tint by biome at player — colored atmosphere instead of flat black,
     // so each biome reads with its own light: icy glare in the snow, warm
     // haze in the desert, sickly green in the mire, magenta dread in the core
@@ -4209,6 +5210,20 @@ const Render = {
     if(mood>0){
       const tint=MOOD_TINT[curBiome.key]||'0,0,8';
       ctx.fillStyle='rgba('+tint+','+(mood*0.4)+')'; ctx.fillRect(0,0,Camera.vw(),Camera.vh());
+    }
+    // the wizard's lantern-light — a warm pool of light around the player
+    // that cuts through the darker biomes' haze, so you always carry a
+    // little firelit clearing with you into the gloom
+    if(mood>0.14){
+      const px=Camera.sx(World.player.x), py=Camera.sy(World.player.y)-8;
+      const rr=210+Math.sin(World.time*0.04)*10;
+      ctx.save(); ctx.globalCompositeOperation='lighter';
+      const lg=ctx.createRadialGradient(px,py,0,px,py,rr);
+      lg.addColorStop(0,'rgba(255,225,160,'+(mood*0.20)+')');
+      lg.addColorStop(0.5,'rgba(255,205,130,'+(mood*0.09)+')');
+      lg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=lg; ctx.beginPath(); ctx.arc(px,py,rr,0,6.28); ctx.fill();
+      ctx.restore();
     }
     // ambient atmosphere particles — glow through the haze on top of the tint
     Ambient.draw(ctx);
@@ -4650,6 +5665,52 @@ const Render = {
         ctx.fillStyle='#caa15a'; ctx.fillRect(x-2,y-8,4,5);
         ctx.strokeStyle='#ff8aa0'; ctx.globalAlpha*=0.4+0.3*Math.sin(dr.bob*2); ctx.lineWidth=1.5;
         ctx.beginPath(); ctx.arc(x,y,12,0,6.28); ctx.stroke(); ctx.globalAlpha=1; continue; }
+      if(dr.turret!=null){ // ARCANE PYLON DROP — a miniature dormant pylon, beaconing its rarity
+        const T=TURRET_TIERS[dr.turret], rIdx=RARITY_ORDER.indexOf(T.rarity);
+        const hue=(World.time*1.6+dr.bob*40)%360;
+        const col=T.prism?('hsl('+hue+',95%,70%)'):RARITY[T.rarity].color;
+        const E=ELEMENTS[T.elem];
+        const pulse=0.6+0.4*Math.sin(dr.bob*1.7);
+        // ground shadow + expanding summon rings
+        ctx.fillStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x,y+12,15,5,0,0,6.28); ctx.fill();
+        ctx.strokeStyle=col; ctx.lineWidth=1.7;
+        const ringT=(dr.bob*0.42)%1;
+        ctx.globalAlpha=(1-ringT)*0.75; ctx.beginPath(); ctx.arc(x,y+8,9+ringT*(18+rIdx*4),0,6.28); ctx.stroke();
+        ctx.globalAlpha=0.35+0.25*pulse; ctx.beginPath(); ctx.arc(x,y+8,18+rIdx*2,0,6.28); ctx.stroke();
+        ctx.globalAlpha=st>0?1-st*0.35:1;
+        // rarity beacon pillar — the "come get me" light visible across the field
+        ctx.save(); ctx.globalCompositeOperation='lighter';
+        const ph=58+rIdx*18;
+        const pg=ctx.createLinearGradient(x,y,x,y-ph);
+        pg.addColorStop(0,col); pg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.globalAlpha=(0.32+rIdx*0.07)*pulse*(st>0?1-st:1);
+        ctx.fillStyle=pg; ctx.beginPath(); ctx.moveTo(x-8-rIdx,y+4); ctx.lineTo(x+8+rIdx,y+4); ctx.lineTo(x+2,y-ph); ctx.lineTo(x-2,y-ph); ctx.closePath(); ctx.fill();
+        const hg2=ctx.createRadialGradient(x,y-4,0,x,y-4,26+rIdx*5);
+        hg2.addColorStop(0,col); hg2.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.globalAlpha=0.4*pulse; ctx.fillStyle=hg2; ctx.beginPath(); ctx.arc(x,y-4,26+rIdx*5,0,6.28); ctx.fill();
+        ctx.restore(); ctx.globalAlpha=st>0?1-st*0.35:1;
+        // tiny stone base + hovering crystal, slowly turning
+        ctx.fillStyle='#3a3444';
+        ctx.beginPath(); ctx.moveTo(x-8,y+9); ctx.lineTo(x-5,y+2); ctx.lineTo(x+5,y+2); ctx.lineTo(x+8,y+9); ctx.closePath(); ctx.fill();
+        const hov=Math.sin(dr.bob*1.2)*2.5;
+        ctx.save(); ctx.translate(x,y-8+hov); ctx.rotate(Math.sin(World.time*0.03+dr.bob)*0.3);
+        ctx.shadowColor=col; ctx.shadowBlur=12+rIdx*4;
+        ctx.fillStyle=E.color;
+        ctx.beginPath(); ctx.moveTo(0,-9); ctx.lineTo(5,0); ctx.lineTo(0,10); ctx.lineTo(-5,0); ctx.closePath(); ctx.fill();
+        ctx.shadowBlur=0;
+        ctx.fillStyle='#ffffff'; ctx.globalAlpha*=0.85;
+        ctx.beginPath(); ctx.moveTo(0,-5); ctx.lineTo(2.4,0); ctx.lineTo(0,5.5); ctx.lineTo(-2.4,0); ctx.closePath(); ctx.fill();
+        ctx.globalAlpha=st>0?1-st*0.35:1;
+        ctx.restore();
+        // orbiting sparkle motes, more per rarity
+        ctx.save(); ctx.globalCompositeOperation='lighter';
+        for(let k=0;k<3+rIdx;k++){ const sa=World.time*0.06+k*(6.28/(3+rIdx)), sr=16+rIdx*3;
+          ctx.globalAlpha=0.55+0.35*Math.sin(World.time*0.1+k);
+          ctx.fillStyle=col; ctx.beginPath();
+          ctx.arc(x+Math.cos(sa)*sr,y-8+hov+Math.sin(sa)*sr*0.45,1.6,0,6.28); ctx.fill(); }
+        ctx.restore();
+        ctx.globalAlpha=1; continue;
+      }
       if(dr.wand!=null){ // WAND DROP — an actual wand, angled, crowned with a glowing crystal
         const wd=WANDS[dr.wand], rIdx=RARITY_ORDER.indexOf(wd.rarity);
         const col=RARITY[wd.rarity].color, E=ELEMENTS[wd.elem]||ELEMENTS.arcane;
@@ -4921,8 +5982,17 @@ const Render = {
         c.fillRect(en.x*scale-1,en.y*scale-1,2.5,2.5); }
       if(World.boss&&!World.boss.dead){ c.fillStyle='#ff2ad0';
         c.beginPath(); c.arc(World.boss.x*scale,World.boss.y*scale,4,0,6.28); c.fill(); }
-      for(const dr of World.drops){ c.fillStyle=dr.chest?(CHEST_TIERS[dr.tier||'wooden']||CHEST_TIERS.wooden).color:dr.powerup?(POWERUPS[dr.powerup]||POWERUPS.frenzy).color:dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
+      for(const dr of World.drops){ c.fillStyle=dr.chest?(CHEST_TIERS[dr.tier||'wooden']||CHEST_TIERS.wooden).color:dr.turret!=null?RARITY[TURRET_TIERS[dr.turret].rarity].color:dr.powerup?(POWERUPS[dr.powerup]||POWERUPS.frenzy).color:dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
         c.fillRect(dr.x*scale-1,dr.y*scale-1,2,2); }
+      // landmarks: unused shrines as bright diamonds, obelisks as violet dots
+      for(const L of Landmarks.all){
+        if(L.kind==='shrine'&&!L.used){ c.save(); c.translate(L.x*scale,L.y*scale); c.rotate(0.785);
+          c.fillStyle=SHRINES[L.shrine].color; c.fillRect(-2,-2,4,4); c.restore(); }
+        else if(L.kind==='obelisk'){ c.fillStyle='#9a6aff'; c.fillRect(L.x*scale-1,L.y*scale-1,2,2); }
+      }
+      // active pylons — rarity-colored squares
+      for(const t of World.turrets){ c.fillStyle=RARITY[TURRET_TIERS[t.tier].rarity].color;
+        c.fillRect(t.x*scale-2,t.y*scale-2,4,4); }
       const p=World.player; c.fillStyle='#ffffff';
       c.beginPath(); c.arc(p.x*scale,p.y*scale,3,0,6.28); c.fill();
       c.strokeStyle='#10180c'; c.lineWidth=1; c.stroke();
@@ -4954,7 +6024,7 @@ const Render = {
     if(World.boss&&!World.boss.dead){ c.fillStyle='#ff2ad0';
       c.beginPath(); c.arc(World.boss.x*scale,(World.boss.y-winTop)*scale,4,0,6.28); c.fill(); }
     // drops
-    for(const dr of World.drops){ c.fillStyle=dr.chest?(CHEST_TIERS[dr.tier||'wooden']||CHEST_TIERS.wooden).color:dr.powerup?(POWERUPS[dr.powerup]||POWERUPS.frenzy).color:dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
+    for(const dr of World.drops){ c.fillStyle=dr.chest?(CHEST_TIERS[dr.tier||'wooden']||CHEST_TIERS.wooden).color:dr.turret!=null?RARITY[TURRET_TIERS[dr.turret].rarity].color:dr.powerup?(POWERUPS[dr.powerup]||POWERUPS.frenzy).color:dr.potion!=null?'#ff5a7a':(dr.wand!=null?RARITY[WANDS[dr.wand].rarity].color:RARITY[dr.item.rarity].color);
       c.fillRect(dr.x*scale-1,(dr.y-winTop)*scale-1,2,2); }
     // player
     const p=World.player; c.fillStyle='#ffffff';
@@ -5025,14 +6095,18 @@ const Render = {
     ctx.save(); ctx.translate(shx,shy); ctx.scale(Camera.zoom,Camera.zoom);
     this.ground();
     this.gateWall();
+    Landmarks.draw();
     this.drops();
+    Turrets.draw();
     for(const en of World.enemies) this.enemy(en);
     this.boss();
     this.effects();
+    Intro.draw();
     Companions.draw();
     Merchant.draw();
     this.wizard(World.player);
     this.terrainFront();
+    Landmarks.arrows();
     ctx.restore();
     // creeping crimson dread as you near the peak
     if(Endgame.intensity>0.02){ const k=Endgame.intensity;
@@ -5714,10 +6788,15 @@ const Game = {
     World.player.recalc(); World.player.hp=World.player.maxhp;
     if(O.id!=='unchosen') UI.toast('Origin · '+O.name, O.c);
     Inventory.reset(); UI.resetBuildTree(); UI.sync();
+    Music.start();
+    Intro.start();
     this.loop();
   },
   step(){
     if(World.shopOpen||World.paused||World.won||!World.running) return;
+    // cinematic run intro: the world holds its breath — no input, no
+    // spawns, just the summoning — until the circle detonates
+    if(Intro.active){ Intro.update(); return; }
     // micro hit-stop: the whole world freezes for a couple of frames on a
     // kill or crit — a tiny bite of impact that makes every hit feel heavy
     if(World.hitstop>0){ World.hitstop--; return; }
@@ -5746,6 +6825,11 @@ const Game = {
     }
     Terrain.collide(p);
     p.moveX=dx; p.moveY=dy;
+    // little scuffs of dust kicked up while walking — grounds the wizard in the world
+    if((dx||dy) && p.dashFrames<=0 && World.time%9===0){
+      World.particles.push({x:p.x+rand(-5,5),y:p.y+p.r-3,vx:-dx*0.5+rand(-0.3,0.3),
+        vy:rand(-0.55,-0.15),life:15,color:'rgba(205,195,165,.5)',sz:1.8});
+    }
     p.mp=Math.min(p.maxmp,p.mp+CONFIG.player.mpRegen);
     if(p.regen>0) p.hp=Math.min(p.maxhp,p.hp+p.regen);
     if(p.hurt>0)p.hurt--;
@@ -5756,8 +6840,8 @@ const Game = {
     World.castMod=bio.castMod||1; World.enemySpeedMod=bio.enemySpeedMod||1;
     World.goldMod=bio.goldMod||1; World.critMod=bio.critMod||0;
     if(Events.bloodMoonBoost){ World.enemySpeedMod*=1.15; World.goldMod*=1.3; }
-    if(World.lastBiome!==bio.name){ World.lastBiome=bio.name;
-      if(bio.rule) UI.toast(bio.rule, '#9fdcff'); }
+    if(World.lastBiome!==bio.name){ const first=World.lastBiome===null; World.lastBiome=bio.name;
+      UI.biomeTitle(bio.name, bio.rule||'', first); }
     // aim + fire
     Input.mouse.wx=Input.mouse.sx/Camera.zoom+Camera.x; Input.mouse.wy=Input.mouse.sy/Camera.zoom+Camera.y;
     p.armAngle=Math.atan2(Input.mouse.wy-(p.y-18),Input.mouse.wx-p.x);
@@ -5771,6 +6855,8 @@ const Game = {
     if(Input.keys['q']&&p.spellQ.unlocked&&p.spellQ.cd<=0&&p.mp>=Combat.spellCost('Q')) Combat.castSpell('Q');
     if(Input.keys['e']&&p.spellE.unlocked&&p.spellE.cd<=0&&p.mp>=Combat.spellCost('E')) Combat.castSpell('E');
     if(Input.keys['r']&&p.spellR.unlocked&&p.spellR.cd<=0&&p.mp>=Combat.spellCost('R')) Combat.castSpell('R');
+    // T — deploy an Arcane Pylon where you stand (edge-triggered, not held)
+    if(Input.keys['t']){ if(!p._tHeld){ p._tHeld=true; Turrets.place(); } } else p._tHeld=false;
     World.runTimers();
     // systems
     Boss.maybeTrigger();
@@ -5784,6 +6870,8 @@ const Game = {
     Companions.update();
     Merchant.update();
     Events.update();
+    Landmarks.update();
+    Turrets.update();
     updateProjectiles();
     Buffs.update();
     Combo.update();
@@ -5801,6 +6889,7 @@ const Game = {
   },
   over(){
     World.running=false;
+    Music.stop();
     document.getElementById('bossbar').classList.remove('show');
     const endless=World.mode==='endless';
     document.getElementById('title').innerHTML = endless ? 'You fought bravely' : 'YOU HAVE DIED';
@@ -5818,6 +6907,7 @@ const Game = {
   },
   goHome(){
     World.running=false; World.won=false;
+    Music.stop();
     // restore default Play-again behavior for the shared button, then show the home menu
     const btn=document.getElementById('startBtn'); btn.textContent='Play Again'; btn.onclick=()=>Game.openModes();
     const ov=document.getElementById('overlay');
@@ -5827,6 +6917,7 @@ const Game = {
   },
   win(){
     World.won=true; World.running=false;
+    Music.stop();
     document.getElementById('bossbar').classList.remove('show');
     document.getElementById('title').innerHTML='Realm is yours';
     document.getElementById('sub').innerHTML='The Hollow King has fallen and the climb is complete. Level <b style="color:#5fd0ff">'+World.player.level+
